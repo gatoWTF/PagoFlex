@@ -1,0 +1,21 @@
+package com.example.pagoflex.ui.screens
+
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
+import com.example.pagoflex.ui.theme.PagoFlexTheme
+
+@Composable
+fun HistorialScreen(modifier: Modifier = Modifier) {
+    Box(modifier = modifier.fillMaxSize())
+}
+
+@Preview(showBackground = true)
+@Composable
+fun HistorialScreenPreview() {
+    PagoFlexTheme {
+        HistorialScreen()
+    }
+}

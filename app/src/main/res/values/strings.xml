@@ -1,3 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">PagoFlex</string>
+    <string name = "app_name">PagoFlex</string>
+    <!-- Con el simbolo % sirve para mostrar el valor de una variable -->
+    <!-- El simbolo de peso ($)separa el numero de variable con su tipo de dato -->
+    <!--  Td -> tipo de dato si es un simbolo S es una cadena de caracteres-->
+    <!-- Si el simbolo es d es un numero entero -->
+    <!-- Si el simbolo es .1f, se muestra un decimal, si es .2f, dos decimales (ej: %1$.2f) -->
+    <!-- Pantalla de formulario -->
+    <string name = "titulo_formulario">Crear Cuenta</string>
+    <string name = "banner_titulo">Unete a la comunidad</string>
+    <string name = "banner_subtitulo">Completa tus datos en menos de un minuto</string>
+    <string name = "seccion_datos">Datos personales</string>
+    <string name = "seccion_preferencias">Preferencias</string>
+    <string name = "campo_nombre">Nombre completo</string>
+    <string name = "campo_correo">Correo electronico</string>
+    <string name = "campo_contrasena">Contraseña</string>
+    <string name = "opcion_noticias">Recibir novedades por correo</string>
+    <string name = "etiqueta_nivel">Nivel de experiencia</string>
+    <string name = "opcion_terminos">Acepto los terminos y condiciones</string>
+    <string name = "btn_registrar">Registrarme</string>
+    <string name = "btn_limpiar">Limpiar</string>
+    <string name = "registro_exitoso">Registro exitoso. Bienvenido/a %1$s</string>
+    <!-- Pantalla de perfil -->
+    <string name = "titulo_perfil">Mi perfil</string>
+    <string name = "sobre_mi">Sobre mi</string>
+    <string name = "seccion_intereses">Intereses</string>
+    <string name = "btn_seguir">Seguir</string>
+    <string name = "btn_siguiendo">Siguiendo</string>
+
+    <!-- Descripciones para accesibilidad (TalkBack) -->
+    <string name = "cd_banner">Ilustracion de un formulario</string>
+    <string name = "cd_portada">Paisaje de montañas al atardecer</string>
+    <string name = "cd_avatar">Foto de perfil</string>
+    <string name = "cd_mostrar_contrasena">Mostrar contraseña</string>
+    <string name = "cd_ocultar_contrasena">Ocultar contraseña</string>
+
 </resources>

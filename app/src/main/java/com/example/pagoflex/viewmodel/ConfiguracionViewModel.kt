@@ -14,4 +14,16 @@ class ConfiguracionViewModel : ViewModel() {
         private set
     var diasAviso by mutableIntStateOf(3)
         private set
+
+    fun cambiarNotificaciones(activo: Boolean) {
+        notificaciones = activo
+    }
+
+    fun cambiarModoOscuro(activo: Boolean) {
+        modoOscuro = activo
+    }
+
+    fun cambiarDiasAviso(dias: Int) {
+        diasAviso = dias
+    }
 }

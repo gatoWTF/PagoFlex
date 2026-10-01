@@ -1,4 +1,6 @@
 package com.example.pagoflex.model
 
-class Usuario {
-}
+data class Usuario(
+    val nombre: String,
+    val correo: String
+)

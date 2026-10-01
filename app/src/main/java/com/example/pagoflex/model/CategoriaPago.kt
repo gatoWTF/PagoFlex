@@ -1,4 +1,3 @@
-package com.example.pagoflex.model;
+package com.example.pagoflex.model
 
-class CategoriaPago {
-}
+enum class CategoriaPago { LUZ, AGUA, GAS, INTERNET, TELEFONO, OTRO }

@@ -1,4 +1,3 @@
 package com.example.pagoflex.model
 
-class EstadoPago {
-}
+enum class EstadoPago { PENDIENTE, PAGADO, VENCIDO }

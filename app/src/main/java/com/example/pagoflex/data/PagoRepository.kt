@@ -13,4 +13,17 @@ class PagoRepository {
         Pago(5, "Agua septiembre", "Aguas Andinas", CategoriaPago.AGUA, 13200, "07/09/2026", EstadoPago.PAGADO),
         Pago(6, "Gas agosto", "Metrogas", CategoriaPago.GAS, 18000, "20/08/2026", EstadoPago.VENCIDO)
     )
+
+    // toList() entrega una copia, así la pantalla detecta que la lista cambió
+    fun obtenerPagos(): List<Pago> = pagos.toList()
+
+    fun obtenerPorId(id: Int): Pago? = pagos.find { it.id == id }
+
+    fun marcarComoPagado(id: Int) {
+        val indice = pagos.indexOfFirst { it.id == id }
+        if (indice != -1) {
+            // copy() crea un Pago igual pero con el estado cambiado
+            pagos[indice] = pagos[indice].copy(estado = EstadoPago.PAGADO)
+        }
+    }
 }

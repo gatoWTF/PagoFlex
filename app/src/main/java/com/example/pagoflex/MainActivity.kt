@@ -2,16 +2,19 @@ package com.example.pagoflex
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.pagoflex.ui.screens.DetalleCompromisoScreen
+import com.example.pagoflex.ui.screens.InicioScreen
 import com.example.pagoflex.ui.theme.PagoFlexTheme
+import com.example.pagoflex.viewmodel.CompromisosViewModel
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -19,29 +22,35 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             PagoFlexTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
-                    )
-                }
+                AppPagoFlex()
             }
         }
     }
 }
 
+// Navegacion simple por estado: Inicio y Detalle. Mas adelante se puede migrar a NavHost.
 @Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
+private fun AppPagoFlex() {
+    val viewModel: CompromisosViewModel = viewModel()
+    // folio del compromiso abierto; null = estamos en Inicio
+    var folioAbierto by rememberSaveable { mutableStateOf<String?>(null) }
 
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    PagoFlexTheme {
-        Greeting("Android")
+    val folio = folioAbierto
+    if (folio == null) {
+        InicioScreen(
+            viewModel = viewModel,
+            alAbrirDetalle = { folioAbierto = it }
+        )
+    } else {
+        DetalleCompromisoScreen(
+            compromiso = viewModel.buscarPorFolio(folio),
+            alVolver = { folioAbierto = null },
+            alPagar = { folioPagado ->
+                viewModel.pagar(folioPagado)
+                folioAbierto = null
+            }
+        )
+        // El boton atras del telefono tambien vuelve a Inicio
+        BackHandler { folioAbierto = null }
     }
 }

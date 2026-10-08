@@ -65,6 +65,9 @@ abstract class PagoFlexDatabase : RoomDatabase() {
                 "pagoflex.db"
             )
                 .addCallback(SemillaCallback(context.applicationContext))
+                // Si cambia el esquema (nueva columna/tabla) y subimos la version,
+                // recrea la base en vez de crashear. Util para modificar en la defensa.
+                .fallbackToDestructiveMigration(dropAllTables = true)
                 .build()
     }
 

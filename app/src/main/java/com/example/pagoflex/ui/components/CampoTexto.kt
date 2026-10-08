@@ -26,7 +26,7 @@ import com.example.pagoflex.ui.theme.PagoFlexTheme
  * Campo de texto reutilizable (el <input> de HTML).
  * En Compose un campo NO guarda su propio texto: "valor" viene del estado del
  * ViewModel y "onValorCambia" avisa cada vez que el usuario escribe. Si no se
- * actualiza el estado ahí, el campo no cambia ("estado elevado").
+ * actualiza el estado ahi, el campo no cambia ("estado elevado").
  * @param error       mensaje bajo el campo; null = sin error.
  * @param tipoTeclado Text, Email, Number, Phone... (cambia el teclado del celular).
  */
@@ -45,7 +45,7 @@ fun CampoTexto(
         onValueChange = onValorCambia,
         modifier = modifier.fillMaxWidth(),
         label = { Text(etiqueta) },                          // texto flotante (como <label>)
-        leadingIcon = {                                      // ícono a la izquierda
+        leadingIcon = {                                      // icono a la izquierda
             Icon(
                 painter = painterResource(id = icono),
                 contentDescription = null,
@@ -57,7 +57,7 @@ fun CampoTexto(
         singleLine = true,
         keyboardOptions = KeyboardOptions(
             keyboardType = tipoTeclado,
-            imeAction = ImeAction.Next                       // botón "Siguiente" en el teclado
+            imeAction = ImeAction.Next                       // boton "Siguiente" en el teclado
         ),
         shape = EstilosCampo.forma,
         colors = EstilosCampo.colores()

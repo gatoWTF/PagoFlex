@@ -79,7 +79,9 @@ Los pagos son datos de ejemplo guardados en memoria: al cerrar la app vuelven a 
 
 ## Pruebas
 
-Las pruebas unitarias cubren las fechas (incluido el cambio de horario), el pago de cuentas, el filtro, los totales y los límites de los ajustes.
+Pendiente: pruebas unitarias de la lógica de los ViewModels, los repositorios y las fechas. Por ahora el proyecto solo incluye el test de ejemplo de la plantilla de Android Studio.
+
+Para ejecutar las pruebas unitarias:
 
 ```bash
 ./gradlew testDebugUnitTest

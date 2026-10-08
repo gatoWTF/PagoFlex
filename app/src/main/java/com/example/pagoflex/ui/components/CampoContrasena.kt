@@ -26,10 +26,10 @@ import com.example.pagoflex.ui.theme.Dimens
 import com.example.pagoflex.ui.theme.PagoFlexTheme
 
 /**
- * Campo de contraseña con puntos (••••) y botón "ojo".
- * visualTransformation cambia CÓMO se muestra el texto, no lo que vale:
+ * Campo de contrasena con puntos y boton "ojo".
+ * visualTransformation cambia COMO se muestra el texto, no lo que vale:
  * PasswordVisualTransformation() muestra puntos y VisualTransformation.None
- * muestra el texto. Si la contraseña se ve o no es ESTADO: lo decide el ViewModel.
+ * muestra el texto. Si la contrasena se ve o no es ESTADO: lo decide el ViewModel.
  */
 @Composable
 fun CampoContrasena(
@@ -53,7 +53,7 @@ fun CampoContrasena(
                 modifier = Modifier.size(Dimens.tamanoIcono)
             )
         },
-        trailingIcon = {                                     // ícono a la DERECHA, presionable
+        trailingIcon = {                                     // icono a la DERECHA, presionable
             IconButton(onClick = onAlternarVisible) {
                 Icon(
                     painter = painterResource(
@@ -72,7 +72,7 @@ fun CampoContrasena(
         singleLine = true,
         keyboardOptions = KeyboardOptions(
             keyboardType = KeyboardType.Password,
-            imeAction = ImeAction.Done                       // botón "Listo" en el teclado
+            imeAction = ImeAction.Done                       // boton "Listo" en el teclado
         ),
         shape = EstilosCampo.forma,
         colors = EstilosCampo.colores()

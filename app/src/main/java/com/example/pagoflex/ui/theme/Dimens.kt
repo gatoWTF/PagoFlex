@@ -23,8 +23,8 @@ object Dimens {
     val radioTarjeta = 20.dp
     val elevacionTarjeta = 2.dp
 
-    // imágenes e íconos
+    // imagenes e iconos
     val altoBanner = 200.dp
     val tamanoIcono = 20.dp
-    val tamanoIconoCategoria = 44.dp   // círculo con el ícono de LUZ, AGUA, etc. en cada pago
+    val tamanoIconoCategoria = 44.dp   // circulo con el icono de LUZ, AGUA, etc. en cada pago
 }

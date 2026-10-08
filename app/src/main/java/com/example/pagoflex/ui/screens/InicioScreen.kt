@@ -1,21 +1,134 @@
 package com.example.pagoflex.ui.screens
 
-import androidx.compose.foundation.layout.Box
+import android.content.res.Configuration
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.pagoflex.ui.components.FilaCompromiso
+import com.example.pagoflex.ui.theme.Dimens
 import com.example.pagoflex.ui.theme.PagoFlexTheme
+import com.example.pagoflex.utils.FormatoMoneda
+import com.example.pagoflex.viewmodel.CompromisosViewModel
 
+// Pantalla de inicio del usuario final: su situacion del mes y la lista de compromisos (RF-02, RF-03).
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun InicioScreen(modifier: Modifier = Modifier) {
-    Box(modifier = modifier.fillMaxSize())
+fun InicioScreen(
+    viewModel: CompromisosViewModel,
+    alAbrirDetalle: (String) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Scaffold(
+        modifier = modifier,
+        topBar = {
+            TopAppBar(
+                title = { Text("PagoFlex") },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    titleContentColor = MaterialTheme.colorScheme.onPrimary
+                )
+            )
+        }
+    ) { padding ->
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding),
+            contentPadding = PaddingValues(Dimens.espacioPantalla),
+            verticalArrangement = Arrangement.spacedBy(Dimens.espacioChico)
+        ) {
+            item {
+                ResumenSituacion(
+                    total = viewModel.totalPorPagar,
+                    proximoVencimiento = viewModel.proximoVencimiento,
+                    vencidos = viewModel.cantidadVencidos
+                )
+            }
+            item {
+                Text(
+                    text = "Tus compromisos",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onBackground,
+                    modifier = Modifier.padding(top = Dimens.espacioChico)
+                )
+            }
+            items(viewModel.compromisos, key = { it.folio }) { compromiso ->
+                FilaCompromiso(
+                    compromiso = compromiso,
+                    onClick = { alAbrirDetalle(compromiso.folio) }
+                )
+            }
+        }
+    }
 }
 
-@Preview(showBackground = true)
+// Tarjeta superior con el total por pagar, el proximo vencimiento y los vencidos (RF-02).
 @Composable
-fun InicioScreenPreview() {
+private fun ResumenSituacion(
+    total: Int,
+    proximoVencimiento: String?,
+    vencidos: Int
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = androidx.compose.foundation.shape.RoundedCornerShape(Dimens.radioTarjeta),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.primary,
+            contentColor = MaterialTheme.colorScheme.onPrimary
+        )
+    ) {
+        Column(modifier = Modifier.padding(Dimens.espacioGrande)) {
+            Text(text = "Total por pagar este mes", style = MaterialTheme.typography.bodyMedium)
+            Text(
+                text = FormatoMoneda.clp(total),
+                style = MaterialTheme.typography.headlineMedium
+            )
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = Dimens.espacioMedio),
+                horizontalArrangement = Arrangement.spacedBy(Dimens.espacioGrande)
+            ) {
+                Column {
+                    Text(text = "Proximo vencimiento", style = MaterialTheme.typography.labelMedium)
+                    Text(
+                        text = proximoVencimiento ?: "Sin pagos pendientes",
+                        style = MaterialTheme.typography.titleSmall
+                    )
+                }
+                Column {
+                    Text(text = "Vencidos", style = MaterialTheme.typography.labelMedium)
+                    Text(text = vencidos.toString(), style = MaterialTheme.typography.titleSmall)
+                }
+            }
+        }
+    }
+}
+
+@Preview(showBackground = true, name = "Claro")
+@Preview(showBackground = true, name = "Oscuro", uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable
+private fun InicioScreenPreview() {
     PagoFlexTheme {
-        InicioScreen()
+        InicioScreen(viewModel = viewModel(), alAbrirDetalle = {})
     }
 }

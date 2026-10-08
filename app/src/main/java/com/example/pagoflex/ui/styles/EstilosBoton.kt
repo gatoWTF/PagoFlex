@@ -41,7 +41,7 @@ object EstilosBoton {
         Dimens.bordeBoton, MaterialTheme.colorScheme.primary
     )
 
-    // sombra del botón principal (se hunde al presionar)
+    // sombra del boton principal (se hunde al presionar)
     @Composable
     fun elevacion(): ButtonElevation = ButtonDefaults.buttonElevation(
         defaultElevation = Dimens.elevacionBoton,

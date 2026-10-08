@@ -24,9 +24,9 @@ import com.example.pagoflex.ui.theme.Dimens
 import com.example.pagoflex.ui.theme.PagoFlexTheme
 
 /**
- * Botón de acción principal (relleno, con sombra y ícono opcional).
+ * Boton de accion principal (relleno, con sombra y icono opcional).
  * No conoce el ViewModel: recibe el texto y avisa con onClick.
- * @param icono recurso R.drawable.xxx, o null si no lleva ícono.
+ * @param icono recurso R.drawable.xxx, o null si no lleva icono.
  */
 @Composable
 fun BotonPrincipal(

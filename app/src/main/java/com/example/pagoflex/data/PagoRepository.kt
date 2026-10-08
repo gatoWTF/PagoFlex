@@ -14,7 +14,7 @@ class PagoRepository {
         Pago(6, "Gas agosto", "Metrogas", CategoriaPago.GAS, 18000, "20/08/2026", EstadoPago.VENCIDO)
     )
 
-    // toList() entrega una copia, así la pantalla detecta que la lista cambió
+    // toList() entrega una copia, asi la pantalla detecta que la lista cambio
     fun obtenerPagos(): List<Pago> = pagos.toList()
 
     fun obtenerPorId(id: Int): Pago? = pagos.find { it.id == id }

@@ -14,7 +14,7 @@ import com.example.pagoflex.ui.styles.estiloAltoBoton
 import com.example.pagoflex.ui.theme.Dimens
 import com.example.pagoflex.ui.theme.PagoFlexTheme
 
-/** Acción de menor importancia (Cancelar, Cerrar sesión): solo borde, sin relleno. */
+/** Accion de menor importancia (Cancelar, Cerrar sesion): solo borde, sin relleno. */
 @Composable
 fun BotonSecundario(
     texto: String,

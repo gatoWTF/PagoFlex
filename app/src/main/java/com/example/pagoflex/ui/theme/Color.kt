@@ -2,12 +2,12 @@ package com.example.pagoflex.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-// colores de marca (salen del ícono de la app)
+// colores de marca (salen del icono de la app)
 val Primario = Color(0xFF534AB7)
 val PrimarioOscuro = Color(0xFF3C3489)
 val PrimarioClaro = Color(0xFFCECBF6)
 val Secundario = Color(0xFF00A6A6)
-val Acento = Color(0xFFFAC775)          // el ámbar de la moneda
+val Acento = Color(0xFFFAC775)          // el ambar de la moneda
 
 // colores neutros
 val Blanco = Color(0xFFFFFFFF)

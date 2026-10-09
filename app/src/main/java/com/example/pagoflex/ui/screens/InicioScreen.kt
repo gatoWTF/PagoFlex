@@ -13,6 +13,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -20,9 +22,11 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.pagoflex.R
 import com.example.pagoflex.ui.components.FilaCompromiso
 import com.example.pagoflex.ui.theme.Dimens
 import com.example.pagoflex.ui.theme.PagoFlexTheme
@@ -35,6 +39,7 @@ import com.example.pagoflex.viewmodel.CompromisosViewModel
 fun InicioScreen(
     viewModel: CompromisosViewModel,
     alAbrirDetalle: (String) -> Unit,
+    alCerrarSesion: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Scaffold(
@@ -42,9 +47,18 @@ fun InicioScreen(
         topBar = {
             TopAppBar(
                 title = { Text("PagoFlex") },
+                actions = {
+                    IconButton(onClick = alCerrarSesion) {
+                        Icon(
+                            painter = painterResource(R.drawable.ic_cerrar_sesion),
+                            contentDescription = "Cerrar sesión"
+                        )
+                    }
+                },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primary,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimary
+                    titleContentColor = MaterialTheme.colorScheme.onPrimary,
+                    actionIconContentColor = MaterialTheme.colorScheme.onPrimary
                 )
             )
         }
@@ -129,6 +143,6 @@ private fun ResumenSituacion(
 @Composable
 private fun InicioScreenPreview() {
     PagoFlexTheme {
-        InicioScreen(viewModel = viewModel(), alAbrirDetalle = {})
+        InicioScreen(viewModel = viewModel(), alAbrirDetalle = {}, alCerrarSesion = {})
     }
 }

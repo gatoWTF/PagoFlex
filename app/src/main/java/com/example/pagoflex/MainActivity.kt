@@ -56,16 +56,16 @@ private fun AppPagoFlex() {
         startDestination = Rutas.SelectorRol.ruta,
         // Transicion al navegar: la pantalla nueva entra desde la derecha; al volver, al reves.
         enterTransition = {
-            slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Start, tween(300)) + fadeIn(tween(300))
+            slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Start, tween(450)) + fadeIn(tween(450))
         },
         exitTransition = {
-            slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Start, tween(300)) + fadeOut(tween(300))
+            slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Start, tween(450)) + fadeOut(tween(450))
         },
         popEnterTransition = {
-            slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.End, tween(300)) + fadeIn(tween(300))
+            slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.End, tween(450)) + fadeIn(tween(450))
         },
         popExitTransition = {
-            slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.End, tween(300)) + fadeOut(tween(300))
+            slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.End, tween(450)) + fadeOut(tween(450))
         }
     ) {
         // Selector de rol (entrada)

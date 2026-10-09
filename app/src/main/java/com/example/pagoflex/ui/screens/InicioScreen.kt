@@ -17,6 +17,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
@@ -32,6 +33,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.pagoflex.R
 import com.example.pagoflex.ui.components.FilaCompromiso
+import com.example.pagoflex.ui.components.SnackbarPagoFlex
 import com.example.pagoflex.ui.theme.Dimens
 import com.example.pagoflex.ui.theme.PagoFlexTheme
 import com.example.pagoflex.utils.FormatoMoneda
@@ -52,14 +54,14 @@ fun InicioScreen(
     LaunchedEffect(viewModel.mensaje) {
         val texto = viewModel.mensaje
         if (texto != null) {
-            snackbarHostState.showSnackbar(texto)
+            snackbarHostState.showSnackbar(texto, duration = SnackbarDuration.Long)
             viewModel.consumirMensaje()
         }
     }
 
     Scaffold(
         modifier = modifier,
-        snackbarHost = { SnackbarHost(snackbarHostState) },
+        snackbarHost = { SnackbarHost(snackbarHostState) { datos -> SnackbarPagoFlex(datos) } },
         topBar = {
             TopAppBar(
                 title = { Text("PagoFlex") },
@@ -107,7 +109,10 @@ fun InicioScreen(
                     modifier = Modifier.padding(top = Dimens.espacioChico)
                 )
             }
-            items(viewModel.compromisos, key = { it.folio }) { compromiso ->
+            items(
+                viewModel.compromisos.sortedBy { it.estado.prioridadLista },
+                key = { it.folio }
+            ) { compromiso ->
                 FilaCompromiso(
                     compromiso = compromiso,
                     onClick = { alAbrirDetalle(compromiso.folio) },

@@ -21,6 +21,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
@@ -42,6 +43,7 @@ import com.example.pagoflex.R
 import com.example.pagoflex.model.CompromisoEmpresa
 import com.example.pagoflex.ui.components.BotonPrincipal
 import com.example.pagoflex.ui.components.EtiquetaEstado
+import com.example.pagoflex.ui.components.SnackbarPagoFlex
 import com.example.pagoflex.ui.theme.Dimens
 import com.example.pagoflex.ui.theme.PagoFlexTheme
 import com.example.pagoflex.utils.FormatoMoneda
@@ -65,14 +67,14 @@ fun HomeEjecutivoScreen(
     LaunchedEffect(viewModel.mensaje) {
         val texto = viewModel.mensaje
         if (texto != null) {
-            snackbarHostState.showSnackbar(texto)
+            snackbarHostState.showSnackbar(texto, duration = SnackbarDuration.Long)
             viewModel.consumirMensaje()
         }
     }
 
     Scaffold(
         modifier = modifier,
-        snackbarHost = { SnackbarHost(snackbarHostState) },
+        snackbarHost = { SnackbarHost(snackbarHostState) { datos -> SnackbarPagoFlex(datos) } },
         topBar = {
             TopAppBar(
                 title = { Text(viewModel.empresa) },
@@ -123,11 +125,14 @@ fun HomeEjecutivoScreen(
                     color = MaterialTheme.colorScheme.onBackground
                 )
             }
-            items(viewModel.compromisos, key = { it.folio }) { compromiso ->
+            items(
+                viewModel.compromisos.sortedBy { it.estado.prioridadLista },
+                key = { it.folio }
+            ) { compromiso ->
                 FilaCompromisoEmpresa(
                     compromiso = compromiso,
                     alAnular = { compromisoAAnular = compromiso },
-                    modifier = Modifier.animateItem() // Animacion 2
+                    modifier = Modifier.animateItem() // Animacion 2: al anular, la fila se reubica
                 )
             }
         }

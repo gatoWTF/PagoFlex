@@ -2,6 +2,7 @@ package com.example.pagoflex.ui.screens
 
 import android.content.res.Configuration
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -72,7 +73,7 @@ fun RegistrarCompromisoScreen(
     LaunchedEffect(registrando) {
         if (registrando) {
             delay(1000)
-            onRegistrar(deudor, rut, concepto, monto.trim().toInt(), fecha)
+            onRegistrar(deudor, rut, concepto, monto.trim().toInt(), fecha.replace("/", "-"))
         }
     }
 
@@ -80,7 +81,9 @@ fun RegistrarCompromisoScreen(
     val errorRut = if (intentoEnvio && !Validaciones.rutValido(rut)) "RUT inválido" else null
     val errorConcepto = if (intentoEnvio && concepto.isBlank()) "Ingresa el concepto" else null
     val errorMonto = if (intentoEnvio && !Validaciones.montoValido(monto)) "Monto inválido (entero positivo)" else null
-    val errorFecha = if (intentoEnvio && !Validaciones.fechaValida(fecha)) "Selecciona la fecha de vencimiento" else null
+    // La fecha se muestra con "/", pero se valida y guarda con "-" como el resto de la app.
+    val fechaConGuiones = fecha.replace("/", "-")
+    val errorFecha = if (intentoEnvio && !Validaciones.fechaValida(fechaConGuiones)) "Ingresa una fecha válida (DD/MM/AAAA)" else null
 
     Scaffold(
         modifier = modifier,
@@ -140,34 +143,37 @@ fun RegistrarCompromisoScreen(
                 error = errorMonto,
                 tipoTeclado = KeyboardType.Number
             )
-            // Campo de fecha de solo lectura: se elige en el calendario (no se escribe).
-            Box {
-                OutlinedTextField(
-                    value = fecha,
-                    onValueChange = {},
-                    readOnly = true,
-                    modifier = Modifier.fillMaxWidth(),
-                    label = { Text("Vencimiento") },
-                    placeholder = { Text("Toca para elegir la fecha") },
-                    leadingIcon = {
+            // Fecha: se escribe con los numeros y los "/" se ponen solos (mascara),
+            // o se elige tocando el icono de calendario.
+            OutlinedTextField(
+                value = fecha,
+                onValueChange = { fecha = formatearFechaEntrada(it) },
+                modifier = Modifier.fillMaxWidth(),
+                label = { Text("Vencimiento (DD/MM/AAAA)") },
+                placeholder = { Text("DD/MM/AAAA") },
+                leadingIcon = {
+                    Icon(
+                        painter = painterResource(R.drawable.ic_dias_aviso),
+                        contentDescription = null,
+                        modifier = Modifier.size(Dimens.tamanoIcono)
+                    )
+                },
+                trailingIcon = {
+                    IconButton(onClick = { mostrarCalendario = true }) {
                         Icon(
                             painter = painterResource(R.drawable.ic_dias_aviso),
-                            contentDescription = null,
+                            contentDescription = "Elegir en el calendario",
                             modifier = Modifier.size(Dimens.tamanoIcono)
                         )
-                    },
-                    isError = errorFecha != null,
-                    supportingText = { if (errorFecha != null) Text(errorFecha) },
-                    shape = EstilosCampo.forma,
-                    colors = EstilosCampo.colores()
-                )
-                // Capa invisible que abre el calendario al tocar el campo.
-                Box(
-                    modifier = Modifier
-                        .matchParentSize()
-                        .clickable { mostrarCalendario = true }
-                )
-            }
+                    }
+                },
+                isError = errorFecha != null,
+                supportingText = { if (errorFecha != null) Text(errorFecha) },
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                shape = EstilosCampo.forma,
+                colors = EstilosCampo.colores()
+            )
 
             BotonPrincipal(
                 texto = if (registrando) "Registrando…" else "Registrar",
@@ -177,7 +183,7 @@ fun RegistrarCompromisoScreen(
                         Validaciones.rutValido(rut) &&
                         concepto.isNotBlank() &&
                         Validaciones.montoValido(monto) &&
-                        Validaciones.fechaValida(fecha)
+                        Validaciones.fechaValida(fechaConGuiones)
                     if (valido) registrando = true
                 },
                 cargando = registrando,
@@ -201,7 +207,7 @@ fun RegistrarCompromisoScreen(
                 confirmButton = {
                     TextButton(onClick = {
                         estadoCalendario.selectedDateMillis?.let { millis ->
-                            val formato = SimpleDateFormat("dd-MM-yyyy", Locale.US)
+                            val formato = SimpleDateFormat("dd/MM/yyyy", Locale.US)
                             formato.timeZone = TimeZone.getTimeZone("UTC")
                             fecha = formato.format(Date(millis))
                         }
@@ -214,6 +220,18 @@ fun RegistrarCompromisoScreen(
             ) {
                 DatePicker(state = estadoCalendario)
             }
+        }
+    }
+}
+
+// Toma lo que escribe la persona, deja solo digitos (max 8) y pone los "/" solos:
+// "25102026" -> "25/10/2026". Asi no hay que escribir los separadores.
+private fun formatearFechaEntrada(entrada: String): String {
+    val digitos = entrada.filter { it.isDigit() }.take(8)
+    return buildString {
+        for (i in digitos.indices) {
+            append(digitos[i])
+            if ((i == 1 || i == 3) && i != digitos.lastIndex) append('/')
         }
     }
 }

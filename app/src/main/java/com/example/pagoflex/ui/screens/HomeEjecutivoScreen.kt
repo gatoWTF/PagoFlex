@@ -17,6 +17,7 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -41,6 +42,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.pagoflex.R
 import com.example.pagoflex.model.CompromisoEmpresa
+import com.example.pagoflex.model.EstadoCompromiso
 import com.example.pagoflex.ui.components.BotonPrincipal
 import com.example.pagoflex.ui.components.EtiquetaEstado
 import com.example.pagoflex.ui.components.SnackbarPagoFlex
@@ -48,6 +50,19 @@ import com.example.pagoflex.ui.theme.Dimens
 import com.example.pagoflex.ui.theme.PagoFlexTheme
 import com.example.pagoflex.utils.FormatoMoneda
 import com.example.pagoflex.viewmodel.EjecutivoViewModel
+
+// Opciones del filtro de la lista de compromisos del ejecutivo.
+private enum class FiltroEjecutivo(val etiqueta: String) {
+    TODOS("Todos"),
+    VIGENTES("Vigentes"),
+    ANULADOS("Anulados");
+
+    fun incluye(estado: EstadoCompromiso): Boolean = when (this) {
+        TODOS -> true
+        VIGENTES -> estado != EstadoCompromiso.ANULADO
+        ANULADOS -> estado == EstadoCompromiso.ANULADO
+    }
+}
 
 // Home del ejecutivo de empresa cliente (R-03): cobranza del mes, lista de
 // compromisos de su empresa y acciones de registrar/anular (RF-17 a RF-20).
@@ -61,6 +76,8 @@ fun HomeEjecutivoScreen(
 ) {
     // Compromiso que se esta por anular; null = sin dialogo abierto.
     var compromisoAAnular by remember { mutableStateOf<CompromisoEmpresa?>(null) }
+    // Filtro de la lista: todos, solo vigentes o solo anulados.
+    var filtro by remember { mutableStateOf(FiltroEjecutivo.TODOS) }
 
     // Animacion 4: Snackbar para "Compromiso registrado" / "Compromiso anulado".
     val snackbarHostState = remember { SnackbarHostState() }
@@ -125,10 +142,24 @@ fun HomeEjecutivoScreen(
                     color = MaterialTheme.colorScheme.onBackground
                 )
             }
-            items(
-                viewModel.compromisos.sortedBy { it.estado.prioridadLista },
-                key = { it.folio }
-            ) { compromiso ->
+            item {
+                FiltroChips(filtro = filtro, alCambiar = { filtro = it })
+            }
+
+            val visibles = viewModel.compromisos
+                .filter { filtro.incluye(it.estado) }
+                .sortedBy { it.estado.prioridadLista }
+
+            if (visibles.isEmpty()) {
+                item {
+                    Text(
+                        text = "No hay compromisos en esta categoría.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+            items(visibles, key = { it.folio }) { compromiso ->
                 FilaCompromisoEmpresa(
                     compromiso = compromiso,
                     alAnular = { compromisoAAnular = compromiso },
@@ -155,6 +186,21 @@ fun HomeEjecutivoScreen(
                 TextButton(onClick = { compromisoAAnular = null }) { Text("Cancelar") }
             }
         )
+    }
+}
+
+// Chips para filtrar la lista por estado (todos / vigentes / anulados).
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun FiltroChips(filtro: FiltroEjecutivo, alCambiar: (FiltroEjecutivo) -> Unit) {
+    Row(horizontalArrangement = Arrangement.spacedBy(Dimens.espacioChico)) {
+        FiltroEjecutivo.entries.forEach { opcion ->
+            FilterChip(
+                selected = filtro == opcion,
+                onClick = { alCambiar(opcion) },
+                label = { Text(opcion.etiqueta) }
+            )
+        }
     }
 }
 

@@ -1,21 +1,29 @@
 package com.example.pagoflex.ui.screens
 
 import android.content.res.Configuration
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -31,10 +39,15 @@ import com.example.pagoflex.R
 import com.example.pagoflex.ui.components.BotonPrincipal
 import com.example.pagoflex.ui.components.BotonSecundario
 import com.example.pagoflex.ui.components.CampoTexto
+import com.example.pagoflex.ui.styles.EstilosCampo
 import com.example.pagoflex.ui.theme.Dimens
 import com.example.pagoflex.ui.theme.PagoFlexTheme
 import com.example.pagoflex.utils.Validaciones
 import kotlinx.coroutines.delay
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+import java.util.TimeZone
 
 // Formulario para registrar un compromiso (RF-17). Valida nombre, RUT (modulo 11),
 // concepto, monto entero en pesos y fecha DD-MM-AAAA (RN-17, RN-18).
@@ -53,6 +66,8 @@ fun RegistrarCompromisoScreen(
     var intentoEnvio by remember { mutableStateOf(false) }
     // Animacion 8: tras validar, el boton muestra un spinner antes de registrar.
     var registrando by remember { mutableStateOf(false) }
+    // Selector de fecha: evita escribir y errores de formato.
+    var mostrarCalendario by remember { mutableStateOf(false) }
 
     LaunchedEffect(registrando) {
         if (registrando) {
@@ -65,7 +80,7 @@ fun RegistrarCompromisoScreen(
     val errorRut = if (intentoEnvio && !Validaciones.rutValido(rut)) "RUT inválido" else null
     val errorConcepto = if (intentoEnvio && concepto.isBlank()) "Ingresa el concepto" else null
     val errorMonto = if (intentoEnvio && !Validaciones.montoValido(monto)) "Monto inválido (entero positivo)" else null
-    val errorFecha = if (intentoEnvio && !Validaciones.fechaValida(fecha)) "Fecha inválida (DD-MM-AAAA)" else null
+    val errorFecha = if (intentoEnvio && !Validaciones.fechaValida(fecha)) "Selecciona la fecha de vencimiento" else null
 
     Scaffold(
         modifier = modifier,
@@ -125,13 +140,34 @@ fun RegistrarCompromisoScreen(
                 error = errorMonto,
                 tipoTeclado = KeyboardType.Number
             )
-            CampoTexto(
-                valor = fecha,
-                onValorCambia = { fecha = it },
-                etiqueta = "Vencimiento (DD-MM-AAAA)",
-                icono = R.drawable.ic_dias_aviso,
-                error = errorFecha
-            )
+            // Campo de fecha de solo lectura: se elige en el calendario (no se escribe).
+            Box {
+                OutlinedTextField(
+                    value = fecha,
+                    onValueChange = {},
+                    readOnly = true,
+                    modifier = Modifier.fillMaxWidth(),
+                    label = { Text("Vencimiento") },
+                    placeholder = { Text("Toca para elegir la fecha") },
+                    leadingIcon = {
+                        Icon(
+                            painter = painterResource(R.drawable.ic_dias_aviso),
+                            contentDescription = null,
+                            modifier = Modifier.size(Dimens.tamanoIcono)
+                        )
+                    },
+                    isError = errorFecha != null,
+                    supportingText = { if (errorFecha != null) Text(errorFecha) },
+                    shape = EstilosCampo.forma,
+                    colors = EstilosCampo.colores()
+                )
+                // Capa invisible que abre el calendario al tocar el campo.
+                Box(
+                    modifier = Modifier
+                        .matchParentSize()
+                        .clickable { mostrarCalendario = true }
+                )
+            }
 
             BotonPrincipal(
                 texto = if (registrando) "Registrando…" else "Registrar",
@@ -155,6 +191,29 @@ fun RegistrarCompromisoScreen(
                 onClick = alVolver,
                 modifier = Modifier.fillMaxWidth()
             )
+        }
+
+        // Calendario para elegir la fecha; al aceptar, la deja en formato DD-MM-AAAA.
+        if (mostrarCalendario) {
+            val estadoCalendario = rememberDatePickerState()
+            DatePickerDialog(
+                onDismissRequest = { mostrarCalendario = false },
+                confirmButton = {
+                    TextButton(onClick = {
+                        estadoCalendario.selectedDateMillis?.let { millis ->
+                            val formato = SimpleDateFormat("dd-MM-yyyy", Locale.US)
+                            formato.timeZone = TimeZone.getTimeZone("UTC")
+                            fecha = formato.format(Date(millis))
+                        }
+                        mostrarCalendario = false
+                    }) { Text("Aceptar") }
+                },
+                dismissButton = {
+                    TextButton(onClick = { mostrarCalendario = false }) { Text("Cancelar") }
+                }
+            ) {
+                DatePicker(state = estadoCalendario)
+            }
         }
     }
 }

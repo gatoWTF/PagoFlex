@@ -22,6 +22,11 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -36,6 +41,7 @@ import com.example.pagoflex.ui.components.EtiquetaEstado
 import com.example.pagoflex.ui.theme.Dimens
 import com.example.pagoflex.ui.theme.PagoFlexTheme
 import com.example.pagoflex.utils.FormatoMoneda
+import kotlinx.coroutines.delay
 
 // Detalle de un compromiso (RF-04): monto, recargo, total y accion de pago simulado (RF-05).
 @OptIn(ExperimentalMaterial3Api::class)
@@ -47,6 +53,15 @@ fun DetalleCompromisoScreen(
     alReportar: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    // Animacion 8: al pagar, el boton muestra un spinner un instante antes de confirmar.
+    var pagando by remember { mutableStateOf(false) }
+    LaunchedEffect(pagando) {
+        if (pagando && compromiso != null) {
+            delay(1100)
+            alPagar(compromiso.folio)
+        }
+    }
+
     Scaffold(
         modifier = modifier,
         topBar = {
@@ -129,17 +144,20 @@ fun DetalleCompromisoScreen(
 
             if (compromiso.sePuedePagar) {
                 BotonPrincipal(
-                    texto = "Pagar " + FormatoMoneda.clp(compromiso.totalAPagar),
-                    onClick = { alPagar(compromiso.folio) },
+                    texto = if (pagando) "Procesando…" else "Pagar " + FormatoMoneda.clp(compromiso.totalAPagar),
+                    onClick = { pagando = true },
+                    cargando = pagando,
                     icono = R.drawable.ic_pagar,
                     modifier = Modifier.fillMaxWidth()
                 )
-                Spacer(Modifier.size(Dimens.espacioMini))
-                BotonSecundario(
-                    texto = "Reportar un problema",
-                    onClick = { alReportar(compromiso.folio) },
-                    modifier = Modifier.fillMaxWidth()
-                )
+                if (!pagando) {
+                    Spacer(Modifier.size(Dimens.espacioMini))
+                    BotonSecundario(
+                        texto = "Reportar un problema",
+                        onClick = { alReportar(compromiso.folio) },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
             }
         }
     }

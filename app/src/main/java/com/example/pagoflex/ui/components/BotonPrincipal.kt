@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -16,6 +17,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.pagoflex.R
 import com.example.pagoflex.ui.styles.EstilosBoton
@@ -34,18 +36,26 @@ fun BotonPrincipal(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     habilitado: Boolean = true,
+    cargando: Boolean = false,                          // muestra un spinner y se deshabilita
     @DrawableRes icono: Int? = null
 ) {
     Button(
         onClick = onClick,
         modifier = modifier.estiloAltoBoton(),          // height: 52dp
-        enabled = habilitado,
+        enabled = habilitado && !cargando,              // mientras carga no se puede volver a tocar
         shape = EstilosBoton.forma,                     // border-radius
         colors = EstilosBoton.coloresPrincipal(),       // background / color
         elevation = EstilosBoton.elevacion(),           // box-shadow
         contentPadding = EstilosBoton.relleno           // padding
     ) {
-        if (icono != null) {
+        if (cargando) {
+            CircularProgressIndicator(
+                modifier = Modifier.size(ButtonDefaults.IconSize),
+                strokeWidth = 2.dp,
+                color = MaterialTheme.colorScheme.onPrimary
+            )
+            Spacer(Modifier.size(ButtonDefaults.IconSpacing))
+        } else if (icono != null) {
             Icon(
                 painter = painterResource(id = icono),
                 contentDescription = null,              // decorativo: el texto ya lo describe

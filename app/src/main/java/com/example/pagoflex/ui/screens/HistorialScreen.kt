@@ -1,6 +1,8 @@
 package com.example.pagoflex.ui.screens
 
 import android.content.res.Configuration
+import androidx.compose.animation.core.animateIntAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -23,6 +25,11 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -93,7 +100,7 @@ fun HistorialScreen(
                 )
             }
             items(viewModel.comprobantes, key = { it.folio }) { comprobante ->
-                FilaComprobante(comprobante)
+                FilaComprobante(comprobante, modifier = Modifier.animateItem())
             }
         }
     }
@@ -102,6 +109,14 @@ fun HistorialScreen(
 // Indicador de cumplimiento: porcentaje de pagos a tiempo (RF-08, RN-10).
 @Composable
 private fun TarjetaCumplimiento(porcentaje: Int, aTiempo: Int, total: Int) {
+    // Animacion 6: el porcentaje sube de 0 al valor al entrar a la pantalla.
+    var objetivo by remember { mutableStateOf(0) }
+    LaunchedEffect(porcentaje) { objetivo = porcentaje }
+    val porcentajeAnimado by animateIntAsState(
+        targetValue = objetivo,
+        animationSpec = tween(durationMillis = 900),
+        label = "cumplimiento"
+    )
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(Dimens.radioTarjeta),
@@ -112,7 +127,7 @@ private fun TarjetaCumplimiento(porcentaje: Int, aTiempo: Int, total: Int) {
     ) {
         Column(modifier = Modifier.padding(Dimens.espacioGrande)) {
             Text(text = "Cumplimiento de pagos", style = MaterialTheme.typography.bodyMedium)
-            Text(text = "$porcentaje%", style = MaterialTheme.typography.headlineLarge)
+            Text(text = "$porcentajeAnimado%", style = MaterialTheme.typography.headlineLarge)
             Text(
                 text = "$aTiempo de $total pagos a tiempo",
                 style = MaterialTheme.typography.bodySmall
@@ -123,9 +138,9 @@ private fun TarjetaCumplimiento(porcentaje: Int, aTiempo: Int, total: Int) {
 
 // Fila de un pago del historial.
 @Composable
-private fun FilaComprobante(comprobante: Comprobante) {
+private fun FilaComprobante(comprobante: Comprobante, modifier: Modifier = Modifier) {
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(Dimens.radioTarjeta),
         elevation = CardDefaults.cardElevation(defaultElevation = Dimens.elevacionTarjeta)
     ) {

@@ -17,6 +17,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -33,6 +34,7 @@ import com.example.pagoflex.ui.components.CampoTexto
 import com.example.pagoflex.ui.theme.Dimens
 import com.example.pagoflex.ui.theme.PagoFlexTheme
 import com.example.pagoflex.utils.Validaciones
+import kotlinx.coroutines.delay
 
 // Formulario para registrar un compromiso (RF-17). Valida nombre, RUT (modulo 11),
 // concepto, monto entero en pesos y fecha DD-MM-AAAA (RN-17, RN-18).
@@ -49,6 +51,15 @@ fun RegistrarCompromisoScreen(
     var monto by rememberSaveable { mutableStateOf("") }
     var fecha by rememberSaveable { mutableStateOf("") }
     var intentoEnvio by remember { mutableStateOf(false) }
+    // Animacion 8: tras validar, el boton muestra un spinner antes de registrar.
+    var registrando by remember { mutableStateOf(false) }
+
+    LaunchedEffect(registrando) {
+        if (registrando) {
+            delay(1000)
+            onRegistrar(deudor, rut, concepto, monto.trim().toInt(), fecha)
+        }
+    }
 
     val errorDeudor = if (intentoEnvio && deudor.isBlank()) "Ingresa el nombre del deudor" else null
     val errorRut = if (intentoEnvio && !Validaciones.rutValido(rut)) "RUT inválido" else null
@@ -123,7 +134,7 @@ fun RegistrarCompromisoScreen(
             )
 
             BotonPrincipal(
-                texto = "Registrar",
+                texto = if (registrando) "Registrando…" else "Registrar",
                 onClick = {
                     intentoEnvio = true
                     val valido = deudor.isNotBlank() &&
@@ -131,10 +142,9 @@ fun RegistrarCompromisoScreen(
                         concepto.isNotBlank() &&
                         Validaciones.montoValido(monto) &&
                         Validaciones.fechaValida(fecha)
-                    if (valido) {
-                        onRegistrar(deudor, rut, concepto, monto.trim().toInt(), fecha)
-                    }
+                    if (valido) registrando = true
                 },
+                cargando = registrando,
                 icono = R.drawable.ic_ingresar,
                 modifier = Modifier
                     .fillMaxWidth()

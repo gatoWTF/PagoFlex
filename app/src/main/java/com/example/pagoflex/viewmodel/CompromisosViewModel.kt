@@ -23,6 +23,12 @@ class CompromisosViewModel : ViewModel() {
     var comprobantes by mutableStateOf(MemoriaDatos.historialDeEjemplo)
         private set
 
+    // Mensaje puntual para mostrar en una Snackbar; la pantalla lo consume y lo limpia.
+    var mensaje by mutableStateOf<String?>(null)
+        private set
+
+    fun consumirMensaje() { mensaje = null }
+
     // Numero correlativo para el folio del proximo comprobante.
     private var contadorComprobante = 460
 
@@ -79,6 +85,7 @@ class CompromisosViewModel : ViewModel() {
         compromisos = compromisos.map {
             if (it.folio == folio) it.copy(estado = EstadoCompromiso.EN_REVISION) else it
         }
+        mensaje = "Reporte enviado"
     }
 
     // Fecha y hora actual como "dd-MM-aaaa HH:mm" (SimpleDateFormat sirve desde minSdk 24).

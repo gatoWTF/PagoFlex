@@ -19,6 +19,12 @@ class EjecutivoViewModel : ViewModel() {
     var compromisos by mutableStateOf(MemoriaDatos.compromisosEmpresaDeEjemplo)
         private set
 
+    // Mensaje puntual para mostrar en una Snackbar; la pantalla lo consume y lo limpia.
+    var mensaje by mutableStateOf<String?>(null)
+        private set
+
+    fun consumirMensaje() { mensaje = null }
+
     // Numero correlativo para el folio del proximo compromiso registrado.
     private var contadorFolio = 130
 
@@ -60,6 +66,7 @@ class EjecutivoViewModel : ViewModel() {
         )
         contadorFolio++
         compromisos = listOf(nuevo) + compromisos
+        mensaje = "Compromiso registrado"
     }
 
     // Anular un compromiso (RF-18): solo si sigue por cobrar (RN-01).
@@ -71,5 +78,6 @@ class EjecutivoViewModel : ViewModel() {
                 it
             }
         }
+        mensaje = "Compromiso anulado"
     }
 }

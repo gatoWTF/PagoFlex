@@ -17,10 +17,14 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -43,8 +47,19 @@ fun InicioScreen(
     alCerrarSesion: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    // Animacion 4: Snackbar para mensajes puntuales (ej. "Reporte enviado").
+    val snackbarHostState = remember { SnackbarHostState() }
+    LaunchedEffect(viewModel.mensaje) {
+        val texto = viewModel.mensaje
+        if (texto != null) {
+            snackbarHostState.showSnackbar(texto)
+            viewModel.consumirMensaje()
+        }
+    }
+
     Scaffold(
         modifier = modifier,
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
                 title = { Text("PagoFlex") },
@@ -95,7 +110,8 @@ fun InicioScreen(
             items(viewModel.compromisos, key = { it.folio }) { compromiso ->
                 FilaCompromiso(
                     compromiso = compromiso,
-                    onClick = { alAbrirDetalle(compromiso.folio) }
+                    onClick = { alAbrirDetalle(compromiso.folio) },
+                    modifier = Modifier.animateItem() // Animacion 2: aparicion/reordenamiento
                 )
             }
         }

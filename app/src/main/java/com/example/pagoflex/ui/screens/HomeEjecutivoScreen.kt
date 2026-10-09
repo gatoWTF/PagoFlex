@@ -1,6 +1,8 @@
 package com.example.pagoflex.ui.screens
 
 import android.content.res.Configuration
+import androidx.compose.animation.core.animateIntAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -19,11 +21,14 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -55,8 +60,19 @@ fun HomeEjecutivoScreen(
     // Compromiso que se esta por anular; null = sin dialogo abierto.
     var compromisoAAnular by remember { mutableStateOf<CompromisoEmpresa?>(null) }
 
+    // Animacion 4: Snackbar para "Compromiso registrado" / "Compromiso anulado".
+    val snackbarHostState = remember { SnackbarHostState() }
+    LaunchedEffect(viewModel.mensaje) {
+        val texto = viewModel.mensaje
+        if (texto != null) {
+            snackbarHostState.showSnackbar(texto)
+            viewModel.consumirMensaje()
+        }
+    }
+
     Scaffold(
         modifier = modifier,
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
                 title = { Text(viewModel.empresa) },
@@ -110,7 +126,8 @@ fun HomeEjecutivoScreen(
             items(viewModel.compromisos, key = { it.folio }) { compromiso ->
                 FilaCompromisoEmpresa(
                     compromiso = compromiso,
-                    alAnular = { compromisoAAnular = compromiso }
+                    alAnular = { compromisoAAnular = compromiso },
+                    modifier = Modifier.animateItem() // Animacion 2
                 )
             }
         }
@@ -139,6 +156,14 @@ fun HomeEjecutivoScreen(
 // Tarjeta superior con la tasa de cobranza y los montos del mes (RF-20, RN-24).
 @Composable
 private fun TarjetaCobranza(tasa: Int, recaudado: Int, porCobrar: Int) {
+    // Animacion 6: la tasa sube de 0 al valor al entrar a la pantalla.
+    var objetivo by remember { mutableStateOf(0) }
+    LaunchedEffect(tasa) { objetivo = tasa }
+    val tasaAnimada by animateIntAsState(
+        targetValue = objetivo,
+        animationSpec = tween(durationMillis = 900),
+        label = "tasa"
+    )
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(Dimens.radioTarjeta),
@@ -149,7 +174,7 @@ private fun TarjetaCobranza(tasa: Int, recaudado: Int, porCobrar: Int) {
     ) {
         Column(modifier = Modifier.padding(Dimens.espacioGrande)) {
             Text(text = "Tasa de cobranza del mes", style = MaterialTheme.typography.bodyMedium)
-            Text(text = "$tasa%", style = MaterialTheme.typography.headlineLarge)
+            Text(text = "$tasaAnimada%", style = MaterialTheme.typography.headlineLarge)
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -173,10 +198,11 @@ private fun TarjetaCobranza(tasa: Int, recaudado: Int, porCobrar: Int) {
 @Composable
 private fun FilaCompromisoEmpresa(
     compromiso: CompromisoEmpresa,
-    alAnular: () -> Unit
+    alAnular: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(Dimens.radioTarjeta),
         elevation = CardDefaults.cardElevation(defaultElevation = Dimens.elevacionTarjeta)
     ) {

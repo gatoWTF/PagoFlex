@@ -10,10 +10,19 @@ sealed class Rutas(val ruta: String) {
 
     // Usuario final (R-01)
     object InicioUsuario : Rutas("usuario/inicio")
+    object Historial : Rutas("usuario/historial")
     object DetalleCompromiso : Rutas("usuario/detalle/{folio}") {
         const val ARG_FOLIO = "folio"
         // crear("CP-2026-0101") -> "usuario/detalle/CP-2026-0101"
         fun crear(folio: String) = "usuario/detalle/$folio"
+    }
+    object Comprobante : Rutas("usuario/comprobante/{folioComprobante}") {
+        const val ARG_FOLIO = "folioComprobante"
+        fun crear(folioComprobante: String) = "usuario/comprobante/$folioComprobante"
+    }
+    object ReportarProblema : Rutas("usuario/reportar/{folio}") {
+        const val ARG_FOLIO = "folio"
+        fun crear(folio: String) = "usuario/reportar/$folio"
     }
 
     // Roles internos (acotados): se completan en los proximos avances.

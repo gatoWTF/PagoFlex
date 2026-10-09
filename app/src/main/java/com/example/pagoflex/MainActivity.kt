@@ -13,10 +13,13 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.pagoflex.ui.navigation.Rutas
+import com.example.pagoflex.ui.screens.ComprobanteScreen
 import com.example.pagoflex.ui.screens.DetalleCompromisoScreen
+import com.example.pagoflex.ui.screens.HistorialScreen
 import com.example.pagoflex.ui.screens.HomeAgenteScreen
 import com.example.pagoflex.ui.screens.HomeEjecutivoScreen
 import com.example.pagoflex.ui.screens.InicioScreen
+import com.example.pagoflex.ui.screens.ReportarProblemaScreen
 import com.example.pagoflex.ui.screens.SelectorRolScreen
 import com.example.pagoflex.ui.theme.PagoFlexTheme
 import com.example.pagoflex.viewmodel.CompromisosViewModel
@@ -38,7 +41,7 @@ class MainActivity : ComponentActivity() {
 @Composable
 private fun AppPagoFlex() {
     val navController = rememberNavController()
-    // VM con alcance de Activity: Inicio y Detalle comparten el mismo estado de compromisos.
+    // VM con alcance de Activity: todas las pantallas del usuario final comparten estado.
     val compromisosViewModel: CompromisosViewModel = viewModel()
 
     NavHost(
@@ -61,7 +64,16 @@ private fun AppPagoFlex() {
                 alAbrirDetalle = { folio ->
                     navController.navigate(Rutas.DetalleCompromiso.crear(folio))
                 },
+                alAbrirHistorial = { navController.navigate(Rutas.Historial.ruta) },
                 alCerrarSesion = { irAlSelector(navController) }
+            )
+        }
+
+        // Historial de pagos (RF-07, RF-08)
+        composable(Rutas.Historial.ruta) {
+            HistorialScreen(
+                viewModel = compromisosViewModel,
+                alVolver = { navController.popBackStack() }
             )
         }
 
@@ -77,8 +89,46 @@ private fun AppPagoFlex() {
                 compromiso = folio?.let { compromisosViewModel.buscarPorFolio(it) },
                 alVolver = { navController.popBackStack() },
                 alPagar = { folioPagado ->
-                    compromisosViewModel.pagar(folioPagado)
-                    navController.popBackStack()
+                    val comprobante = compromisosViewModel.pagar(folioPagado)
+                    // Deja Inicio en la pila y muestra el comprobante encima (RF-06).
+                    navController.navigate(Rutas.Comprobante.crear(comprobante.folio)) {
+                        popUpTo(Rutas.InicioUsuario.ruta)
+                    }
+                },
+                alReportar = { folioReporte ->
+                    navController.navigate(Rutas.ReportarProblema.crear(folioReporte))
+                }
+            )
+        }
+
+        // Comprobante del pago (RF-05, RF-06)
+        composable(
+            route = Rutas.Comprobante.ruta,
+            arguments = listOf(
+                navArgument(Rutas.Comprobante.ARG_FOLIO) { type = NavType.StringType }
+            )
+        ) { backStackEntry ->
+            val folioComprobante = backStackEntry.arguments?.getString(Rutas.Comprobante.ARG_FOLIO)
+            ComprobanteScreen(
+                comprobante = folioComprobante?.let { compromisosViewModel.buscarComprobante(it) },
+                alFinalizar = { navController.popBackStack() }
+            )
+        }
+
+        // Reportar un problema sobre un compromiso (RF-09)
+        composable(
+            route = Rutas.ReportarProblema.ruta,
+            arguments = listOf(
+                navArgument(Rutas.ReportarProblema.ARG_FOLIO) { type = NavType.StringType }
+            )
+        ) { backStackEntry ->
+            val folio = backStackEntry.arguments?.getString(Rutas.ReportarProblema.ARG_FOLIO)
+            ReportarProblemaScreen(
+                compromiso = folio?.let { compromisosViewModel.buscarPorFolio(it) },
+                alVolver = { navController.popBackStack() },
+                alEnviar = {
+                    if (folio != null) compromisosViewModel.reportarProblema(folio)
+                    navController.popBackStack(Rutas.InicioUsuario.ruta, inclusive = false)
                 }
             )
         }

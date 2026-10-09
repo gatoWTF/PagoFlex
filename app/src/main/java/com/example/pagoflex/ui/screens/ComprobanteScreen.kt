@@ -12,10 +12,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -25,57 +25,46 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.pagoflex.R
-import com.example.pagoflex.model.Compromiso
-import com.example.pagoflex.model.EstadoCompromiso
+import com.example.pagoflex.model.Comprobante
 import com.example.pagoflex.ui.components.BotonPrincipal
-import com.example.pagoflex.ui.components.BotonSecundario
-import com.example.pagoflex.ui.components.EtiquetaEstado
 import com.example.pagoflex.ui.theme.Dimens
+import com.example.pagoflex.ui.theme.Exito
+import com.example.pagoflex.ui.theme.ExitoFondo
 import com.example.pagoflex.ui.theme.PagoFlexTheme
 import com.example.pagoflex.utils.FormatoMoneda
 
-// Detalle de un compromiso (RF-04): monto, recargo, total y accion de pago simulado (RF-05).
+// Comprobante de pago (RF-05, RF-06): confirma el pago y muestra sus datos.
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DetalleCompromisoScreen(
-    compromiso: Compromiso?,
-    alVolver: () -> Unit,
-    alPagar: (String) -> Unit,
-    alReportar: (String) -> Unit,
+fun ComprobanteScreen(
+    comprobante: Comprobante?,
+    alFinalizar: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Scaffold(
         modifier = modifier,
         topBar = {
             TopAppBar(
-                title = { Text("Detalle del pago") },
-                navigationIcon = {
-                    IconButton(onClick = alVolver) {
-                        Icon(
-                            painter = painterResource(R.drawable.ic_volver),
-                            contentDescription = "Volver"
-                        )
-                    }
-                },
+                title = { Text("Comprobante") },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primary,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimary,
-                    navigationIconContentColor = MaterialTheme.colorScheme.onPrimary
+                    titleContentColor = MaterialTheme.colorScheme.onPrimary
                 )
             )
         }
     ) { padding ->
-        if (compromiso == null) {
+        if (comprobante == null) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(padding),
                 contentAlignment = Alignment.Center
             ) {
-                Text("No se encontro el compromiso.")
+                Text("No se encontro el comprobante.")
             }
             return@Scaffold
         }
@@ -90,57 +79,53 @@ fun DetalleCompromisoScreen(
         ) {
             Box(
                 modifier = Modifier
-                    .size(64.dp)
-                    .background(MaterialTheme.colorScheme.primaryContainer, CircleShape),
+                    .size(72.dp)
+                    .background(ExitoFondo, CircleShape),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
-                    painter = painterResource(R.drawable.ic_otro),
+                    painter = painterResource(R.drawable.ic_pagado),
                     contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                    tint = Exito,
                     modifier = Modifier.size(Dimens.tamanoIconoCategoria)
                 )
             }
             Text(
-                text = compromiso.concepto,
+                text = "¡Pago realizado!",
                 style = MaterialTheme.typography.titleLarge,
                 color = MaterialTheme.colorScheme.onBackground
             )
             Text(
-                text = compromiso.empresa,
+                text = "Guarda este comprobante como respaldo de tu pago.",
                 style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center
             )
-            EtiquetaEstado(estado = compromiso.estado)
 
             Spacer(Modifier.size(Dimens.espacioChico))
 
-            FilaDato("Monto", FormatoMoneda.clp(compromiso.monto))
-            if (compromiso.recargo > 0) {
-                FilaDato("Recargo por atraso", FormatoMoneda.clp(compromiso.recargo))
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = androidx.compose.foundation.shape.RoundedCornerShape(Dimens.radioTarjeta)
+            ) {
+                Column(modifier = Modifier.padding(Dimens.espacioMedio)) {
+                    FilaDato("Concepto", comprobante.concepto)
+                    FilaDato("Empresa", comprobante.empresa)
+                    HorizontalDivider(modifier = Modifier.padding(vertical = Dimens.espacioChico))
+                    FilaDato("Monto pagado", FormatoMoneda.clp(comprobante.monto))
+                    FilaDato("Fecha y hora", comprobante.fechaHora)
+                    FilaDato("Canal", comprobante.canal)
+                    FilaDato("N° comprobante", comprobante.folio)
+                }
             }
-            FilaDato("Total a pagar", FormatoMoneda.clp(compromiso.totalAPagar))
-            HorizontalDivider(modifier = Modifier.padding(vertical = Dimens.espacioChico))
-            FilaDato("Vence", compromiso.fechaVencimiento)
-            compromiso.cuota?.let { FilaDato("Cuota", it) }
-            FilaDato("Folio", compromiso.folio)
 
             Spacer(Modifier.weight(1f))
 
-            if (compromiso.sePuedePagar) {
-                BotonPrincipal(
-                    texto = "Pagar " + FormatoMoneda.clp(compromiso.totalAPagar),
-                    onClick = { alPagar(compromiso.folio) },
-                    icono = R.drawable.ic_pagar,
-                    modifier = Modifier.fillMaxWidth()
-                )
-                Spacer(Modifier.size(Dimens.espacioMini))
-                BotonSecundario(
-                    texto = "Reportar un problema",
-                    onClick = { alReportar(compromiso.folio) },
-                    modifier = Modifier.fillMaxWidth()
-                )
-            }
+            BotonPrincipal(
+                texto = "Listo",
+                onClick = alFinalizar,
+                modifier = Modifier.fillMaxWidth()
+            )
         }
     }
 }
@@ -148,7 +133,9 @@ fun DetalleCompromisoScreen(
 @Composable
 private fun FilaDato(etiqueta: String, valor: String) {
     Row(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = Dimens.espacioMini),
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Text(
@@ -167,23 +154,19 @@ private fun FilaDato(etiqueta: String, valor: String) {
 @Preview(showBackground = true, name = "Claro")
 @Preview(showBackground = true, name = "Oscuro", uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
-private fun DetalleCompromisoScreenPreview() {
+private fun ComprobanteScreenPreview() {
     PagoFlexTheme {
-        DetalleCompromisoScreen(
-            compromiso = Compromiso(
-                folio = "CP-2026-0102",
-                empresa = "Club Los Halcones",
-                rubro = "Club deportivo",
+        ComprobanteScreen(
+            comprobante = Comprobante(
+                folio = "CPR-000460",
+                folioCompromiso = "CP-2026-0102",
                 concepto = "Cuota social octubre",
-                cuota = "10/12",
-                monto = 15000,
-                fechaVencimiento = "05-10-2026",
-                estado = EstadoCompromiso.VENCIDO,
-                recargo = 2000
+                empresa = "Club Los Halcones",
+                monto = 17000,
+                fechaHora = "09-10-2026 14:32",
+                aTiempo = false
             ),
-            alVolver = {},
-            alPagar = {},
-            alReportar = {}
+            alFinalizar = {}
         )
     }
 }

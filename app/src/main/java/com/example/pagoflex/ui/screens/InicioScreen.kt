@@ -39,6 +39,7 @@ import com.example.pagoflex.viewmodel.CompromisosViewModel
 fun InicioScreen(
     viewModel: CompromisosViewModel,
     alAbrirDetalle: (String) -> Unit,
+    alAbrirHistorial: () -> Unit,
     alCerrarSesion: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -48,6 +49,12 @@ fun InicioScreen(
             TopAppBar(
                 title = { Text("PagoFlex") },
                 actions = {
+                    IconButton(onClick = alAbrirHistorial) {
+                        Icon(
+                            painter = painterResource(R.drawable.ic_historial),
+                            contentDescription = "Historial de pagos"
+                        )
+                    }
                     IconButton(onClick = alCerrarSesion) {
                         Icon(
                             painter = painterResource(R.drawable.ic_cerrar_sesion),
@@ -143,6 +150,11 @@ private fun ResumenSituacion(
 @Composable
 private fun InicioScreenPreview() {
     PagoFlexTheme {
-        InicioScreen(viewModel = viewModel(), alAbrirDetalle = {}, alCerrarSesion = {})
+        InicioScreen(
+            viewModel = viewModel(),
+            alAbrirDetalle = {},
+            alAbrirHistorial = {},
+            alCerrarSesion = {}
+        )
     }
 }

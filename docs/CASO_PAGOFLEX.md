@@ -73,8 +73,10 @@ RF-17/18/19/20 ejecutivo registra/anula compromisos y ve su cobranza.
 - [x] Persistencia local con Room + datos semilla (Anexo 9)
 - [x] Sesión simulada / selector de rol (RF-01) — usuario fijo por rol para pruebas
 - [x] NavHost (navigation-compose) con un home por rol
-- [~] Pantallas del usuario final (Inicio + Detalle enrutadas; faltan Historial y Config)
-- [ ] Pago simulado + comprobante
+- [x] Pago simulado + comprobante (RF-05/06)
+- [x] Historial con indicador de cumplimiento (RF-07/08)
+- [x] Reportar problema como formulario validado (RF-09) → pasa a En revisión
+- [~] Pantallas del usuario final (Inicio, Detalle, Historial, Reportar listas; falta Configuración)
 - [ ] Avisos de vencimiento (RF-11) + notificación local
 - [~] Roles internos (agente / ejecutivo) — homes creados, en construcción
 - [ ] Segundo recurso nativo (cámara/galería)

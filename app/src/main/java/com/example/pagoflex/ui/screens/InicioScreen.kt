@@ -46,6 +46,7 @@ fun InicioScreen(
     viewModel: CompromisosViewModel,
     alAbrirDetalle: (String) -> Unit,
     alAbrirHistorial: () -> Unit,
+    alAbrirConfiguracion: () -> Unit,
     alCerrarSesion: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -70,6 +71,12 @@ fun InicioScreen(
                         Icon(
                             painter = painterResource(R.drawable.ic_historial),
                             contentDescription = "Historial de pagos"
+                        )
+                    }
+                    IconButton(onClick = alAbrirConfiguracion) {
+                        Icon(
+                            painter = painterResource(R.drawable.ic_ajustes),
+                            contentDescription = "Configuración"
                         )
                     }
                     IconButton(onClick = alCerrarSesion) {

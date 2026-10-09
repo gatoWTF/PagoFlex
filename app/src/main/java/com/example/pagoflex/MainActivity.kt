@@ -8,6 +8,7 @@ import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
@@ -16,8 +17,10 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.example.pagoflex.model.ModoTema
 import com.example.pagoflex.ui.navigation.Rutas
 import com.example.pagoflex.ui.screens.ComprobanteScreen
+import com.example.pagoflex.ui.screens.ConfiguracionScreen
 import com.example.pagoflex.ui.screens.DetalleCompromisoScreen
 import com.example.pagoflex.ui.screens.HistorialScreen
 import com.example.pagoflex.ui.screens.HomeAgenteScreen
@@ -28,6 +31,7 @@ import com.example.pagoflex.ui.screens.ReportarProblemaScreen
 import com.example.pagoflex.ui.screens.SelectorRolScreen
 import com.example.pagoflex.ui.theme.PagoFlexTheme
 import com.example.pagoflex.viewmodel.CompromisosViewModel
+import com.example.pagoflex.viewmodel.ConfiguracionViewModel
 import com.example.pagoflex.viewmodel.EjecutivoViewModel
 
 class MainActivity : ComponentActivity() {
@@ -35,8 +39,14 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            PagoFlexTheme {
-                AppPagoFlex()
+            val configuracionViewModel: ConfiguracionViewModel = viewModel()
+            val oscuro = when (configuracionViewModel.modoTema) {
+                ModoTema.CLARO -> false
+                ModoTema.OSCURO -> true
+                ModoTema.SISTEMA -> isSystemInDarkTheme()
+            }
+            PagoFlexTheme(darkTheme = oscuro) {
+                AppPagoFlex(configuracionViewModel)
             }
         }
     }
@@ -45,7 +55,7 @@ class MainActivity : ComponentActivity() {
 // Navegacion de la app con NavHost. El flujo arranca en el selector de rol
 // (sesion simulada, RF-01) y cada rol entra a su propio home (RNF-13, RN-22).
 @Composable
-private fun AppPagoFlex() {
+private fun AppPagoFlex(configuracionViewModel: ConfiguracionViewModel) {
     val navController = rememberNavController()
     // VMs con alcance de Activity: las pantallas de cada rol comparten su estado.
     val compromisosViewModel: CompromisosViewModel = viewModel()
@@ -85,6 +95,7 @@ private fun AppPagoFlex() {
                     navController.navigate(Rutas.DetalleCompromiso.crear(folio))
                 },
                 alAbrirHistorial = { navController.navigate(Rutas.Historial.ruta) },
+                alAbrirConfiguracion = { navController.navigate(Rutas.Configuracion.ruta) },
                 alCerrarSesion = { irAlSelector(navController) }
             )
         }
@@ -93,6 +104,14 @@ private fun AppPagoFlex() {
         composable(Rutas.Historial.ruta) {
             HistorialScreen(
                 viewModel = compromisosViewModel,
+                alVolver = { navController.popBackStack() }
+            )
+        }
+
+        // Configuracion: apariencia y avisos (RF-11)
+        composable(Rutas.Configuracion.ruta) {
+            ConfiguracionScreen(
+                viewModel = configuracionViewModel,
                 alVolver = { navController.popBackStack() }
             )
         }

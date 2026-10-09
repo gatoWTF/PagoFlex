@@ -11,6 +11,7 @@ sealed class Rutas(val ruta: String) {
     // Usuario final (R-01)
     object InicioUsuario : Rutas("usuario/inicio")
     object Historial : Rutas("usuario/historial")
+    object Configuracion : Rutas("usuario/configuracion")
     object DetalleCompromiso : Rutas("usuario/detalle/{folio}") {
         const val ARG_FOLIO = "folio"
         // crear("CP-2026-0101") -> "usuario/detalle/CP-2026-0101"

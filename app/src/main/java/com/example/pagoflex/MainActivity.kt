@@ -9,7 +9,11 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -46,7 +50,13 @@ class MainActivity : ComponentActivity() {
                 ModoTema.SISTEMA -> isSystemInDarkTheme()
             }
             PagoFlexTheme(darkTheme = oscuro) {
-                AppPagoFlex(configuracionViewModel)
+                // Surface pinta el fondo del tema en toda la app (evita la pantalla en negro).
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                    color = MaterialTheme.colorScheme.background
+                ) {
+                    AppPagoFlex(configuracionViewModel)
+                }
             }
         }
     }

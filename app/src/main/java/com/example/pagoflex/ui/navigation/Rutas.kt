@@ -25,9 +25,12 @@ sealed class Rutas(val ruta: String) {
         fun crear(folio: String) = "usuario/reportar/$folio"
     }
 
-    // Roles internos (acotados): se completan en los proximos avances.
-    object HomeAgente : Rutas("agente/inicio")       // R-02: gestiona reportes
-    object HomeEjecutivo : Rutas("ejecutivo/inicio") // R-03: compromisos y cobranza
+    // Agente (R-02): se completa en los proximos avances.
+    object HomeAgente : Rutas("agente/inicio")       // gestiona reportes
+
+    // Ejecutivo de empresa (R-03)
+    object HomeEjecutivo : Rutas("ejecutivo/inicio") // compromisos y cobranza
+    object RegistrarCompromiso : Rutas("ejecutivo/registrar")
 
     companion object {
         // A que home entra cada rol tras elegirlo en el selector.

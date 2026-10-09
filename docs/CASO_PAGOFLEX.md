@@ -78,7 +78,7 @@ RF-17/18/19/20 ejecutivo registra/anula compromisos y ve su cobranza.
 - [x] Reportar problema como formulario validado (RF-09) → pasa a En revisión
 - [~] Pantallas del usuario final (Inicio, Detalle, Historial, Reportar listas; falta Configuración)
 - [ ] Avisos de vencimiento (RF-11) + notificación local
-- [~] Roles internos (agente / ejecutivo) — homes creados, en construcción
+- [~] Roles internos: ejecutivo con registrar (formulario validado) / anular / cobranza del mes (RF-17/18/20); agente aún placeholder
 - [ ] Segundo recurso nativo (cámara/galería)
 
 > Nota de diseño: el selector de rol es la sesión simulada (sin contraseña). Hoy

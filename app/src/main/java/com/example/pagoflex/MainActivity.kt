@@ -19,10 +19,12 @@ import com.example.pagoflex.ui.screens.HistorialScreen
 import com.example.pagoflex.ui.screens.HomeAgenteScreen
 import com.example.pagoflex.ui.screens.HomeEjecutivoScreen
 import com.example.pagoflex.ui.screens.InicioScreen
+import com.example.pagoflex.ui.screens.RegistrarCompromisoScreen
 import com.example.pagoflex.ui.screens.ReportarProblemaScreen
 import com.example.pagoflex.ui.screens.SelectorRolScreen
 import com.example.pagoflex.ui.theme.PagoFlexTheme
 import com.example.pagoflex.viewmodel.CompromisosViewModel
+import com.example.pagoflex.viewmodel.EjecutivoViewModel
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -41,8 +43,9 @@ class MainActivity : ComponentActivity() {
 @Composable
 private fun AppPagoFlex() {
     val navController = rememberNavController()
-    // VM con alcance de Activity: todas las pantallas del usuario final comparten estado.
+    // VMs con alcance de Activity: las pantallas de cada rol comparten su estado.
     val compromisosViewModel: CompromisosViewModel = viewModel()
+    val ejecutivoViewModel: EjecutivoViewModel = viewModel()
 
     NavHost(
         navController = navController,
@@ -140,7 +143,22 @@ private fun AppPagoFlex() {
 
         // Home del ejecutivo (R-03)
         composable(Rutas.HomeEjecutivo.ruta) {
-            HomeEjecutivoScreen(alCerrarSesion = { irAlSelector(navController) })
+            HomeEjecutivoScreen(
+                viewModel = ejecutivoViewModel,
+                alRegistrar = { navController.navigate(Rutas.RegistrarCompromiso.ruta) },
+                alCerrarSesion = { irAlSelector(navController) }
+            )
+        }
+
+        // Registrar un compromiso (RF-17)
+        composable(Rutas.RegistrarCompromiso.ruta) {
+            RegistrarCompromisoScreen(
+                alVolver = { navController.popBackStack() },
+                onRegistrar = { deudor, rut, concepto, monto, fecha ->
+                    ejecutivoViewModel.registrarCompromiso(deudor, rut, concepto, monto, fecha)
+                    navController.popBackStack()
+                }
+            )
         }
     }
 }

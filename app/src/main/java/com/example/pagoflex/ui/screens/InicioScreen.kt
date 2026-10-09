@@ -165,17 +165,3 @@ private fun ResumenSituacion(
         }
     }
 }
-
-@Preview(showBackground = true, name = "Claro")
-@Preview(showBackground = true, name = "Oscuro", uiMode = Configuration.UI_MODE_NIGHT_YES)
-@Composable
-private fun InicioScreenPreview() {
-    PagoFlexTheme {
-        InicioScreen(
-            viewModel = viewModel(),
-            alAbrirDetalle = {},
-            alAbrirHistorial = {},
-            alCerrarSesion = {}
-        )
-    }
-}

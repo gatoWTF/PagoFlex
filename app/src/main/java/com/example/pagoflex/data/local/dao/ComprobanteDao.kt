@@ -19,6 +19,10 @@ interface ComprobanteDao {
     @Query("SELECT * FROM comprobante WHERE usuarioCodigo = :usuarioCodigo ORDER BY numero DESC")
     fun observarPorUsuario(usuarioCodigo: String): Flow<List<ComprobanteEntity>>
 
+    // Igual que el anterior pero de una sola lectura (sin Flow), para cargar al inicio.
+    @Query("SELECT * FROM comprobante WHERE usuarioCodigo = :usuarioCodigo ORDER BY numero DESC")
+    suspend fun listarPorUsuario(usuarioCodigo: String): List<ComprobanteEntity>
+
     @Query("SELECT * FROM comprobante WHERE compromisoFolio = :folio")
     suspend fun obtenerPorCompromiso(folio: String): ComprobanteEntity?
 }

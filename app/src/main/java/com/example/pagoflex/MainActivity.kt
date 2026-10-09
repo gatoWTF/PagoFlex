@@ -146,8 +146,8 @@ private fun AppPagoFlex() {
             ReportarProblemaScreen(
                 compromiso = folio?.let { compromisosViewModel.buscarPorFolio(it) },
                 alVolver = { navController.popBackStack() },
-                alEnviar = {
-                    if (folio != null) compromisosViewModel.reportarProblema(folio)
+                alEnviar = { motivo, descripcion ->
+                    if (folio != null) compromisosViewModel.reportarProblema(folio, motivo, descripcion)
                     navController.popBackStack(Rutas.InicioUsuario.ruta, inclusive = false)
                 }
             )

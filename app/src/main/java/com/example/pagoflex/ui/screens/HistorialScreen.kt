@@ -192,12 +192,3 @@ private fun PildoraCumplimiento(aTiempo: Boolean) {
             .padding(horizontal = Dimens.espacioChico, vertical = 2.dp)
     )
 }
-
-@Preview(showBackground = true, name = "Claro")
-@Preview(showBackground = true, name = "Oscuro", uiMode = Configuration.UI_MODE_NIGHT_YES)
-@Composable
-private fun HistorialScreenPreview() {
-    PagoFlexTheme {
-        HistorialScreen(viewModel = viewModel(), alVolver = {})
-    }
-}

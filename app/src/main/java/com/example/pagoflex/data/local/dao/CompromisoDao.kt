@@ -23,6 +23,10 @@ interface CompromisoDao {
     @Query("SELECT * FROM compromiso WHERE usuarioCodigo = :usuarioCodigo ORDER BY fechaVencimiento")
     fun observarPorUsuario(usuarioCodigo: String): Flow<List<CompromisoEntity>>
 
+    // Igual que el anterior pero de una sola lectura (sin Flow), para cargar al inicio.
+    @Query("SELECT * FROM compromiso WHERE usuarioCodigo = :usuarioCodigo ORDER BY fechaVencimiento")
+    suspend fun listarPorUsuario(usuarioCodigo: String): List<CompromisoEntity>
+
     // Lo que falta pagar de una persona: pendientes y vencidos (RF-02)
     @Query("SELECT * FROM compromiso WHERE usuarioCodigo = :usuarioCodigo AND estado IN ('PENDIENTE','VENCIDO') ORDER BY fechaVencimiento")
     fun observarPorPagar(usuarioCodigo: String): Flow<List<CompromisoEntity>>

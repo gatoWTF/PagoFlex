@@ -58,7 +58,7 @@ private const val LARGO_MINIMO_DESCRIPCION = 10
 fun ReportarProblemaScreen(
     compromiso: Compromiso?,
     alVolver: () -> Unit,
-    alEnviar: () -> Unit,
+    alEnviar: (motivo: String, descripcion: String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     var motivo by rememberSaveable { mutableStateOf<String?>(null) }
@@ -179,7 +179,7 @@ fun ReportarProblemaScreen(
                     intentoEnvio = true
                     val valido = motivo != null &&
                         descripcion.trim().length >= LARGO_MINIMO_DESCRIPCION
-                    if (valido) alEnviar()
+                    if (valido) alEnviar(motivo ?: "Otro", descripcion.trim())
                 },
                 icono = R.drawable.ic_avisos,
                 modifier = Modifier
@@ -220,7 +220,7 @@ private fun ReportarProblemaScreenPreview() {
                 recargo = 2000
             ),
             alVolver = {},
-            alEnviar = {}
+            alEnviar = { _, _ -> }
         )
     }
 }

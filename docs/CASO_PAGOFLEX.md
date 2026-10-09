@@ -77,8 +77,10 @@ RF-17/18/19/20 ejecutivo registra/anula compromisos y ve su cobranza.
 - [x] Pago simulado + comprobante (RF-05/06)
 - [x] Historial con indicador de cumplimiento (RF-07/08)
 - [x] Reportar problema como formulario validado (RF-09) → pasa a En revisión
-- [~] Pantallas del usuario final (Inicio, Detalle, Historial, Reportar listas; falta Configuración)
-- [ ] Avisos de vencimiento (RF-11) + notificación local
+- [x] Pantallas del usuario final: Inicio, Detalle, Historial, Reportar y Configuración
+- [x] Configuración: modo claro/oscuro/sistema (persistente) + ajustes de avisos (RF-11)
+- [x] Ejecutivo conectado a Room: registrar y anular persisten
+- [ ] Avisos de vencimiento (RF-11): falta la notificación local que los dispara
 - [~] Roles internos: ejecutivo con registrar (formulario validado) / anular / cobranza del mes (RF-17/18/20); agente aún placeholder
 - [ ] Segundo recurso nativo (cámara/galería)
 

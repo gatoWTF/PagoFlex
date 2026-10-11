@@ -90,4 +90,4 @@ Pruebas unitarias de la lógica (validación de RUT por módulo 11 y asignación
 
 ## Autor
 
-**<Tu Gabriel Antonio Molina Apablaza>** — <Carrera>, Duoc UC
+Gabriel Antonio Molina Apablaza — <Carrera>, Duoc UC

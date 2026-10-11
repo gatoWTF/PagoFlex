@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
@@ -30,13 +31,16 @@ import com.example.pagoflex.ui.screens.HistorialScreen
 import com.example.pagoflex.ui.screens.HomeAgenteScreen
 import com.example.pagoflex.ui.screens.HomeEjecutivoScreen
 import com.example.pagoflex.ui.screens.InicioScreen
+import com.example.pagoflex.ui.screens.LoginScreen
 import com.example.pagoflex.ui.screens.RegistrarCompromisoScreen
+import com.example.pagoflex.ui.screens.RegistroScreen
 import com.example.pagoflex.ui.screens.ReportarProblemaScreen
-import com.example.pagoflex.ui.screens.SelectorRolScreen
 import com.example.pagoflex.ui.theme.PagoFlexTheme
 import com.example.pagoflex.viewmodel.CompromisosViewModel
 import com.example.pagoflex.viewmodel.ConfiguracionViewModel
 import com.example.pagoflex.viewmodel.EjecutivoViewModel
+import com.example.pagoflex.viewmodel.LoginViewModel
+import com.example.pagoflex.viewmodel.RegistroViewModel
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -62,8 +66,9 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-// Navegacion de la app con NavHost. El flujo arranca en el selector de rol
-// (sesion simulada, RF-01) y cada rol entra a su propio home (RNF-13, RN-22).
+// Navegacion de la app con NavHost. El flujo arranca en login/registro (sesion
+// simulada, RF-01): el rol se deduce del correo y cada rol entra a su propio
+// home (RNF-13, RN-22).
 @Composable
 private fun AppPagoFlex(configuracionViewModel: ConfiguracionViewModel) {
     val navController = rememberNavController()
@@ -73,7 +78,7 @@ private fun AppPagoFlex(configuracionViewModel: ConfiguracionViewModel) {
 
     NavHost(
         navController = navController,
-        startDestination = Rutas.SelectorRol.ruta,
+        startDestination = Rutas.Login.ruta,
         // Transicion al navegar: la pantalla nueva entra desde la derecha; al volver, al reves.
         enterTransition = {
             slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Start, tween(450)) + fadeIn(tween(450))
@@ -88,12 +93,64 @@ private fun AppPagoFlex(configuracionViewModel: ConfiguracionViewModel) {
             slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.End, tween(450)) + fadeOut(tween(450))
         }
     ) {
-        // Selector de rol (entrada)
-        composable(Rutas.SelectorRol.ruta) {
-            SelectorRolScreen(
-                alElegirRol = { rol ->
-                    navController.navigate(Rutas.homeDeRol(rol).ruta)
+        // Inicio de sesion (entrada). El rol sale del dominio del correo.
+        composable(Rutas.Login.ruta) {
+            val loginViewModel: LoginViewModel = viewModel()
+            LaunchedEffect(loginViewModel.rol) {
+                loginViewModel.rol?.let { rol ->
+                    navController.navigate(Rutas.homeDeRol(rol).ruta) {
+                        popUpTo(Rutas.Login.ruta) { inclusive = true }
+                    }
+                    loginViewModel.consumirRol()
                 }
+            }
+            LoginScreen(
+                correo = loginViewModel.correo,
+                contrasena = loginViewModel.contrasena,
+                contrasenaVisible = loginViewModel.contrasenaVisible,
+                onCorreoCambia = loginViewModel::cambiarCorreo,
+                onContrasenaCambia = loginViewModel::cambiarContrasena,
+                onAlternarVisible = loginViewModel::alternarContrasenaVisible,
+                onIngresar = loginViewModel::iniciarSesion,
+                onIrARegistro = { navController.navigate(Rutas.Registro.ruta) },
+                errorCorreo = loginViewModel.errorCorreo,
+                errorContrasena = loginViewModel.errorContrasena
+            )
+        }
+
+        // Registro. Crea la sesion con el rol deducido del correo.
+        composable(Rutas.Registro.ruta) {
+            val registroViewModel: RegistroViewModel = viewModel()
+            LaunchedEffect(registroViewModel.rol) {
+                registroViewModel.rol?.let { rol ->
+                    navController.navigate(Rutas.homeDeRol(rol).ruta) {
+                        popUpTo(Rutas.Login.ruta) { inclusive = true }
+                    }
+                    registroViewModel.consumirRol()
+                }
+            }
+            RegistroScreen(
+                nombre = registroViewModel.nombre,
+                rut = registroViewModel.rut,
+                correo = registroViewModel.correo,
+                contrasena = registroViewModel.contrasena,
+                confirmar = registroViewModel.confirmar,
+                contrasenaVisible = registroViewModel.contrasenaVisible,
+                onNombreCambia = registroViewModel::cambiarNombre,
+                onRutCambia = registroViewModel::cambiarRut,
+                onCorreoCambia = registroViewModel::cambiarCorreo,
+                onContrasenaCambia = registroViewModel::cambiarContrasena,
+                onConfirmarCambia = registroViewModel::cambiarConfirmar,
+                onAlternarVisible = registroViewModel::alternarContrasenaVisible,
+                onCrearCuenta = registroViewModel::crearCuenta,
+                onIrALogin = { navController.popBackStack() },
+                onRutPerderFoco = registroViewModel::validarRut,
+                onCorreoPerderFoco = registroViewModel::validarCorreo,
+                errorNombre = registroViewModel.errorNombre,
+                errorRut = registroViewModel.errorRut,
+                errorCorreo = registroViewModel.errorCorreo,
+                errorContrasena = registroViewModel.errorContrasena,
+                errorConfirmar = registroViewModel.errorConfirmar
             )
         }
 
@@ -106,7 +163,7 @@ private fun AppPagoFlex(configuracionViewModel: ConfiguracionViewModel) {
                 },
                 alAbrirHistorial = { navController.navigate(Rutas.Historial.ruta) },
                 alAbrirConfiguracion = { navController.navigate(Rutas.Configuracion.ruta) },
-                alCerrarSesion = { irAlSelector(navController) }
+                alCerrarSesion = { irALogin(navController) }
             )
         }
 
@@ -184,7 +241,7 @@ private fun AppPagoFlex(configuracionViewModel: ConfiguracionViewModel) {
 
         // Home del agente (R-02)
         composable(Rutas.HomeAgente.ruta) {
-            HomeAgenteScreen(alCerrarSesion = { irAlSelector(navController) })
+            HomeAgenteScreen(alCerrarSesion = { irALogin(navController) })
         }
 
         // Home del ejecutivo (R-03)
@@ -192,7 +249,7 @@ private fun AppPagoFlex(configuracionViewModel: ConfiguracionViewModel) {
             HomeEjecutivoScreen(
                 viewModel = ejecutivoViewModel,
                 alRegistrar = { navController.navigate(Rutas.RegistrarCompromiso.ruta) },
-                alCerrarSesion = { irAlSelector(navController) }
+                alCerrarSesion = { irALogin(navController) }
             )
         }
 
@@ -209,10 +266,10 @@ private fun AppPagoFlex(configuracionViewModel: ConfiguracionViewModel) {
     }
 }
 
-// Cierra la sesion simulada: vuelve al selector y limpia el historial de navegacion.
-private fun irAlSelector(navController: NavHostController) {
-    navController.navigate(Rutas.SelectorRol.ruta) {
-        popUpTo(Rutas.SelectorRol.ruta) { inclusive = true }
+// Cierra la sesion simulada: vuelve al login y limpia el historial de navegacion.
+private fun irALogin(navController: NavHostController) {
+    navController.navigate(Rutas.Login.ruta) {
+        popUpTo(Rutas.Login.ruta) { inclusive = true }
         launchSingleTop = true
     }
 }

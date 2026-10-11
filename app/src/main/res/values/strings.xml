@@ -35,4 +35,28 @@
     <string name = "cd_mostrar_contrasena">Mostrar contraseña</string>
     <string name = "cd_ocultar_contrasena">Ocultar contraseña</string>
 
+    <!-- Pantallas de login y registro (canal oficial) -->
+    <string name="marca_subtitulo_login">Tu canal oficial de pagos</string>
+    <string name="marca_subtitulo_registro">Crea tu cuenta en el canal oficial</string>
+    <string name="titulo_login">Iniciar sesión</string>
+    <string name="titulo_registro">Crear cuenta</string>
+
+    <string name="label_nombre">Nombre completo</string>
+    <string name="label_rut">RUT</string>
+    <string name="label_correo">Correo electrónico</string>
+    <string name="label_contrasena">Contraseña</string>
+    <string name="label_confirmar">Confirmar contraseña</string>
+
+    <string name="btn_ingresar">Ingresar</string>
+    <string name="btn_crear_cuenta">Crear cuenta</string>
+
+    <string name="pregunta_sin_cuenta">¿No tienes cuenta?</string>
+    <string name="accion_crear_cuenta">Crear cuenta</string>
+    <string name="pregunta_con_cuenta">¿Ya tienes cuenta?</string>
+    <string name="accion_iniciar_sesion">Inicia sesión</string>
+
+    <string name="nota_rol_correo">Tu rol se asigna según el dominio de tu correo.</string>
+    <string name="pie_confianza">Canal oficial de PagoFlex</string>
+    <string name="pie_prototipo">Datos ficticios · prototipo</string>
+
 </resources>

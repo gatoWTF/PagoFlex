@@ -2,11 +2,12 @@ package com.example.pagoflex.ui.navigation
 
 import com.example.pagoflex.model.RolUsuario
 
-// Destinos de navegacion de la app. Cada rol tiene su propio home (RNF-13, RN-22):
-// cada usuario ve solo las pantallas que le corresponden.
+// Destinos de navegacion de la app. La entrada es login/registro (RF-01): el rol
+// se deduce del correo y cada rol tiene su propio home (RNF-13, RN-22).
 sealed class Rutas(val ruta: String) {
-    // Sesion simulada: se elige el rol al entrar (RF-01, FA-01).
-    object SelectorRol : Rutas("selector")
+    // Entrada: sesion simulada con login y registro.
+    object Login : Rutas("login")
+    object Registro : Rutas("registro")
 
     // Usuario final (R-01)
     object InicioUsuario : Rutas("usuario/inicio")
@@ -34,7 +35,7 @@ sealed class Rutas(val ruta: String) {
     object RegistrarCompromiso : Rutas("ejecutivo/registrar")
 
     companion object {
-        // A que home entra cada rol tras elegirlo en el selector.
+        // A que home entra cada rol tras iniciar sesion o registrarse.
         fun homeDeRol(rol: RolUsuario): Rutas = when (rol) {
             RolUsuario.USUARIO_FINAL -> InicioUsuario
             RolUsuario.AGENTE -> HomeAgente

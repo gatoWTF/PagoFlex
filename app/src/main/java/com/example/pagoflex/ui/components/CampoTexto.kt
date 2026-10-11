@@ -12,7 +12,12 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -38,12 +43,25 @@ fun CampoTexto(
     @DrawableRes icono: Int,
     modifier: Modifier = Modifier,
     error: String? = null,
-    tipoTeclado: KeyboardType = KeyboardType.Text
+    tipoTeclado: KeyboardType = KeyboardType.Text,
+    onPerderFoco: (() -> Unit)? = null
 ) {
+    // Avisa cuando el campo deja de tener el foco, pero solo si antes lo tuvo
+    // (asi se valida al pasar al siguiente campo, no al abrir la pantalla).
+    var tuvoFoco by remember { mutableStateOf(false) }
     OutlinedTextField(
         value = valor,
         onValueChange = onValorCambia,
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier
+            .fillMaxWidth()
+            .onFocusChanged { estado ->
+                if (estado.isFocused) {
+                    tuvoFoco = true
+                } else if (tuvoFoco) {
+                    tuvoFoco = false
+                    onPerderFoco?.invoke()
+                }
+            },
         label = { Text(etiqueta) },                          // texto flotante (como <label>)
         leadingIcon = {                                      // icono a la izquierda
             Icon(

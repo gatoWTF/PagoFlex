@@ -32,4 +32,19 @@ class DerivadorDeRolTest {
     fun correoSinArrobaCaeEnUsuarioFinal() {
         assertEquals(RolUsuario.USUARIO_FINAL, DerivadorDeRol.rolPorCorreo("textoSinArroba"))
     }
+
+    @Test
+    fun correoDeGmailEsUsuarioFinal() {
+        assertEquals(RolUsuario.USUARIO_FINAL, DerivadorDeRol.rolPorCorreo("juan.perez@gmail.com"))
+    }
+
+    @Test
+    fun correoDeHotmailEsUsuarioFinal() {
+        assertEquals(RolUsuario.USUARIO_FINAL, DerivadorDeRol.rolPorCorreo("ana@hotmail.com"))
+    }
+
+    @Test
+    fun correoDuocEsUsuarioFinal() {
+        assertEquals(RolUsuario.USUARIO_FINAL, DerivadorDeRol.rolPorCorreo("f.armazan@duocuc.cl"))
+    }
 }

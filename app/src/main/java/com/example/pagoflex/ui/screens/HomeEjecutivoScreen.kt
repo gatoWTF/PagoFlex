@@ -71,6 +71,8 @@ private enum class FiltroEjecutivo(val etiqueta: String) {
 fun HomeEjecutivoScreen(
     viewModel: EjecutivoViewModel,
     alRegistrar: () -> Unit,
+    alAbrirPerfil: () -> Unit,
+    alAbrirConfiguracion: () -> Unit,
     alCerrarSesion: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -96,6 +98,18 @@ fun HomeEjecutivoScreen(
             TopAppBar(
                 title = { Text(viewModel.empresa) },
                 actions = {
+                    IconButton(onClick = alAbrirPerfil) {
+                        Icon(
+                            painter = painterResource(R.drawable.ic_perfil),
+                            contentDescription = "Mi perfil"
+                        )
+                    }
+                    IconButton(onClick = alAbrirConfiguracion) {
+                        Icon(
+                            painter = painterResource(R.drawable.ic_ajustes),
+                            contentDescription = "Configuración"
+                        )
+                    }
                     IconButton(onClick = alCerrarSesion) {
                         Icon(
                             painter = painterResource(R.drawable.ic_cerrar_sesion),

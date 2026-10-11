@@ -19,6 +19,11 @@ interface ReporteDao {
     @Query("SELECT * FROM reporte WHERE estado = 'ABIERTO' ORDER BY fecha")
     fun observarAbiertos(): Flow<List<ReporteEntity>>
 
+    // Todos los reportes para la bandeja del agente (RF-14, RF-15):
+    // abiertos primero, luego en gestion y resueltos (orden alfabetico del estado).
+    @Query("SELECT * FROM reporte ORDER BY estado, fecha DESC")
+    fun observarTodos(): Flow<List<ReporteEntity>>
+
     // Reportes de una persona (RF-09)
     @Query("SELECT * FROM reporte WHERE usuarioCodigo = :usuarioCodigo ORDER BY fecha DESC")
     fun observarPorUsuario(usuarioCodigo: String): Flow<List<ReporteEntity>>

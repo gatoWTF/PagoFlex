@@ -37,6 +37,7 @@ import com.example.pagoflex.ui.screens.RegistrarCompromisoScreen
 import com.example.pagoflex.ui.screens.RegistroScreen
 import com.example.pagoflex.ui.screens.ReportarProblemaScreen
 import com.example.pagoflex.ui.theme.PagoFlexTheme
+import com.example.pagoflex.viewmodel.AgenteViewModel
 import com.example.pagoflex.viewmodel.CompromisosViewModel
 import com.example.pagoflex.viewmodel.ConfiguracionViewModel
 import com.example.pagoflex.viewmodel.EjecutivoViewModel
@@ -77,6 +78,7 @@ private fun AppPagoFlex(configuracionViewModel: ConfiguracionViewModel) {
     // VMs con alcance de Activity: las pantallas de cada rol comparten su estado.
     val compromisosViewModel: CompromisosViewModel = viewModel()
     val ejecutivoViewModel: EjecutivoViewModel = viewModel()
+    val agenteViewModel: AgenteViewModel = viewModel()
     // Guarda los datos de la persona logueada para mostrarlos en el Perfil.
     val sesionViewModel: SesionViewModel = viewModel()
 
@@ -259,9 +261,14 @@ private fun AppPagoFlex(configuracionViewModel: ConfiguracionViewModel) {
             )
         }
 
-        // Home del agente (R-02)
+        // Home del agente (R-02): bandeja de reportes
         composable(Rutas.HomeAgente.ruta) {
-            HomeAgenteScreen(alCerrarSesion = { irALogin(navController) })
+            HomeAgenteScreen(
+                viewModel = agenteViewModel,
+                alAbrirPerfil = { navController.navigate(Rutas.Perfil.ruta) },
+                alAbrirConfiguracion = { navController.navigate(Rutas.Configuracion.ruta) },
+                alCerrarSesion = { irALogin(navController) }
+            )
         }
 
         // Home del ejecutivo (R-03)
@@ -269,6 +276,8 @@ private fun AppPagoFlex(configuracionViewModel: ConfiguracionViewModel) {
             HomeEjecutivoScreen(
                 viewModel = ejecutivoViewModel,
                 alRegistrar = { navController.navigate(Rutas.RegistrarCompromiso.ruta) },
+                alAbrirPerfil = { navController.navigate(Rutas.Perfil.ruta) },
+                alAbrirConfiguracion = { navController.navigate(Rutas.Configuracion.ruta) },
                 alCerrarSesion = { irALogin(navController) }
             )
         }

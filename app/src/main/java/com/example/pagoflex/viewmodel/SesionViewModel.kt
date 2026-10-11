@@ -1,5 +1,6 @@
 package com.example.pagoflex.viewmodel
 
+import android.graphics.Bitmap
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -30,6 +31,10 @@ class SesionViewModel : ViewModel() {
     var correoSecundario by mutableStateOf("")
         private set
     var telefono by mutableStateOf("")
+        private set
+
+    // Foto de perfil tomada con la camara (recurso nativo). En memoria de sesion.
+    var fotoPerfil by mutableStateOf<Bitmap?>(null)
         private set
 
     var errorCorreoSecundario by mutableStateOf<String?>(null)
@@ -63,6 +68,12 @@ class SesionViewModel : ViewModel() {
         this.telefono = semilla?.telefono.orEmpty()
         this.correoSecundario = ""
         limpiarErrores()
+    }
+
+    // Guarda la foto tomada con la camara y avisa en pantalla.
+    fun cambiarFoto(bitmap: Bitmap) {
+        fotoPerfil = bitmap
+        mensaje = "Foto de perfil actualizada"
     }
 
     fun cambiarCorreoSecundario(nuevo: String) {

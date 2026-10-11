@@ -1,6 +1,14 @@
 package com.example.pagoflex.ui.screens
 
+import android.Manifest
+import android.content.pm.PackageManager
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -26,15 +34,25 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import com.example.pagoflex.R
 import com.example.pagoflex.ui.components.BotonPrincipal
+import com.example.pagoflex.ui.components.BotonSecundario
 import com.example.pagoflex.ui.components.CampoTexto
 import com.example.pagoflex.ui.components.SnackbarPagoFlex
 import com.example.pagoflex.ui.theme.Dimens
 import com.example.pagoflex.viewmodel.SesionViewModel
+import kotlinx.coroutines.launch
 
 /**
  * Perfil del usuario (R-01). Muestra la identidad con la que se registro (rol,
@@ -55,6 +73,36 @@ fun PerfilScreen(
             snackbarHostState.showSnackbar(texto, duration = SnackbarDuration.Short)
             sesion.consumirMensaje()
         }
+    }
+
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+
+    // Abre la camara del dispositivo y guarda la miniatura que devuelve.
+    val camaraLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.TakePicturePreview()
+    ) { bitmap ->
+        if (bitmap != null) sesion.cambiarFoto(bitmap)
+    }
+
+    // Solicita el permiso de camara; si la persona lo concede, abre la camara.
+    val permisoLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { concedido ->
+        if (concedido) {
+            camaraLauncher.launch(null)
+        } else {
+            scope.launch { snackbarHostState.showSnackbar("Permiso de cámara denegado") }
+        }
+    }
+
+    // Si el permiso ya esta concedido abre la camara directo; si no, lo pide primero.
+    fun tomarFoto() {
+        val concedido = ContextCompat.checkSelfPermission(
+            context, Manifest.permission.CAMERA
+        ) == PackageManager.PERMISSION_GRANTED
+        if (concedido) camaraLauncher.launch(null)
+        else permisoLauncher.launch(Manifest.permission.CAMERA)
     }
 
     Scaffold(
@@ -87,6 +135,43 @@ fun PerfilScreen(
                 .padding(Dimens.espacioPantalla),
             verticalArrangement = Arrangement.spacedBy(Dimens.espacioMedio)
         ) {
+            // --- Foto de perfil (recurso nativo: camara) ---
+            Box(
+                modifier = Modifier.fillMaxWidth(),
+                contentAlignment = Alignment.Center
+            ) {
+                val foto = sesion.fotoPerfil
+                if (foto != null) {
+                    Image(
+                        bitmap = foto.asImageBitmap(),
+                        contentDescription = "Foto de perfil",
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier
+                            .size(110.dp)
+                            .clip(CircleShape)
+                    )
+                } else {
+                    Box(
+                        modifier = Modifier
+                            .size(110.dp)
+                            .clip(CircleShape)
+                            .background(MaterialTheme.colorScheme.primaryContainer),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            painter = painterResource(R.drawable.ic_perfil),
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+                    }
+                }
+            }
+            BotonSecundario(
+                texto = "Tomar foto",
+                onClick = { tomarFoto() },
+                modifier = Modifier.fillMaxWidth()
+            )
+
             // --- Identidad (solo lectura) ---
             Card(
                 modifier = Modifier.fillMaxWidth(),

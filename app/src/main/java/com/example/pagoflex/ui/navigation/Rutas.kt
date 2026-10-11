@@ -11,6 +11,7 @@ sealed class Rutas(val ruta: String) {
 
     // Usuario final (R-01)
     object InicioUsuario : Rutas("usuario/inicio")
+    object Perfil : Rutas("usuario/perfil")
     object Historial : Rutas("usuario/historial")
     object Configuracion : Rutas("usuario/configuracion")
     object DetalleCompromiso : Rutas("usuario/detalle/{folio}") {

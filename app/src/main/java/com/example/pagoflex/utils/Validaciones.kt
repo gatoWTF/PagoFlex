@@ -12,6 +12,13 @@ object Validaciones {
     fun contrasenaValida(contrasena: String): Boolean =
         contrasena.length >= LARGO_MINIMO_CONTRASENA
 
+    // Telefono: digitos, espacios, + y guiones; entre 8 y 15 digitos reales.
+    fun telefonoValido(texto: String): Boolean {
+        val limpio = texto.trim()
+        if (!Regex("""^[0-9+\s-]+$""").matches(limpio)) return false
+        return limpio.count { it.isDigit() } in 8..15
+    }
+
     // Monto en pesos: entero positivo, sin decimales ni separadores (RN-17).
     fun montoValido(texto: String): Boolean {
         val numero = texto.trim().toIntOrNull() ?: return false

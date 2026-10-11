@@ -45,6 +45,7 @@ import com.example.pagoflex.viewmodel.CompromisosViewModel
 fun InicioScreen(
     viewModel: CompromisosViewModel,
     alAbrirDetalle: (String) -> Unit,
+    alAbrirPerfil: () -> Unit,
     alAbrirHistorial: () -> Unit,
     alAbrirConfiguracion: () -> Unit,
     alCerrarSesion: () -> Unit,
@@ -67,6 +68,12 @@ fun InicioScreen(
             TopAppBar(
                 title = { Text("PagoFlex") },
                 actions = {
+                    IconButton(onClick = alAbrirPerfil) {
+                        Icon(
+                            painter = painterResource(R.drawable.ic_perfil),
+                            contentDescription = "Mi perfil"
+                        )
+                    }
                     IconButton(onClick = alAbrirHistorial) {
                         Icon(
                             painter = painterResource(R.drawable.ic_historial),

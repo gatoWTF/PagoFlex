@@ -52,21 +52,25 @@ class SesionViewModel : ViewModel() {
         this.rol = rol
         this.telefono = ""
         this.correoSecundario = ""
+        this.fotoPerfil = null
         limpiarErrores()
     }
 
     // Alta desde el login: solo tenemos correo y rol. Si el correo calza con un
-    // usuario de ejemplo (Anexo 9), completamos nombre, RUT y telefono.
+    // dato de ejemplo (Anexo 9) completamos nombre, RUT y telefono, sea usuario
+    // final, ejecutivo o agente, para que el Perfil funcione en cualquier rol.
     fun iniciarDesdeLogin(correo: String, rol: RolUsuario) {
         val limpio = correo.trim()
-        val semilla = DatosSemilla.usuariosFinales
-            .firstOrNull { it.correo.equals(limpio, ignoreCase = true) }
+        val uf = DatosSemilla.usuariosFinales.firstOrNull { it.correo.equals(limpio, ignoreCase = true) }
+        val ej = DatosSemilla.ejecutivos.firstOrNull { it.correo.equals(limpio, ignoreCase = true) }
+        val ag = DatosSemilla.agentes.firstOrNull { it.correo.equals(limpio, ignoreCase = true) }
         this.correo = limpio
         this.rol = rol
-        this.nombre = semilla?.nombreCompleto.orEmpty()
-        this.rut = semilla?.rut.orEmpty()
-        this.telefono = semilla?.telefono.orEmpty()
+        this.nombre = uf?.nombreCompleto ?: ej?.nombre ?: ag?.nombre ?: ""
+        this.rut = uf?.rut ?: ej?.rut ?: ag?.rut ?: ""
+        this.telefono = uf?.telefono ?: ej?.telefono ?: ""
         this.correoSecundario = ""
+        this.fotoPerfil = null
         limpiarErrores()
     }
 

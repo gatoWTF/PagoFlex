@@ -41,22 +41,61 @@ Elegir un ejemplo concreto (el flujo del usuario final) y explicar quién hace q
 
 ---
 
-## Fase 2 — Recorrido funcional (esquema)
+## Fase 2 — Recorrido funcional (detalle)
 
-Mostrar el *happy path* del usuario final explicando mientras navegas:
-- **Formularios** (login/registro): validación **desacoplada** en el ViewModel (`Validaciones`, RUT módulo 11), mensajes e íconos por campo.
-- **Gestión de estado**: `mutableStateOf` / `StateFlow`; cómo la UI reacciona (pagar → comprobante → la lista se actualiza).
-- **Persistencia en vivo**: pagar un compromiso, cerrar y reabrir la app para mostrar que el cambio persiste en Room.
-- **Cumplimiento e historial** (indicador de % a tiempo).
+Cubre: formularios y validación · diseño visual y navegación · gestión de estado · persistencia en vivo (IE 2.1.1, 2.1.2, 2.2.2, 2.3.1). Narra mientras navegas.
 
-## Fase 3 — Recursos nativos y modificación en vivo (esquema)
+### 2.1 Formularios y validación (60–90 s)
+Mostrar el **registro** y provocar errores a propósito:
+> "Los formularios no validan en la propia pantalla: la pantalla solo dibuja. La validación vive en el **ViewModel** (`RegistroViewModel`) usando `utils/Validaciones`. Por ejemplo, el **RUT se valida por módulo 11** y el correo por formato; si está mal, el ViewModel expone el mensaje de error y el campo lo muestra con su ícono."
 
-- **Cámara**: en Perfil, "Tomar foto" → permiso → foto redondeada (explicar permiso `CAMERA` y `ActivityResult`).
-- **Notificaciones**: botón de campana en el inicio → permiso `POST_NOTIFICATIONS` → aviso de vencimiento.
-- **Modificación en vivo** (ensayar una sencilla y segura), por ejemplo:
-  - Agregar una validación nueva a un campo (longitud mínima del nombre en el registro).
-  - Cambiar el texto o color de un componente reutilizable.
-  - Agregar un `Text` con un dato extra en una tarjeta.
+Mostrar: escribir un RUT inválido → aparece "RUT no válido"; corregirlo → desaparece. Esto demuestra validación **desacoplada** y en vivo.
+
+### 2.2 Diseño visual y navegación (30–45 s)
+> "La navegación es un **NavHost** (`MainActivity`): login/registro como entrada y un home por rol. El tema (claro/oscuro) y los componentes reutilizables (`BotonPrincipal`, `CampoTexto`, `FilaCompromiso`) dan consistencia. Las transiciones entre pantallas están animadas."
+
+Mostrar: moverte entre Inicio → Detalle → Comprobante y volver; cambiar el tema en Configuración.
+
+### 2.3 Gestión de estado (30–45 s)
+> "El estado se maneja con `mutableStateOf` en los ViewModels y, para Room, con `Flow`/`StateFlow`. La UI es **reactiva**: cuando cambia el estado, Compose vuelve a dibujar solo lo necesario."
+
+Mostrar: pagar un compromiso → el total por pagar y la lista se actualizan solos.
+
+### 2.4 Persistencia en vivo (45–60 s) — clave (IE 2.3.1)
+> "La persistencia es **Room/SQLite**. Lo demuestro: pago este compromiso, se genera el comprobante… y ahora **cierro la app y la vuelvo a abrir**: el compromiso sigue pagado, porque se guardó en la base, no en memoria."
+
+Mostrar: pagar → cerrar app (no solo minimizar) → reabrir → el cambio persiste. (El indicador de **cumplimiento** en Historial refuerza este punto.)
+
+## Fase 3 — Recursos nativos y modificación en vivo (detalle)
+
+Cubre: recursos nativos y su presentación · incorporar/modificar en vivo (IE 2.2.1, 2.4.1, 2.4.2). Es la parte de mayor peso en la defensa.
+
+### 3.1 Recursos nativos (60–90 s)
+- **Cámara** (Perfil → "Tomar foto"):
+  > "Declaro el permiso `CAMERA` en el manifest y lo pido en runtime con `ActivityResultContracts`. Al conceder, abro la cámara con `TakePicturePreview`, guardo la foto en la sesión y la muestro **recortada en un círculo** en el avatar."
+- **Notificaciones** (Inicio → campana):
+  > "Declaro `POST_NOTIFICATIONS`, lo pido en runtime (obligatorio desde Android 13), creo un canal y muestro una notificación con el **próximo vencimiento y el total** (RF-11, el aviso de hábito)."
+
+Mostrar ambos en vivo y señalar cómo se gestionó el permiso y cómo se presenta el resultado en la UI.
+
+### 3.2 Modificación en vivo (lo que más vale)
+Ante la petición del profe, mantén la calma: edita, explica lo que haces y vuelve a correr. Ensaya **una** de estas (de más segura a más vistosa):
+
+**A) Agregar una validación a un campo (recomendada).** En `RegistroViewModel.crearCuenta()`, cambia la validación del nombre para exigir un mínimo de caracteres:
+```kotlin
+errorNombre = when {
+    nombre.isBlank() -> "Ingresa tu nombre"
+    nombre.trim().length < 3 -> "El nombre es muy corto"
+    else -> null
+}
+```
+Explica: "La regla vive en el ViewModel; la pantalla solo refleja el error." Corre, escribe "Ab" → aparece el mensaje. (Cubre IE 2.1.1 al máximo: modificar la validación en vivo.)
+
+**B) Cambiar un componente reutilizable.** En `ui/components/` ajusta el texto o un color de un botón/etiqueta y muestra que el cambio se propaga a todas las pantallas que lo usan (demuestra modularidad, IE 2.2.1).
+
+**C) Agregar un dato a una tarjeta.** En una pantalla, añade un `Text(...)` con un campo extra (por ejemplo el folio en una fila) para mostrar que sabes dónde tocar la UI.
+
+> Consejo: ten decidido de antemano **cuál** harás y **en qué archivo**, y practícala 2–3 veces hasta que salga sin dudar.
 
 ---
 

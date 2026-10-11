@@ -1,87 +1,88 @@
 # PagoFlex
 
-Aplicación Android para organizar y pagar las cuentas del hogar (luz, agua, gas, internet y más) en un solo lugar. Muestra cuánto falta por pagar, avisa qué cuentas están por vencer y guarda el historial de pagos.
+Punto de contacto móvil para una **fintech de recaudación y cobranza**. Las personas (usuarios finales) ven y pagan sus **compromisos de pago** (arriendos, créditos, cuotas, mensualidades) con las **empresas clientes** de PagoFlex, revisan su historial y su cumplimiento, reportan problemas y reciben avisos de vencimiento. La app es un punto de contacto adicional pensado para generar hábito de uso pese a la baja frecuencia (mensual).
 
-Proyecto desarrollado con **Kotlin** y **Jetpack Compose** para la asignatura de desarrollo de aplicaciones móviles.
+Caso **DSY1105 – Desarrollo de Aplicaciones Móviles** (Duoc UC). Prototipo funcional (MVP) del *happy path*, desarrollado en **Kotlin + Jetpack Compose** con arquitectura **MVVM** y persistencia local con **Room/SQLite**. Solo usa datos ficticios (Anexo 9).
 
-## Estado del proyecto
+## Roles (sesión simulada, sin login real)
 
-En desarrollo (segunda evaluación).
+No hay autenticación real: el rol se deduce del **dominio del correo** al iniciar sesión o registrarse (así nadie se asigna un rol que no le corresponde).
 
-- [x] Arquitectura MVVM por capas (`model`, `data`, `viewmodel`, `ui`, `utils`)
-- [x] Sistema de diseño: colores de marca, tema claro y oscuro, medidas y estilos reutilizables
-- [x] Componentes reutilizables: `BotonPrincipal`, `BotonSecundario`, `CampoTexto`, `CampoContrasena`
-- [x] Lógica de negocio en los ViewModels (login, pagos, configuración)
-- [x] Pruebas unitarias de la lógica
-- [ ] Pantalla de Login
-- [ ] Pantalla de Inicio
-- [ ] Pantalla de Detalle de pago
-- [ ] Pantalla de Historial
-- [ ] Pantalla de Configuración
-- [ ] Navegación entre pantallas
+| Rol | Correo de ejemplo | Qué hace |
+|---|---|---|
+| **Usuario final** | `crojas@correo.ejemplo` (o cualquier correo personal: gmail, hotmail, etc.) | Ve su situación del mes, paga, revisa historial y cumplimiento, reporta problemas, configura avisos, edita su perfil |
+| **Ejecutivo de empresa** | `chenriquez@creditoandino.ejemplo` | Ve la cobranza del mes, registra y anula compromisos de su empresa, filtra la lista |
+| **Agente PagoFlex** | `alagos@pagoflex.ejemplo` | Gestiona la bandeja de reportes de problema (tomar / resolver) |
+
+Contraseña: cualquiera de **6+ caracteres** (no se valida contra un backend). Un correo genérico (gmail, hotmail, duoc, etc.) entra siempre como **usuario final**.
 
 ## Funcionalidades
 
-| Pantalla | Qué permite |
-|---|---|
-| **Login** | Iniciar sesión con correo y contraseña, con validación y mensajes de error |
-| **Inicio** | Ver el total pendiente y las cuentas por pagar, la que vence antes primero |
-| **Detalle de pago** | Ver los datos de una cuenta y pagarla (queda registrada la fecha de pago) |
-| **Historial** | Ver todos los pagos y filtrarlos por estado: pendiente, pagado o vencido |
-| **Configuración** | Activar el modo oscuro, elegir con cuántos días de anticipación avisar (de 1 a 7) y cerrar sesión |
+**Usuario final**
+- Situación del mes: total por pagar, próximo vencimiento y vencidos.
+- Lista de compromisos y detalle; **pago simulado** con **comprobante** inmutable.
+- **Historial** de pagos con filtro e **indicador de cumplimiento** (% de pagos a tiempo).
+- **Reportar un problema** sobre un compromiso.
+- **Perfil**: datos de cuenta (rol, nombre, RUT, correo) en solo lectura, más correo secundario y teléfono editables, y **foto de perfil con la cámara**.
+- **Configuración**: tema claro/oscuro y días de anticipación de los avisos.
 
-### Reglas de la aplicación
+**Ejecutivo** — tasa de cobranza del mes, registrar/anular compromisos, filtro (Todos/Vigentes/Anulados), perfil y configuración.
 
-- Un pago puede estar `PENDIENTE`, `PAGADO` o `VENCIDO`.
-- Un pago ya pagado no se puede pagar de nuevo.
-- Los montos se muestran en pesos chilenos, por ejemplo `$25.990`.
-- "Por vencer" son los pagos pendientes que vencen hoy o dentro de los próximos días de aviso configurados.
-- El correo debe tener formato válido y la contraseña al menos 6 caracteres.
+**Agente** — bandeja de reportes con estados (Abierto → En gestión → Resuelto), perfil y configuración.
+
+### Recursos nativos
+- **Cámara** — foto de perfil (permiso `CAMERA`, `ActivityResult`).
+- **Notificaciones locales** — aviso de vencimiento (permiso `POST_NOTIFICATIONS`).
+
+### Reglas de negocio (extracto)
+- Estados del compromiso: Pendiente, Vencido, Pagado, En revisión, Anulado.
+- Un compromiso en revisión o anulado no se puede pagar; uno pagado no se vuelve a pagar.
+- Montos enteros en pesos chilenos (`$86.400`), fechas `DD-MM-AAAA`, **RUT validado por módulo 11**.
+- El rol se deriva del dominio del correo.
 
 ## Tecnologías
 
-- Kotlin 2.2.10 y Jetpack Compose (BOM 2026.02.01) con Material 3
-- ViewModel y estado con `mutableStateOf`
-- Android Gradle Plugin 9.4.1
-- minSdk 24 (Android 7.0), targetSdk 37
+- **Kotlin 2.2.10** y **Jetpack Compose** (BOM 2026.02.01) con Material 3.
+- Arquitectura **MVVM**; estado con `mutableStateOf`, ViewModels y `StateFlow`/`Flow`.
+- **Room/SQLite** (con KSP) para la persistencia local; datos semilla del Anexo 9.
+- **Navigation Compose** para la navegación entre pantallas y roles.
+- **Coroutines/Flow** para leer y escribir en la base de datos.
+- Android Gradle Plugin 9.4.1 · minSdk 24 (Android 7.0) · targetSdk 37 · probado en emulador Android 15 (API 35).
 
 ## Arquitectura
 
-Patrón **MVVM**: las pantallas solo muestran el estado y avisan de las acciones del usuario; la lógica vive en los ViewModels y los datos en los repositorios.
+Patrón **MVVM** por capas: las pantallas (`ui`) solo muestran estado y emiten acciones; la lógica vive en los `viewmodel`; los datos se persisten con Room en `data/local`.
 
 ```
 app/src/main/java/com/example/pagoflex/
-├── MainActivity.kt
-├── model/          Pago, Usuario, EstadoPago, CategoriaPago
-├── data/           PagoRepository, UsuarioRepository (datos de ejemplo en memoria)
-├── viewmodel/      LoginViewModel, PagosViewModel, ConfiguracionViewModel
+├── MainActivity.kt          NavHost y wiring de la app
+├── model/                   enums y modelos de dominio (Compromiso, Rol, EstadoReporte, ...)
+├── data/
+│   ├── DerivadorDeRol.kt    deduce el rol según el dominio del correo
+│   └── local/               Room: PagoFlexDatabase, DAOs, entidades, DatosSemilla
+├── viewmodel/               Compromisos, Ejecutivo, Agente, Login, Registro, Sesion, Configuracion
 ├── ui/
-│   ├── screens/    Login, Inicio, DetallePago, Historial, Configuracion
-│   ├── components/ BotonPrincipal, BotonSecundario, CampoTexto, CampoContrasena
-│   ├── styles/     EstilosBoton, EstilosCampo, EstilosTarjeta
-│   ├── theme/      Color, Dimens, Theme, Type
-│   └── navigation/ Rutas
-└── utils/          FormatoMoneda, FormatoFecha, Validaciones
+│   ├── screens/             Login, Registro, Inicio, Detalle, Comprobante, Historial,
+│   │                        Configuracion, Perfil, ReportarProblema, HomeEjecutivo, HomeAgente
+│   ├── components/          BotonPrincipal/Secundario, CampoTexto/Contrasena, FilaCompromiso, ...
+│   ├── styles/              EstilosBoton, EstilosCampo, EstilosTarjeta
+│   ├── theme/               Color, Dimens, Theme, Type
+│   └── navigation/          Rutas
+└── utils/                   FormatoMoneda, Validaciones, Notificaciones
 ```
 
 ## Cómo ejecutarla
 
-1. Abre el proyecto con una versión reciente de **Android Studio** (con el SDK 37 instalado).
+1. Abre el proyecto con una versión reciente de **Android Studio** (con el SDK de Android instalado).
 2. Espera a que termine la sincronización de Gradle.
-3. Elige un emulador o un celular con Android 7.0 o superior y presiona **Run**.
+3. Elige un emulador o celular con **Android 7.0 (API 24) o superior** y presiona **Run**.
+4. En el login usa uno de los correos de ejemplo de la tabla de arriba y cualquier contraseña de 6+ caracteres, o crea una cuenta nueva (entrarás como usuario final).
 
-Datos de prueba para iniciar sesión:
-
-- Correo: `<completar>`
-- Contraseña: `<completar>`
-
-Los pagos son datos de ejemplo guardados en memoria: al cerrar la app vuelven a su estado inicial.
+Los datos vienen de la semilla del Anexo 9 y se guardan en Room: los cambios (pagos, reportes, compromisos) **persisten** al cerrar y abrir la app.
 
 ## Pruebas
 
-Pendiente: pruebas unitarias de la lógica de los ViewModels, los repositorios y las fechas. Por ahora el proyecto solo incluye el test de ejemplo de la plantilla de Android Studio.
-
-Para ejecutar las pruebas unitarias:
+Pruebas unitarias de la lógica (validación de RUT por módulo 11 y asignación de rol por correo):
 
 ```bash
 ./gradlew testDebugUnitTest
@@ -89,4 +90,4 @@ Para ejecutar las pruebas unitarias:
 
 ## Autor
 
-<nombre y carrera>
+**<Tu nombre completo>** — <Carrera>, Duoc UC

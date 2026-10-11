@@ -71,9 +71,20 @@ RF-17/18/19/20 ejecutivo registra/anula compromisos y ve su cobranza.
 ## 6. Estado de avance
 
 - [x] Persistencia local con Room + datos semilla (Anexo 9)
-- [ ] Sesión simulada / selector de rol
-- [ ] NavHost y pantallas del usuario final
-- [ ] Pago simulado + comprobante
-- [ ] Avisos de vencimiento (RF-11) + notificación local
-- [ ] Roles internos (agente / ejecutivo)
+- [x] Room conectado al flujo del usuario final: lee con Flow y escribe (pagar, reportar) → persiste al cerrar/abrir. Ejecutivo aún en memoria (siguiente paso)
+- [x] Sesión simulada / selector de rol (RF-01) — usuario fijo por rol para pruebas
+- [x] NavHost (navigation-compose) con un home por rol
+- [x] Pago simulado + comprobante (RF-05/06)
+- [x] Historial con indicador de cumplimiento (RF-07/08)
+- [x] Reportar problema como formulario validado (RF-09) → pasa a En revisión
+- [x] Pantallas del usuario final: Inicio, Detalle, Historial, Reportar y Configuración
+- [x] Configuración: modo claro/oscuro/sistema (persistente) + ajustes de avisos (RF-11)
+- [x] Ejecutivo conectado a Room: registrar y anular persisten
+- [ ] Avisos de vencimiento (RF-11): falta la notificación local que los dispara
+- [~] Roles internos: ejecutivo con registrar (formulario validado) / anular / cobranza del mes (RF-17/18/20); agente aún placeholder
 - [ ] Segundo recurso nativo (cámara/galería)
+
+> Nota de diseño: el selector de rol es la sesión simulada (sin contraseña). Hoy
+> deja elegir el rol con un usuario fijo de la semilla, útil para probar. En la
+> versión final el rol se declara según el cargo de quien inicia sesión, sin
+> permitir elegir la cuenta de otra persona ni ver sus datos.

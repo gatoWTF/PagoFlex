@@ -1,6 +1,8 @@
 package com.example.pagoflex.data
 
+import com.example.pagoflex.model.Comprobante
 import com.example.pagoflex.model.Compromiso
+import com.example.pagoflex.model.CompromisoEmpresa
 import com.example.pagoflex.model.EstadoCompromiso
 
 // Datos de ejemplo en memoria para construir y probar las pantallas.
@@ -13,5 +15,22 @@ object MemoriaDatos {
         Compromiso("CP-2026-0103", "Manos Abiertas", "ONG", "Aporte mensual octubre", null, 10000, "15-10-2026", EstadoCompromiso.PENDIENTE),
         Compromiso("CP-2026-0104", "Crédito Andino", "Crédito de consumo", "Crédito de consumo", "7/24", 86400, "25-09-2026", EstadoCompromiso.PAGADO),
         Compromiso("CP-2026-0105", "Crédito Andino", "Crédito de consumo", "Crédito de consumo", "8/24", 86400, "25-10-2026", EstadoCompromiso.PENDIENTE)
+    )
+
+    // Pagos anteriores de Camila para el historial (RF-07). Mezcla de a tiempo y atrasados
+    // para que el indicador de cumplimiento tenga datos (RF-08).
+    val historialDeEjemplo = listOf(
+        Comprobante("CPR-000451", "CP-2026-0104", "Crédito de consumo", "Crédito Andino", 86400, "24-09-2026 10:42", aTiempo = true),
+        Comprobante("CPR-000405", "CP-2026-0091", "Aporte mensual septiembre", "Manos Abiertas", 10000, "15-09-2026 08:22", aTiempo = true),
+        Comprobante("CPR-000402", "CP-2026-0090", "Cuota social septiembre", "Club Los Halcones", 17000, "07-09-2026 18:40", aTiempo = false),
+        Comprobante("CPR-000398", "CP-2026-0089", "Arriendo departamento septiembre", "Plaza Oriente", 520000, "09-09-2026 13:05", aTiempo = true)
+    )
+
+    // Compromisos de la empresa del ejecutivo de demo: Crédito Andino (EC-03), del Anexo 9.
+    val compromisosEmpresaDeEjemplo = listOf(
+        CompromisoEmpresa("CP-2026-0104", "Camila Rojas", "15.834.207-3", "Crédito de consumo 7/24", 86400, "25-09-2026", EstadoCompromiso.PAGADO),
+        CompromisoEmpresa("CP-2026-0105", "Camila Rojas", "15.834.207-3", "Crédito de consumo 8/24", 86400, "25-10-2026", EstadoCompromiso.PENDIENTE),
+        CompromisoEmpresa("CP-2026-0111", "Héctor Pizarro", "10.318.265-4", "Crédito de consumo 19/36", 54200, "20-09-2026", EstadoCompromiso.ANULADO),
+        CompromisoEmpresa("CP-2026-0120", "Luis Muñoz", "12.476.318-5", "Crédito de consumo 3/12", 120000, "28-09-2026", EstadoCompromiso.VENCIDO)
     )
 }

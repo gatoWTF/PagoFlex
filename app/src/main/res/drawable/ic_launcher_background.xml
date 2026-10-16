@@ -4,8 +4,8 @@
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <!-- Fondo liso morado: el celular lo recorta con su propia forma -->
+    <!-- Fondo liso verde de la marca: el celular lo recorta con su propia forma -->
     <path
-        android:fillColor="#534AB7"
+        android:fillColor="#0F9D7E"
         android:pathData="M0,0h108v108h-108z" />
 </vector>

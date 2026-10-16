@@ -23,7 +23,31 @@ private val DarkColorScheme = darkColorScheme(
     background = FondoOscuro,
     onBackground = TextoClaro,
     surface = SuperficieOscura,
-    onSurface = TextoClaro
+    onSurface = TextoClaro,
+    // Variantes y bordes en verde-grisaceo (evitan los morados por defecto de Material).
+    surfaceVariant = SuperficieVarianteOscura,
+    onSurfaceVariant = TextoVarianteOscuro,
+    outline = BordeOscuro,
+    outlineVariant = BordeVarianteOscuro,
+    inverseSurface = ExitoFondo,
+    inverseOnSurface = SuperficieOscura,
+    // Contenedores de estado: misma paleta que las pildoras de pago, igual en ambos temas.
+    error = VencidoTextoOscuro,
+    onError = VencidoSobreOscuro,
+    errorContainer = VencidoFondo,
+    onErrorContainer = Vencido,
+    secondaryContainer = ExitoFondo,
+    onSecondaryContainer = Exito,
+    tertiaryContainer = PendienteFondo,
+    onTertiaryContainer = Pendiente,
+    // Contenedores de superficie (default de las Card) en verde-gris.
+    surfaceDim = SuperficieTenueOscura,
+    surfaceBright = SuperficieBrillanteOscura,
+    surfaceContainerLowest = ContenedorBajoMinimoOscuro,
+    surfaceContainerLow = ContenedorBajoOscuro,
+    surfaceContainer = ContenedorOscuro,
+    surfaceContainerHigh = ContenedorAltoOscuro,
+    surfaceContainerHighest = ContenedorAltoMaximoOscuro
 )
 
 private val LightColorScheme = lightColorScheme(
@@ -38,7 +62,31 @@ private val LightColorScheme = lightColorScheme(
     background = FondoClaro,
     onBackground = TextoOscuro,
     surface = SuperficieClara,
-    onSurface = TextoOscuro
+    onSurface = TextoOscuro,
+    // Variantes y bordes en verde-grisaceo (evitan los morados por defecto de Material).
+    surfaceVariant = SuperficieVarianteClara,
+    onSurfaceVariant = TextoVarianteClaro,
+    outline = BordeClaro,
+    outlineVariant = BordeVarianteClaro,
+    inverseSurface = SuperficieOscura,
+    inverseOnSurface = TextoClaro,
+    // Contenedores de estado: misma paleta que las pildoras de pago, igual en ambos temas.
+    error = Vencido,
+    onError = Blanco,
+    errorContainer = VencidoFondo,
+    onErrorContainer = Vencido,
+    secondaryContainer = ExitoFondo,
+    onSecondaryContainer = Exito,
+    tertiaryContainer = PendienteFondo,
+    onTertiaryContainer = Pendiente,
+    // Contenedores de superficie (default de las Card) en verde-gris.
+    surfaceDim = SuperficieTenueClara,
+    surfaceBright = SuperficieBrillanteClara,
+    surfaceContainerLowest = ContenedorBajoMinimoClaro,
+    surfaceContainerLow = ContenedorBajoClaro,
+    surfaceContainer = ContenedorClaro,
+    surfaceContainerHigh = ContenedorAltoClaro,
+    surfaceContainerHighest = ContenedorAltoMaximoClaro
 )
 
 @Composable

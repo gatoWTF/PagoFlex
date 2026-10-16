@@ -33,7 +33,7 @@ class SesionViewModel : ViewModel() {
     var telefono by mutableStateOf("")
         private set
 
-    // Foto de perfil tomada con la camara (recurso nativo). En memoria de sesion.
+    // Foto de perfil desde un recurso nativo (camara o galeria). En memoria de sesion.
     var fotoPerfil by mutableStateOf<Bitmap?>(null)
         private set
 
@@ -74,7 +74,7 @@ class SesionViewModel : ViewModel() {
         limpiarErrores()
     }
 
-    // Guarda la foto tomada con la camara y avisa en pantalla.
+    // Guarda la foto elegida (camara o galeria) y avisa en pantalla.
     fun cambiarFoto(bitmap: Bitmap) {
         fotoPerfil = bitmap
         mensaje = "Foto de perfil actualizada"

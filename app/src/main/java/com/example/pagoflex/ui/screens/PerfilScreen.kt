@@ -1,8 +1,15 @@
 package com.example.pagoflex.ui.screens
 
 import android.Manifest
+import android.content.Context
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.graphics.ImageDecoder
+import android.net.Uri
+import android.os.Build
+import android.provider.MediaStore
 import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -85,6 +92,18 @@ fun PerfilScreen(
         if (bitmap != null) sesion.cambiarFoto(bitmap)
     }
 
+    // Abre el selector de fotos nativo (Android Photo Picker). No pide permisos:
+    // la persona elige una sola imagen y el sistema nos entrega su Uri.
+    val galeriaLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.PickVisualMedia()
+    ) { uri ->
+        if (uri != null) {
+            val bitmap = cargarBitmap(context, uri)
+            if (bitmap != null) sesion.cambiarFoto(bitmap)
+            else scope.launch { snackbarHostState.showSnackbar("No se pudo abrir la imagen") }
+        }
+    }
+
     // Solicita el permiso de camara; si la persona lo concede, abre la camara.
     val permisoLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -135,7 +154,7 @@ fun PerfilScreen(
                 .padding(Dimens.espacioPantalla),
             verticalArrangement = Arrangement.spacedBy(Dimens.espacioMedio)
         ) {
-            // --- Foto de perfil (recurso nativo: camara) ---
+            // --- Foto de perfil (recursos nativos: camara o galeria) ---
             Box(
                 modifier = Modifier.fillMaxWidth(),
                 contentAlignment = Alignment.Center
@@ -169,6 +188,15 @@ fun PerfilScreen(
             BotonSecundario(
                 texto = "Tomar foto",
                 onClick = { tomarFoto() },
+                modifier = Modifier.fillMaxWidth()
+            )
+            BotonSecundario(
+                texto = "Elegir de galería",
+                onClick = {
+                    galeriaLauncher.launch(
+                        PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                    )
+                },
                 modifier = Modifier.fillMaxWidth()
             )
 
@@ -240,6 +268,23 @@ fun PerfilScreen(
             )
         }
     }
+}
+
+// Decodifica la imagen que eligio la persona (Uri -> Bitmap). Se pide un bitmap
+// mutable/por software para que el Image de Compose (asImageBitmap) pueda pintarlo.
+// Devuelve null si la imagen no se puede leer, para avisar sin que la app caiga.
+private fun cargarBitmap(context: Context, uri: Uri): Bitmap? = try {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+        val fuente = ImageDecoder.createSource(context.contentResolver, uri)
+        ImageDecoder.decodeBitmap(fuente) { decoder, _, _ ->
+            decoder.allocator = ImageDecoder.ALLOCATOR_SOFTWARE
+        }
+    } else {
+        @Suppress("DEPRECATION")
+        MediaStore.Images.Media.getBitmap(context.contentResolver, uri)
+    }
+} catch (e: Exception) {
+    null
 }
 
 // Fila de un dato en solo lectura: etiqueta pequeña arriba, valor abajo.

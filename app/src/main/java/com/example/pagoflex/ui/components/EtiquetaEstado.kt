@@ -51,7 +51,7 @@ fun EtiquetaEstado(estado: EstadoCompromiso, modifier: Modifier = Modifier) {
             colorTexto = Pendiente; colorFondo = PendienteFondo; icono = R.drawable.ic_pendiente
         }
         EstadoCompromiso.ANULADO -> {
-            colorTexto = GrisDeshabilitado; colorFondo = Color(0xFFEDECF2); icono = R.drawable.ic_otro
+            colorTexto = GrisDeshabilitado; colorFondo = Color(0xFFECEFEE); icono = R.drawable.ic_otro
         }
     }
 

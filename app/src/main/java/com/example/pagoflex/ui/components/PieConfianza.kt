@@ -19,10 +19,6 @@ import com.example.pagoflex.R
 import com.example.pagoflex.ui.theme.Dimens
 import com.example.pagoflex.ui.theme.PagoFlexTheme
 
-/**
- * Pie de confianza: candado + "Canal oficial de PagoFlex". Refuerza que la
- * persona esta en un canal legitimo y que no se piden datos de mas (RNF-05).
- */
 @Composable
 fun PieConfianza(
     texto: String,

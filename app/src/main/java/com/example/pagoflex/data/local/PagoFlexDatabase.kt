@@ -52,7 +52,6 @@ abstract class PagoFlexDatabase : RoomDatabase() {
         @Volatile
         private var instancia: PagoFlexDatabase? = null
 
-        // Una sola instancia para toda la app (patron singleton).
         fun obtener(context: Context): PagoFlexDatabase =
             instancia ?: synchronized(this) {
                 instancia ?: construir(context).also { instancia = it }
@@ -65,13 +64,11 @@ abstract class PagoFlexDatabase : RoomDatabase() {
                 "pagoflex.db"
             )
                 .addCallback(SemillaCallback(context.applicationContext))
-                // Si cambia el esquema (nueva columna/tabla) y subimos la version,
-                // recrea la base en vez de crashear. Util para modificar en la defensa.
+
                 .fallbackToDestructiveMigration(dropAllTables = true)
                 .build()
     }
 
-    // Carga los datos del Anexo 9 la primera vez que se crea la base.
     private class SemillaCallback(private val context: Context) : RoomDatabase.Callback() {
         override fun onCreate(db: SupportSQLiteDatabase) {
             super.onCreate(db)

@@ -19,8 +19,6 @@ import androidx.compose.ui.unit.dp
 import com.example.pagoflex.ui.theme.Dimens
 import com.example.pagoflex.ui.theme.Exito
 
-// Snackbar con el estilo de PagoFlex: pildora redondeada con un punto de color,
-// en vez de la barra negra plana por defecto de Material.
 @Composable
 fun SnackbarPagoFlex(data: SnackbarData) {
     Snackbar(

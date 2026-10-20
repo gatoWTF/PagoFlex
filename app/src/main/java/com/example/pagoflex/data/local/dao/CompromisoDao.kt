@@ -19,19 +19,15 @@ interface CompromisoDao {
     @Update
     suspend fun actualizar(item: CompromisoEntity)
 
-    // Todos los compromisos de una persona (RF-03)
     @Query("SELECT * FROM compromiso WHERE usuarioCodigo = :usuarioCodigo ORDER BY fechaVencimiento")
     fun observarPorUsuario(usuarioCodigo: String): Flow<List<CompromisoEntity>>
 
-    // Igual que el anterior pero de una sola lectura (sin Flow), para cargar al inicio.
     @Query("SELECT * FROM compromiso WHERE usuarioCodigo = :usuarioCodigo ORDER BY fechaVencimiento")
     suspend fun listarPorUsuario(usuarioCodigo: String): List<CompromisoEntity>
 
-    // Lo que falta pagar de una persona: pendientes y vencidos (RF-02)
     @Query("SELECT * FROM compromiso WHERE usuarioCodigo = :usuarioCodigo AND estado IN ('PENDIENTE','VENCIDO') ORDER BY fechaVencimiento")
     fun observarPorPagar(usuarioCodigo: String): Flow<List<CompromisoEntity>>
 
-    // Compromisos de una empresa, para el ejecutivo (RF-17)
     @Query("SELECT * FROM compromiso WHERE empresaCodigo = :empresaCodigo ORDER BY fechaVencimiento")
     fun observarPorEmpresa(empresaCodigo: String): Flow<List<CompromisoEntity>>
 

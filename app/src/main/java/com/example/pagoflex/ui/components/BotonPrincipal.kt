@@ -25,28 +25,23 @@ import com.example.pagoflex.ui.styles.estiloAltoBoton
 import com.example.pagoflex.ui.theme.Dimens
 import com.example.pagoflex.ui.theme.PagoFlexTheme
 
-/**
- * Boton de accion principal (relleno, con sombra y icono opcional).
- * No conoce el ViewModel: recibe el texto y avisa con onClick.
- * @param icono recurso R.drawable.xxx, o null si no lleva icono.
- */
 @Composable
 fun BotonPrincipal(
     texto: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     habilitado: Boolean = true,
-    cargando: Boolean = false,                          // muestra un spinner y se deshabilita
+    cargando: Boolean = false,
     @DrawableRes icono: Int? = null
 ) {
     Button(
         onClick = onClick,
-        modifier = modifier.estiloAltoBoton(),          // height: 52dp
-        enabled = habilitado && !cargando,              // mientras carga no se puede volver a tocar
-        shape = EstilosBoton.forma,                     // border-radius
-        colors = EstilosBoton.coloresPrincipal(),       // background / color
-        elevation = EstilosBoton.elevacion(),           // box-shadow
-        contentPadding = EstilosBoton.relleno           // padding
+        modifier = modifier.estiloAltoBoton(),
+        enabled = habilitado && !cargando,
+        shape = EstilosBoton.forma,
+        colors = EstilosBoton.coloresPrincipal(),
+        elevation = EstilosBoton.elevacion(),
+        contentPadding = EstilosBoton.relleno
     ) {
         if (cargando) {
             CircularProgressIndicator(
@@ -58,7 +53,7 @@ fun BotonPrincipal(
         } else if (icono != null) {
             Icon(
                 painter = painterResource(id = icono),
-                contentDescription = null,              // decorativo: el texto ya lo describe
+                contentDescription = null,
                 modifier = Modifier.size(ButtonDefaults.IconSize)
             )
             Spacer(Modifier.size(ButtonDefaults.IconSpacing))

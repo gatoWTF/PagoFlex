@@ -14,7 +14,6 @@ class PagoRepository {
         Pago(6, "Gas agosto", "Metrogas", CategoriaPago.GAS, 18000, "20/08/2026", EstadoPago.VENCIDO)
     )
 
-    // toList() entrega una copia, asi la pantalla detecta que la lista cambio
     fun obtenerPagos(): List<Pago> = pagos.toList()
 
     fun obtenerPorId(id: Int): Pago? = pagos.find { it.id == id }
@@ -22,7 +21,7 @@ class PagoRepository {
     fun marcarComoPagado(id: Int) {
         val indice = pagos.indexOfFirst { it.id == id }
         if (indice != -1) {
-            // copy() crea un Pago igual pero con el estado cambiado
+
             pagos[indice] = pagos[indice].copy(estado = EstadoPago.PAGADO)
         }
     }

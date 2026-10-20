@@ -23,10 +23,6 @@ import com.example.pagoflex.ui.theme.PagoFlexTheme
 import com.example.pagoflex.ui.theme.Pendiente
 import com.example.pagoflex.ui.theme.PendienteFondo
 
-/**
- * Nota informativa de fondo ambar: un aviso breve y de tono positivo (RNF-04).
- * Reutilizable; en el registro explica que el rol se asigna segun el correo.
- */
 @Composable
 fun NotaInfo(
     texto: String,

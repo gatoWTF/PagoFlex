@@ -5,7 +5,6 @@ import com.example.pagoflex.model.RolUsuario
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
-// Pruebas de la asignacion de rol segun el dominio del correo (RF-01).
 class DerivadorDeRolTest {
 
     @Test

@@ -49,7 +49,6 @@ import com.example.pagoflex.utils.Notificaciones
 import com.example.pagoflex.viewmodel.CompromisosViewModel
 import kotlinx.coroutines.launch
 
-// Pantalla de inicio del usuario final: su situacion del mes y la lista de compromisos (RF-02, RF-03).
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun InicioScreen(
@@ -61,7 +60,7 @@ fun InicioScreen(
     alCerrarSesion: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    // Animacion 4: Snackbar para mensajes puntuales (ej. "Reporte enviado").
+
     val snackbarHostState = remember { SnackbarHostState() }
     LaunchedEffect(viewModel.mensaje) {
         val texto = viewModel.mensaje
@@ -71,7 +70,6 @@ fun InicioScreen(
         }
     }
 
-    // --- Notificaciones locales: aviso de vencimiento (RF-11, recurso nativo) ---
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     LaunchedEffect(Unit) { Notificaciones.crearCanal(context) }
@@ -91,7 +89,6 @@ fun InicioScreen(
         else scope.launch { snackbarHostState.showSnackbar("Permiso de notificaciones denegado") }
     }
 
-    // Desde Android 13 hay que pedir el permiso; antes no hace falta.
     fun avisarVencimiento() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             val concedido = ContextCompat.checkSelfPermission(
@@ -178,14 +175,13 @@ fun InicioScreen(
                 FilaCompromiso(
                     compromiso = compromiso,
                     onClick = { alAbrirDetalle(compromiso.folio) },
-                    modifier = Modifier.animateItem() // Animacion 2: aparicion/reordenamiento
+                    modifier = Modifier.animateItem()
                 )
             }
         }
     }
 }
 
-// Tarjeta superior con el total por pagar, el proximo vencimiento y los vencidos (RF-02).
 @Composable
 private fun ResumenSituacion(
     total: Int,

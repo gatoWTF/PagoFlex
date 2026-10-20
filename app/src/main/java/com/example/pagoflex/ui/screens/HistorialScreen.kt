@@ -48,7 +48,6 @@ import com.example.pagoflex.ui.theme.VencidoFondo
 import com.example.pagoflex.utils.FormatoMoneda
 import com.example.pagoflex.viewmodel.CompromisosViewModel
 
-// Historial de pagos (RF-07) con el indicador de cumplimiento (RF-08).
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HistorialScreen(
@@ -106,10 +105,9 @@ fun HistorialScreen(
     }
 }
 
-// Indicador de cumplimiento: porcentaje de pagos a tiempo (RF-08, RN-10).
 @Composable
 private fun TarjetaCumplimiento(porcentaje: Int, aTiempo: Int, total: Int) {
-    // Animacion 6: el porcentaje sube de 0 al valor al entrar a la pantalla.
+
     var objetivo by remember { mutableStateOf(0) }
     LaunchedEffect(porcentaje) { objetivo = porcentaje }
     val porcentajeAnimado by animateIntAsState(
@@ -136,7 +134,6 @@ private fun TarjetaCumplimiento(porcentaje: Int, aTiempo: Int, total: Int) {
     }
 }
 
-// Fila de un pago del historial.
 @Composable
 private fun FilaComprobante(comprobante: Comprobante, modifier: Modifier = Modifier) {
     Card(
@@ -176,7 +173,6 @@ private fun FilaComprobante(comprobante: Comprobante, modifier: Modifier = Modif
     }
 }
 
-// Pildora que indica si el pago fue a tiempo o atrasado.
 @Composable
 private fun PildoraCumplimiento(aTiempo: Boolean) {
     val texto = if (aTiempo) "A tiempo" else "Atrasado"

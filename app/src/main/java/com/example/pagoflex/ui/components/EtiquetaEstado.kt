@@ -31,7 +31,6 @@ import com.example.pagoflex.ui.theme.PendienteFondo
 import com.example.pagoflex.ui.theme.Vencido
 import com.example.pagoflex.ui.theme.VencidoFondo
 
-// Pildora de color con el estado del compromiso. Reutiliza los colores de estado del tema.
 @Composable
 fun EtiquetaEstado(estado: EstadoCompromiso, modifier: Modifier = Modifier) {
     val colorTexto: Color

@@ -31,11 +31,6 @@ import com.example.pagoflex.ui.components.PieConfianza
 import com.example.pagoflex.ui.theme.Dimens
 import com.example.pagoflex.ui.theme.PagoFlexTheme
 
-/**
- * Pantalla de registro (RF-01, sesion simulada). Pide nombre, RUT, correo,
- * contrasena y su confirmacion. El rol no se elige: se deduce del correo, por
- * eso la nota ambar lo explica. Es "sin estado": la logica va en el ViewModel.
- */
 @Composable
 fun RegistroScreen(
     nombre: String,

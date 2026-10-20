@@ -6,7 +6,6 @@ import com.example.pagoflex.model.CanalPago
 import com.example.pagoflex.model.EstadoCompromiso
 import com.example.pagoflex.model.EstadoReporte
 
-// Room no sabe guardar enums por si solo; aqui los convertimos a texto y de vuelta.
 class Converters {
     @TypeConverter
     fun estadoCompromisoATexto(valor: EstadoCompromiso): String = valor.name

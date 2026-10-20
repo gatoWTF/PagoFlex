@@ -8,8 +8,6 @@ import com.example.pagoflex.data.DerivadorDeRol
 import com.example.pagoflex.model.RolUsuario
 import com.example.pagoflex.utils.Validaciones
 
-// Login de la sesion simulada (RF-01): valida el formato y deduce el rol del
-// dominio del correo, en vez de dejar elegir el rol a mano. No hay clave real.
 class LoginViewModel : ViewModel() {
 
     var correo by mutableStateOf("")
@@ -23,7 +21,6 @@ class LoginViewModel : ViewModel() {
     var errorContrasena by mutableStateOf<String?>(null)
         private set
 
-    // Cuando deja de ser null, la pantalla navega al home de ese rol.
     var rol by mutableStateOf<RolUsuario?>(null)
         private set
 
@@ -41,6 +38,5 @@ class LoginViewModel : ViewModel() {
         rol = DerivadorDeRol.rolPorCorreo(correoLimpio)
     }
 
-    // La pantalla la llama tras navegar, para no repetir la navegacion.
     fun consumirRol() { rol = null }
 }

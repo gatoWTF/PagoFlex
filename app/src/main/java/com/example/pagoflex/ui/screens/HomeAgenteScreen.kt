@@ -39,8 +39,6 @@ import com.example.pagoflex.ui.theme.Dimens
 import com.example.pagoflex.viewmodel.AgenteViewModel
 import com.example.pagoflex.viewmodel.ReporteGestion
 
-// Home del agente PagoFlex (R-02): bandeja de reportes de problema para tomarlos
-// y resolverlos (RF-14, RF-15).
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeAgenteScreen(

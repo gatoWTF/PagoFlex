@@ -30,7 +30,6 @@ import com.example.pagoflex.ui.theme.Dimens
 import com.example.pagoflex.ui.theme.PagoFlexTheme
 import com.example.pagoflex.utils.FormatoMoneda
 
-// Fila que muestra un compromiso en la lista. Al tocarla abre el detalle.
 @Composable
 fun FilaCompromiso(
     compromiso: Compromiso,

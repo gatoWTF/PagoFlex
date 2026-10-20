@@ -3,7 +3,6 @@ package com.example.pagoflex.utils
 object Validaciones {
     const val LARGO_MINIMO_CONTRASENA = 6
 
-    // texto@dominio.ext (solo Kotlin, sin depender de Android)
     private val patronCorreo =
         Regex("""^[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}$""")
 
@@ -12,20 +11,17 @@ object Validaciones {
     fun contrasenaValida(contrasena: String): Boolean =
         contrasena.length >= LARGO_MINIMO_CONTRASENA
 
-    // Telefono: digitos, espacios, + y guiones; entre 8 y 15 digitos reales.
     fun telefonoValido(texto: String): Boolean {
         val limpio = texto.trim()
         if (!Regex("""^[0-9+\s-]+$""").matches(limpio)) return false
         return limpio.count { it.isDigit() } in 8..15
     }
 
-    // Monto en pesos: entero positivo, sin decimales ni separadores (RN-17).
     fun montoValido(texto: String): Boolean {
         val numero = texto.trim().toIntOrNull() ?: return false
         return numero > 0
     }
 
-    // Fecha en formato DD-MM-AAAA con dia y mes plausibles (RN-17).
     fun fechaValida(texto: String): Boolean {
         val coincidencia = Regex("""^(\d{2})-(\d{2})-(\d{4})$""").matchEntire(texto.trim())
             ?: return false
@@ -41,8 +37,6 @@ object Validaciones {
     private fun esBisiesto(anio: Int): Boolean =
         (anio % 4 == 0 && anio % 100 != 0) || (anio % 400 == 0)
 
-    // Valida el digito verificador de un RUT chileno con el modulo 11 (RN-18).
-    // Acepta formato con o sin puntos y guion: "15.834.207-3" o "158342073".
     fun rutValido(rut: String): Boolean {
         val limpio = rut.trim().uppercase().replace(".", "").replace("-", "")
         if (limpio.length < 2) return false
@@ -51,7 +45,6 @@ object Validaciones {
         val digitoVerificador = limpio.last()
         if (cuerpo.isEmpty() || !cuerpo.all { it.isDigit() }) return false
 
-        // Se multiplica cada digito, de derecha a izquierda, por 2,3,4,5,6,7 y se repite.
         var suma = 0
         var multiplo = 2
         for (caracter in cuerpo.reversed()) {

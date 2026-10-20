@@ -22,37 +22,29 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-// Estado y logica de los compromisos del usuario final. Lee de Room con Flow
-// (cuando la base cambia, la UI se actualiza sola) y escribe los cambios, por eso
-// los datos persisten al cerrar y abrir la app.
 class CompromisosViewModel(app: Application) : AndroidViewModel(app) {
 
     private val db = PagoFlexDatabase.obtener(app)
 
-    // Usuario fijo de la sesion simulada (coincide con el selector de rol).
     private val usuarioCodigo = "UF-01"
 
     var compromisos by mutableStateOf<List<Compromiso>>(emptyList())
         private set
 
-    // Historial de pagos (RF-07).
     var comprobantes by mutableStateOf<List<Comprobante>>(emptyList())
         private set
 
-    // Mensaje puntual para mostrar en una Snackbar; la pantalla lo consume y lo limpia.
     var mensaje by mutableStateOf<String?>(null)
         private set
 
-    // Codigo -> empresa, para mostrar nombre y rubro legibles.
     private var empresas: Map<String, EmpresaClienteEntity> = emptyMap()
-    // Ultimo comprobante emitido, para mostrarlo al instante aunque la base aun no refresque.
+
     private var ultimoComprobante: Comprobante? = null
     private var contadorComprobante = 460
     private var contadorReporte = 20
 
     init {
-        // Observa empresas, compromisos y comprobantes a la vez; cualquier cambio en la
-        // base (incluida la carga de la semilla la primera vez) actualiza la pantalla.
+
         viewModelScope.launch {
             combine(
                 db.empresaClienteDao().observarTodas(),
@@ -71,8 +63,6 @@ class CompromisosViewModel(app: Application) : AndroidViewModel(app) {
 
     fun consumirMensaje() { mensaje = null }
 
-    // --- Lectura derivada para las pantallas ---
-
     val porPagar: List<Compromiso>
         get() = compromisos.filter { it.estaPorPagar }
 
@@ -85,7 +75,6 @@ class CompromisosViewModel(app: Application) : AndroidViewModel(app) {
     val proximoVencimiento: String?
         get() = porPagar.minByOrNull { aOrden(it.fechaVencimiento) }?.fechaVencimiento
 
-    // Indicador de cumplimiento: porcentaje de pagos hechos a tiempo (RF-08, RN-10).
     val porcentajeCumplimiento: Int
         get() = if (comprobantes.isEmpty()) 100
         else comprobantes.count { it.aTiempo } * 100 / comprobantes.size
@@ -95,9 +84,6 @@ class CompromisosViewModel(app: Application) : AndroidViewModel(app) {
     fun buscarComprobante(folio: String): Comprobante? =
         comprobantes.find { it.folio == folio } ?: ultimoComprobante?.takeIf { it.folio == folio }
 
-    // --- Acciones (persisten en la base; la UI se refresca via Flow) ---
-
-    // Pago simulado (RF-05): el compromiso pasa a Pagado y se emite un comprobante (RF-06, RN-05).
     fun pagar(folio: String): Comprobante {
         val compromiso = compromisos.first { it.folio == folio }
         val aTiempo = compromiso.estado != EstadoCompromiso.VENCIDO
@@ -136,7 +122,6 @@ class CompromisosViewModel(app: Application) : AndroidViewModel(app) {
         return comprobante
     }
 
-    // Reportar un problema (RF-09): el compromiso queda En revision y no se puede pagar (RN-08).
     fun reportarProblema(folio: String, motivo: String, comentario: String) {
         mensaje = "Reporte enviado"
         val numero = "REP-" + String.format(Locale.US, "%04d", contadorReporte)
@@ -163,8 +148,6 @@ class CompromisosViewModel(app: Application) : AndroidViewModel(app) {
         }
     }
 
-    // --- Mapeo entidad -> modelo de pantalla ---
-
     private fun CompromisoEntity.aModelo(): Compromiso {
         val empresa = empresas[empresaCodigo]
         return Compromiso(
@@ -185,7 +168,7 @@ class CompromisosViewModel(app: Application) : AndroidViewModel(app) {
         return Comprobante(
             folio = numero,
             folioCompromiso = compromisoFolio,
-            // El comprobante no guarda el concepto; se toma del compromiso si sigue cargado.
+
             concepto = conceptoPorFolio[compromisoFolio] ?: nombreEmpresa,
             empresa = nombreEmpresa,
             monto = montoPagado,
@@ -195,15 +178,12 @@ class CompromisosViewModel(app: Application) : AndroidViewModel(app) {
         )
     }
 
-    // --- Utilidades ---
-
     private fun ahoraFormateado(): String =
         SimpleDateFormat("dd-MM-yyyy HH:mm", Locale.US).format(Date())
 
     private fun hoyFormateado(): String =
         SimpleDateFormat("dd-MM-yyyy", Locale.US).format(Date())
 
-    // Convierte DD-MM-AAAA en un numero AAAAMMDD para poder ordenar por fecha.
     private fun aOrden(fecha: String): Int {
         val partes = fecha.split("-")
         if (partes.size != 3) return 0

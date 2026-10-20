@@ -9,14 +9,6 @@ import com.example.pagoflex.data.local.DatosSemilla
 import com.example.pagoflex.model.RolUsuario
 import com.example.pagoflex.utils.Validaciones
 
-/**
- * Portador de la sesion simulada (RF-01). Guarda los datos de la persona que
- * inicio sesion o se registro para mostrarlos en el Perfil. Vive con alcance de
- * Activity, por eso cualquier pantalla puede leer el usuario actual.
- *
- * Identidad (nombre, RUT, correo, rol): solo lectura.
- * Contacto (correo secundario y telefono): editable por la persona, con validacion.
- */
 class SesionViewModel : ViewModel() {
 
     var nombre by mutableStateOf("")
@@ -33,7 +25,6 @@ class SesionViewModel : ViewModel() {
     var telefono by mutableStateOf("")
         private set
 
-    // Foto de perfil desde un recurso nativo (camara o galeria). En memoria de sesion.
     var fotoPerfil by mutableStateOf<Bitmap?>(null)
         private set
 
@@ -44,7 +35,6 @@ class SesionViewModel : ViewModel() {
     var mensaje by mutableStateOf<String?>(null)
         private set
 
-    // Alta desde el registro: tenemos todos los datos que escribio la persona.
     fun iniciarDesdeRegistro(nombre: String, rut: String, correo: String, rol: RolUsuario) {
         this.nombre = nombre.trim()
         this.rut = rut.trim()
@@ -56,9 +46,6 @@ class SesionViewModel : ViewModel() {
         limpiarErrores()
     }
 
-    // Alta desde el login: solo tenemos correo y rol. Si el correo calza con un
-    // dato de ejemplo (Anexo 9) completamos nombre, RUT y telefono, sea usuario
-    // final, ejecutivo o agente, para que el Perfil funcione en cualquier rol.
     fun iniciarDesdeLogin(correo: String, rol: RolUsuario) {
         val limpio = correo.trim()
         val uf = DatosSemilla.usuariosFinales.firstOrNull { it.correo.equals(limpio, ignoreCase = true) }
@@ -74,7 +61,6 @@ class SesionViewModel : ViewModel() {
         limpiarErrores()
     }
 
-    // Guarda la foto elegida (camara o galeria) y avisa en pantalla.
     fun cambiarFoto(bitmap: Bitmap) {
         fotoPerfil = bitmap
         mensaje = "Foto de perfil actualizada"
@@ -90,8 +76,6 @@ class SesionViewModel : ViewModel() {
         errorTelefono = null
     }
 
-    // Guarda el contacto si es valido. El correo secundario y el telefono son
-    // opcionales: vacios se aceptan; si traen algo, deben tener formato valido.
     fun guardarContacto() {
         val correo2 = correoSecundario.trim()
         errorCorreoSecundario =

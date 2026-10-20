@@ -27,14 +27,6 @@ import com.example.pagoflex.ui.styles.EstilosCampo
 import com.example.pagoflex.ui.theme.Dimens
 import com.example.pagoflex.ui.theme.PagoFlexTheme
 
-/**
- * Campo de texto reutilizable (el <input> de HTML).
- * En Compose un campo NO guarda su propio texto: "valor" viene del estado del
- * ViewModel y "onValorCambia" avisa cada vez que el usuario escribe. Si no se
- * actualiza el estado ahi, el campo no cambia ("estado elevado").
- * @param error       mensaje bajo el campo; null = sin error.
- * @param tipoTeclado Text, Email, Number, Phone... (cambia el teclado del celular).
- */
 @Composable
 fun CampoTexto(
     valor: String,
@@ -46,8 +38,7 @@ fun CampoTexto(
     tipoTeclado: KeyboardType = KeyboardType.Text,
     onPerderFoco: (() -> Unit)? = null
 ) {
-    // Avisa cuando el campo deja de tener el foco, pero solo si antes lo tuvo
-    // (asi se valida al pasar al siguiente campo, no al abrir la pantalla).
+
     var tuvoFoco by remember { mutableStateOf(false) }
     OutlinedTextField(
         value = valor,
@@ -62,20 +53,20 @@ fun CampoTexto(
                     onPerderFoco?.invoke()
                 }
             },
-        label = { Text(etiqueta) },                          // texto flotante (como <label>)
-        leadingIcon = {                                      // icono a la izquierda
+        label = { Text(etiqueta) },
+        leadingIcon = {
             Icon(
                 painter = painterResource(id = icono),
                 contentDescription = null,
                 modifier = Modifier.size(Dimens.tamanoIcono)
             )
         },
-        isError = error != null,                             // borde rojo si hay error
-        supportingText = { if (error != null) Text(error) }, // texto de ayuda bajo el campo
+        isError = error != null,
+        supportingText = { if (error != null) Text(error) },
         singleLine = true,
         keyboardOptions = KeyboardOptions(
             keyboardType = tipoTeclado,
-            imeAction = ImeAction.Next                       // boton "Siguiente" en el teclado
+            imeAction = ImeAction.Next
         ),
         shape = EstilosCampo.forma,
         colors = EstilosCampo.colores()

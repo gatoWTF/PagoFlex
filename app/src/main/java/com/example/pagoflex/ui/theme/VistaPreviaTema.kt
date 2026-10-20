@@ -25,8 +25,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.pagoflex.R
 
-// Solo para mirar el tema en Android Studio (vista Split o Design). La app no lo usa.
-
 @Composable
 private fun CuadroDeColor(nombre: String, color: Color) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {

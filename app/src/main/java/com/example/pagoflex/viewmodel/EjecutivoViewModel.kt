@@ -17,13 +17,10 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-// Estado y logica del ejecutivo de empresa cliente (R-03). Lee y escribe en Room:
-// registrar y anular compromisos persisten al cerrar y abrir la app.
 class EjecutivoViewModel(app: Application) : AndroidViewModel(app) {
 
     private val db = PagoFlexDatabase.obtener(app)
 
-    // Empresa fija de la sesion simulada (coincide con el selector de rol).
     private val empresaCodigo = "EC-03"
     val empresa = "Crédito Andino"
 
@@ -33,7 +30,6 @@ class EjecutivoViewModel(app: Application) : AndroidViewModel(app) {
     var mensaje by mutableStateOf<String?>(null)
         private set
 
-    // Codigo -> usuario, para mostrar el nombre y RUT del deudor y para buscar por RUT.
     private var usuarios: Map<String, UsuarioFinalEntity> = emptyMap()
     private var contadorFolio = 130
     private var contadorUsuario = 900
@@ -54,8 +50,6 @@ class EjecutivoViewModel(app: Application) : AndroidViewModel(app) {
 
     fun consumirMensaje() { mensaje = null }
 
-    // --- Cobranza del mes (RF-20, RN-24) ---
-
     private val porCobrar: List<CompromisoEmpresa>
         get() = compromisos.filter {
             it.estado == EstadoCompromiso.PENDIENTE || it.estado == EstadoCompromiso.VENCIDO
@@ -73,9 +67,6 @@ class EjecutivoViewModel(app: Application) : AndroidViewModel(app) {
             return if (base == 0) 0 else pagados.size * 100 / base
         }
 
-    // --- Acciones ---
-
-    // Registrar un compromiso (RF-17). Si el RUT no existe aun, se crea el deudor.
     fun registrarCompromiso(
         deudor: String,
         rutDeudor: String,
@@ -106,7 +97,6 @@ class EjecutivoViewModel(app: Application) : AndroidViewModel(app) {
         }
     }
 
-    // Anular un compromiso (RF-18): solo si sigue por cobrar (RN-01).
     fun anular(folio: String) {
         mensaje = "Compromiso anulado"
         viewModelScope.launch {
@@ -117,7 +107,6 @@ class EjecutivoViewModel(app: Application) : AndroidViewModel(app) {
         }
     }
 
-    // Devuelve el codigo de un usuario existente con ese RUT, o crea uno nuevo.
     private suspend fun resolverUsuario(nombre: String, rut: String): String {
         val existente = usuarios.values.find { normalizarRut(it.rut) == normalizarRut(rut) }
         if (existente != null) return existente.codigo
@@ -141,8 +130,6 @@ class EjecutivoViewModel(app: Application) : AndroidViewModel(app) {
         )
         return codigo
     }
-
-    // --- Mapeo entidad -> modelo de pantalla ---
 
     private fun CompromisoEntity.aModelo(): CompromisoEmpresa {
         val usuario = usuarios[usuarioCodigo]

@@ -21,12 +21,6 @@ import androidx.compose.ui.unit.dp
 import com.example.pagoflex.ui.theme.Dimens
 import com.example.pagoflex.ui.theme.PagoFlexTheme
 
-/**
- * Encabezado de marca: banda morada con el logo, el nombre y un subtitulo.
- * Transmite que la persona esta en el canal oficial de PagoFlex (RNF-05).
- * @param compacto true usa una fila mas baja (para pantallas con muchos campos,
- *                 como el registro); false usa una columna centrada mas alta.
- */
 @Composable
 fun EncabezadoMarca(
     titulo: String,

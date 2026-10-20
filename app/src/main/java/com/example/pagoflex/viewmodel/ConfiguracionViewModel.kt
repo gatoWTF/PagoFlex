@@ -9,8 +9,6 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.AndroidViewModel
 import com.example.pagoflex.model.ModoTema
 
-// Preferencias del usuario (apariencia y avisos). Se guardan en SharedPreferences,
-// asi persisten al cerrar y abrir la app.
 class ConfiguracionViewModel(app: Application) : AndroidViewModel(app) {
 
     private val prefs =

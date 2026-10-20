@@ -30,11 +30,6 @@ import com.example.pagoflex.ui.components.PieConfianza
 import com.example.pagoflex.ui.theme.Dimens
 import com.example.pagoflex.ui.theme.PagoFlexTheme
 
-/**
- * Pantalla de inicio de sesion (RF-01). Es "sin estado": recibe los valores y
- * avisa de las acciones; la logica vive en el ViewModel (se conecta en la
- * siguiente etapa). Al ingresar, el rol se deduce del correo.
- */
 @Composable
 fun LoginScreen(
     correo: String,

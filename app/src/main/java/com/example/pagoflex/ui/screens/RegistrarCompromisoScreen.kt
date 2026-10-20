@@ -50,8 +50,6 @@ import java.util.Date
 import java.util.Locale
 import java.util.TimeZone
 
-// Formulario para registrar un compromiso (RF-17). Valida nombre, RUT (modulo 11),
-// concepto, monto entero en pesos y fecha DD-MM-AAAA (RN-17, RN-18).
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RegistrarCompromisoScreen(
@@ -65,9 +63,9 @@ fun RegistrarCompromisoScreen(
     var monto by rememberSaveable { mutableStateOf("") }
     var fecha by rememberSaveable { mutableStateOf("") }
     var intentoEnvio by remember { mutableStateOf(false) }
-    // Animacion 8: tras validar, el boton muestra un spinner antes de registrar.
+
     var registrando by remember { mutableStateOf(false) }
-    // Selector de fecha: evita escribir y errores de formato.
+
     var mostrarCalendario by remember { mutableStateOf(false) }
 
     LaunchedEffect(registrando) {
@@ -81,7 +79,7 @@ fun RegistrarCompromisoScreen(
     val errorRut = if (intentoEnvio && !Validaciones.rutValido(rut)) "RUT inválido" else null
     val errorConcepto = if (intentoEnvio && concepto.isBlank()) "Ingresa el concepto" else null
     val errorMonto = if (intentoEnvio && !Validaciones.montoValido(monto)) "Monto inválido (entero positivo)" else null
-    // La fecha se muestra con "/", pero se valida y guarda con "-" como el resto de la app.
+
     val fechaConGuiones = fecha.replace("/", "-")
     val errorFecha = if (intentoEnvio && !Validaciones.fechaValida(fechaConGuiones)) "Ingresa una fecha válida (DD/MM/AAAA)" else null
 
@@ -143,8 +141,7 @@ fun RegistrarCompromisoScreen(
                 error = errorMonto,
                 tipoTeclado = KeyboardType.Number
             )
-            // Fecha: se escribe con los numeros y los "/" se ponen solos (mascara),
-            // o se elige tocando el icono de calendario.
+
             OutlinedTextField(
                 value = fecha,
                 onValueChange = { fecha = formatearFechaEntrada(it) },
@@ -199,7 +196,6 @@ fun RegistrarCompromisoScreen(
             )
         }
 
-        // Calendario para elegir la fecha; al aceptar, la deja en formato DD-MM-AAAA.
         if (mostrarCalendario) {
             val estadoCalendario = rememberDatePickerState()
             DatePickerDialog(
@@ -224,8 +220,6 @@ fun RegistrarCompromisoScreen(
     }
 }
 
-// Toma lo que escribe la persona, deja solo digitos (max 8) y pone los "/" solos:
-// "25102026" -> "25/10/2026". Asi no hay que escribir los separadores.
 private fun formatearFechaEntrada(entrada: String): String {
     val digitos = entrada.filter { it.isDigit() }.take(8)
     return buildString {

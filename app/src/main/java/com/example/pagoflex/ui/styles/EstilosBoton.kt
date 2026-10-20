@@ -17,31 +17,27 @@ import com.example.pagoflex.ui.theme.GrisDeshabilitado
 import com.example.pagoflex.ui.theme.Primario
 
 object EstilosBoton {
-    val forma = RoundedCornerShape(Dimens.radioBoton)                    // border-radius
-    val relleno = PaddingValues(horizontal = 20.dp, vertical = 12.dp)    // padding
+    val forma = RoundedCornerShape(Dimens.radioBoton)
+    val relleno = PaddingValues(horizontal = 20.dp, vertical = 12.dp)
 
-    // botones principales: relleno morado, texto blanco
     @Composable
     fun coloresPrincipal(): ButtonColors = ButtonDefaults.buttonColors(
-        containerColor = Primario,                                       // background-color
-        contentColor = Blanco,                                           // color
+        containerColor = Primario,
+        contentColor = Blanco,
         disabledContainerColor = GrisDeshabilitado,
         disabledContentColor = Blanco
     )
 
-    // botones secundarios: transparentes, texto del color primario del tema
     @Composable
     fun coloresSecundario(): ButtonColors = ButtonDefaults.outlinedButtonColors(
         contentColor = MaterialTheme.colorScheme.primary
     )
 
-    // borde de los botones secundarios
     @Composable
     fun bordeSecundario(): BorderStroke = BorderStroke(
         Dimens.bordeBoton, MaterialTheme.colorScheme.primary
     )
 
-    // sombra del boton principal (se hunde al presionar)
     @Composable
     fun elevacion(): ButtonElevation = ButtonDefaults.buttonElevation(
         defaultElevation = Dimens.elevacionBoton,
@@ -49,5 +45,4 @@ object EstilosBoton {
     )
 }
 
-// funciona como una clase CSS: se aplica con Modifier.estiloAltoBoton()
 fun Modifier.estiloAltoBoton(): Modifier = this.height(Dimens.alturaBoton)

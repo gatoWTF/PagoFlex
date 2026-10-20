@@ -2,10 +2,10 @@ package com.example.pagoflex.model
 
 data class Pago(
     val id: Int,
-    val descripcion: String,        // "Cuenta de luz"
-    val empresa: String,            // "Enel"
-    val categoria: CategoriaPago,   // decide que icono mostrar
-    val monto: Int,                 // en pesos, sin decimales
-    val fechaVencimiento: String,   // "05/10/2026"
+    val descripcion: String,
+    val empresa: String,
+    val categoria: CategoriaPago,
+    val monto: Int,
+    val fechaVencimiento: String,
     val estado: EstadoPago
 )

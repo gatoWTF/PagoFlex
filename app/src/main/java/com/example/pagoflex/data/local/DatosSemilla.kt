@@ -12,8 +12,6 @@ import com.example.pagoflex.model.CanalPago
 import com.example.pagoflex.model.EstadoCompromiso
 import com.example.pagoflex.model.EstadoReporte
 
-// Datos de ejemplo del Anexo 9 (ficticios). Se cargan una sola vez al crear la base.
-// Los nombres de personas y empresas conservan tildes porque son datos visibles al usuario.
 object DatosSemilla {
 
     val usuariosFinales = listOf(
@@ -56,7 +54,6 @@ object DatosSemilla {
         EjecutivoEntity("EJ-07", "Mónica Patricia Leiva Castro", "12.584.396-4", "mleiva@plazaoriente.ejemplo", "+56 9 0000 0407", "EC-08", "Administradora de cobranza", true)
     )
 
-    // recargoAplicado = total a pagar - monto cuando esta Vencido; 0 en el resto (RN-03).
     val compromisos = listOf(
         CompromisoEntity("CP-2026-0101", "UF-01", "EC-08", "Arriendo departamento octubre", "10/12", 520000, "10-10-2026", EstadoCompromiso.PENDIENTE, 0, "EJ-07"),
         CompromisoEntity("CP-2026-0102", "UF-01", "EC-06", "Cuota social octubre", "10/12", 15000, "05-10-2026", EstadoCompromiso.VENCIDO, 2000, "EJ-05"),
@@ -72,8 +69,6 @@ object DatosSemilla {
         CompromisoEntity("CP-2026-0112", "UF-07", "EC-06", "Cuota social octubre", "10/12", 15000, "05-10-2026", EstadoCompromiso.PAGADO, 0, "EJ-05")
     )
 
-    // Pagos historicos. Algunos compromisos (de septiembre) no estan en la tabla compromiso
-    // a proposito: igual deben verse en el historial (RF-07, RN-07).
     val comprobantes = listOf(
         ComprobanteEntity("CPR-000377", "CP-2026-0072", "UF-02", "EC-01", "02-09-2026 21:14", 318500, CanalPago.AGENTE_CONVERSACIONAL, false, "Pago simulado"),
         ComprobanteEntity("CPR-000398", "CP-2026-0089", "UF-01", "EC-08", "09-09-2026 13:05", 520000, CanalPago.PORTAL, true, "Pago simulado"),

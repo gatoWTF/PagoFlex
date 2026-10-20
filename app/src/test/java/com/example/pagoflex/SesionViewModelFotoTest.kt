@@ -6,9 +6,6 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Test
 
-// Pruebas del estado de la foto de perfil en la sesion (recurso nativo: camara o
-// galeria). No crean un Bitmap real (eso vive en el test instrumentado), sino que
-// cubren el ciclo de vida del estado: arranca vacio y se limpia al iniciar sesion.
 class SesionViewModelFotoTest {
 
     @Test
@@ -39,7 +36,7 @@ class SesionViewModelFotoTest {
     @Test
     fun consumirMensaje_limpiaElAviso() {
         val sesion = SesionViewModel()
-        sesion.guardarContacto() // deja un mensaje de confirmacion
+        sesion.guardarContacto()
         assertEquals("Datos de contacto guardados", sesion.mensaje)
         sesion.consumirMensaje()
         assertNull(sesion.mensaje)

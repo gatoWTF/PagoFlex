@@ -41,7 +41,6 @@ import com.example.pagoflex.ui.styles.EstilosCampo
 import com.example.pagoflex.ui.theme.Dimens
 import com.example.pagoflex.ui.theme.PagoFlexTheme
 
-// Motivos posibles de un reporte de problema (Anexo 7).
 private val MOTIVOS = listOf(
     "No reconozco este cobro",
     "El monto no corresponde",
@@ -51,8 +50,6 @@ private val MOTIVOS = listOf(
 
 private const val LARGO_MINIMO_DESCRIPCION = 10
 
-// Reportar un problema sobre un compromiso (RF-09). Formulario con validaciones:
-// hay que elegir un motivo y escribir una descripcion suficiente.
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ReportarProblemaScreen(
@@ -63,7 +60,7 @@ fun ReportarProblemaScreen(
 ) {
     var motivo by rememberSaveable { mutableStateOf<String?>(null) }
     var descripcion by rememberSaveable { mutableStateOf("") }
-    // Las validaciones se muestran recien al intentar enviar, para no molestar antes.
+
     var intentoEnvio by remember { mutableStateOf(false) }
 
     val errorMotivo = if (intentoEnvio && motivo == null) "Selecciona un motivo" else null

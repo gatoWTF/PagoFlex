@@ -29,8 +29,6 @@ import com.example.pagoflex.model.ModoTema
 import com.example.pagoflex.ui.theme.Dimens
 import com.example.pagoflex.viewmodel.ConfiguracionViewModel
 
-// Configuracion del usuario final: apariencia (claro/oscuro/sistema) y avisos de
-// vencimiento (RF-11). Las preferencias se guardan y persisten.
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ConfiguracionScreen(

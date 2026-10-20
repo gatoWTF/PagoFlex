@@ -24,14 +24,14 @@ private val DarkColorScheme = darkColorScheme(
     onBackground = TextoClaro,
     surface = SuperficieOscura,
     onSurface = TextoClaro,
-    // Variantes y bordes en verde-grisaceo (evitan los morados por defecto de Material).
+
     surfaceVariant = SuperficieVarianteOscura,
     onSurfaceVariant = TextoVarianteOscuro,
     outline = BordeOscuro,
     outlineVariant = BordeVarianteOscuro,
     inverseSurface = ExitoFondo,
     inverseOnSurface = SuperficieOscura,
-    // Contenedores de estado: misma paleta que las pildoras de pago, igual en ambos temas.
+
     error = VencidoTextoOscuro,
     onError = VencidoSobreOscuro,
     errorContainer = VencidoFondo,
@@ -40,7 +40,7 @@ private val DarkColorScheme = darkColorScheme(
     onSecondaryContainer = Exito,
     tertiaryContainer = PendienteFondo,
     onTertiaryContainer = Pendiente,
-    // Contenedores de superficie (default de las Card) en verde-gris.
+
     surfaceDim = SuperficieTenueOscura,
     surfaceBright = SuperficieBrillanteOscura,
     surfaceContainerLowest = ContenedorBajoMinimoOscuro,
@@ -63,14 +63,14 @@ private val LightColorScheme = lightColorScheme(
     onBackground = TextoOscuro,
     surface = SuperficieClara,
     onSurface = TextoOscuro,
-    // Variantes y bordes en verde-grisaceo (evitan los morados por defecto de Material).
+
     surfaceVariant = SuperficieVarianteClara,
     onSurfaceVariant = TextoVarianteClaro,
     outline = BordeClaro,
     outlineVariant = BordeVarianteClaro,
     inverseSurface = SuperficieOscura,
     inverseOnSurface = TextoClaro,
-    // Contenedores de estado: misma paleta que las pildoras de pago, igual en ambos temas.
+
     error = Vencido,
     onError = Blanco,
     errorContainer = VencidoFondo,
@@ -79,7 +79,7 @@ private val LightColorScheme = lightColorScheme(
     onSecondaryContainer = Exito,
     tertiaryContainer = PendienteFondo,
     onTertiaryContainer = Pendiente,
-    // Contenedores de superficie (default de las Card) en verde-gris.
+
     surfaceDim = SuperficieTenueClara,
     surfaceBright = SuperficieBrillanteClara,
     surfaceContainerLowest = ContenedorBajoMinimoClaro,
@@ -92,7 +92,7 @@ private val LightColorScheme = lightColorScheme(
 @Composable
 fun PagoFlexTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    // Con true, Android 12+ ignora los colores de marca y usa los del fondo de pantalla
+
     dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {

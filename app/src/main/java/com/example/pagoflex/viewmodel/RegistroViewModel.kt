@@ -8,8 +8,6 @@ import com.example.pagoflex.data.DerivadorDeRol
 import com.example.pagoflex.model.RolUsuario
 import com.example.pagoflex.utils.Validaciones
 
-// Registro de la sesion simulada (RF-01). Valida los campos y deduce el rol del
-// correo. La contrasena solo se usa para validar que ambas coinciden; no se guarda.
 class RegistroViewModel : ViewModel() {
 
     var nombre by mutableStateOf("")
@@ -41,11 +39,9 @@ class RegistroViewModel : ViewModel() {
 
     fun cambiarNombre(nuevo: String) { nombre = nuevo; errorNombre = null }
 
-    // El RUT y el correo se validan al salir del campo (validarRut / validarCorreo).
     fun cambiarRut(nuevo: String) { rut = nuevo; errorRut = null }
     fun cambiarCorreo(nuevo: String) { correo = nuevo; errorCorreo = null }
 
-    // La contrasena y su confirmacion se validan en vivo, sin esperar al boton.
     fun cambiarContrasena(nueva: String) {
         contrasena = nueva
         errorContrasena = evaluarContrasena()
@@ -98,7 +94,6 @@ class RegistroViewModel : ViewModel() {
         else -> null
     }
 
-    // Al enviar, un campo vacio tambien es invalido.
     private fun contrasenaObligatoria(): String? =
         if (contrasena.isEmpty()) "Ingresa una contraseña" else null
 

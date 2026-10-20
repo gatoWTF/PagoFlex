@@ -43,7 +43,6 @@ import com.example.pagoflex.ui.theme.ExitoFondo
 import com.example.pagoflex.ui.theme.PagoFlexTheme
 import com.example.pagoflex.utils.FormatoMoneda
 
-// Comprobante de pago (RF-05, RF-06): confirma el pago y muestra sus datos.
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ComprobanteScreen(
@@ -51,7 +50,7 @@ fun ComprobanteScreen(
     alFinalizar: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    // Animacion 3: el circulo de exito entra con efecto resorte al mostrar el comprobante.
+
     val escala = remember { Animatable(0f) }
     LaunchedEffect(Unit) {
         escala.animateTo(

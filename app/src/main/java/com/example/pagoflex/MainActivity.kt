@@ -57,7 +57,7 @@ class MainActivity : ComponentActivity() {
                 ModoTema.SISTEMA -> isSystemInDarkTheme()
             }
             PagoFlexTheme(darkTheme = oscuro) {
-                // Surface pinta el fondo del tema en toda la app (evita la pantalla en negro).
+
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
@@ -69,23 +69,20 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-// Navegacion de la app con NavHost. El flujo arranca en login/registro (sesion
-// simulada, RF-01): el rol se deduce del correo y cada rol entra a su propio
-// home (RNF-13, RN-22).
 @Composable
 private fun AppPagoFlex(configuracionViewModel: ConfiguracionViewModel) {
     val navController = rememberNavController()
-    // VMs con alcance de Activity: las pantallas de cada rol comparten su estado.
+
     val compromisosViewModel: CompromisosViewModel = viewModel()
     val ejecutivoViewModel: EjecutivoViewModel = viewModel()
     val agenteViewModel: AgenteViewModel = viewModel()
-    // Guarda los datos de la persona logueada para mostrarlos en el Perfil.
+
     val sesionViewModel: SesionViewModel = viewModel()
 
     NavHost(
         navController = navController,
         startDestination = Rutas.Login.ruta,
-        // Transicion al navegar: la pantalla nueva entra desde la derecha; al volver, al reves.
+
         enterTransition = {
             slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Start, tween(450)) + fadeIn(tween(450))
         },
@@ -99,7 +96,7 @@ private fun AppPagoFlex(configuracionViewModel: ConfiguracionViewModel) {
             slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.End, tween(450)) + fadeOut(tween(450))
         }
     ) {
-        // Inicio de sesion (entrada). El rol sale del dominio del correo.
+
         composable(Rutas.Login.ruta) {
             val loginViewModel: LoginViewModel = viewModel()
             LaunchedEffect(loginViewModel.rol) {
@@ -125,7 +122,6 @@ private fun AppPagoFlex(configuracionViewModel: ConfiguracionViewModel) {
             )
         }
 
-        // Registro. Crea la sesion con el rol deducido del correo.
         composable(Rutas.Registro.ruta) {
             val registroViewModel: RegistroViewModel = viewModel()
             LaunchedEffect(registroViewModel.rol) {
@@ -167,7 +163,6 @@ private fun AppPagoFlex(configuracionViewModel: ConfiguracionViewModel) {
             )
         }
 
-        // Home del usuario final (R-01)
         composable(Rutas.InicioUsuario.ruta) {
             InicioScreen(
                 viewModel = compromisosViewModel,
@@ -181,7 +176,6 @@ private fun AppPagoFlex(configuracionViewModel: ConfiguracionViewModel) {
             )
         }
 
-        // Perfil del usuario: identidad en solo lectura + contacto editable
         composable(Rutas.Perfil.ruta) {
             PerfilScreen(
                 sesion = sesionViewModel,
@@ -189,7 +183,6 @@ private fun AppPagoFlex(configuracionViewModel: ConfiguracionViewModel) {
             )
         }
 
-        // Historial de pagos (RF-07, RF-08)
         composable(Rutas.Historial.ruta) {
             HistorialScreen(
                 viewModel = compromisosViewModel,
@@ -197,7 +190,6 @@ private fun AppPagoFlex(configuracionViewModel: ConfiguracionViewModel) {
             )
         }
 
-        // Configuracion: apariencia y avisos (RF-11)
         composable(Rutas.Configuracion.ruta) {
             ConfiguracionScreen(
                 viewModel = configuracionViewModel,
@@ -205,7 +197,6 @@ private fun AppPagoFlex(configuracionViewModel: ConfiguracionViewModel) {
             )
         }
 
-        // Detalle de un compromiso (RF-04), recibe el folio por argumento
         composable(
             route = Rutas.DetalleCompromiso.ruta,
             arguments = listOf(
@@ -218,7 +209,7 @@ private fun AppPagoFlex(configuracionViewModel: ConfiguracionViewModel) {
                 alVolver = { navController.popBackStack() },
                 alPagar = { folioPagado ->
                     val comprobante = compromisosViewModel.pagar(folioPagado)
-                    // Deja Inicio en la pila y muestra el comprobante encima (RF-06).
+
                     navController.navigate(Rutas.Comprobante.crear(comprobante.folio)) {
                         popUpTo(Rutas.InicioUsuario.ruta)
                     }
@@ -229,7 +220,6 @@ private fun AppPagoFlex(configuracionViewModel: ConfiguracionViewModel) {
             )
         }
 
-        // Comprobante del pago (RF-05, RF-06)
         composable(
             route = Rutas.Comprobante.ruta,
             arguments = listOf(
@@ -243,7 +233,6 @@ private fun AppPagoFlex(configuracionViewModel: ConfiguracionViewModel) {
             )
         }
 
-        // Reportar un problema sobre un compromiso (RF-09)
         composable(
             route = Rutas.ReportarProblema.ruta,
             arguments = listOf(
@@ -261,7 +250,6 @@ private fun AppPagoFlex(configuracionViewModel: ConfiguracionViewModel) {
             )
         }
 
-        // Home del agente (R-02): bandeja de reportes
         composable(Rutas.HomeAgente.ruta) {
             HomeAgenteScreen(
                 viewModel = agenteViewModel,
@@ -271,7 +259,6 @@ private fun AppPagoFlex(configuracionViewModel: ConfiguracionViewModel) {
             )
         }
 
-        // Home del ejecutivo (R-03)
         composable(Rutas.HomeEjecutivo.ruta) {
             HomeEjecutivoScreen(
                 viewModel = ejecutivoViewModel,
@@ -282,7 +269,6 @@ private fun AppPagoFlex(configuracionViewModel: ConfiguracionViewModel) {
             )
         }
 
-        // Registrar un compromiso (RF-17)
         composable(Rutas.RegistrarCompromiso.ruta) {
             RegistrarCompromisoScreen(
                 alVolver = { navController.popBackStack() },
@@ -295,7 +281,6 @@ private fun AppPagoFlex(configuracionViewModel: ConfiguracionViewModel) {
     }
 }
 
-// Cierra la sesion simulada: vuelve al login y limpia el historial de navegacion.
 private fun irALogin(navController: NavHostController) {
     navController.navigate(Rutas.Login.ruta) {
         popUpTo(Rutas.Login.ruta) { inclusive = true }

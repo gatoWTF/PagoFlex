@@ -43,7 +43,6 @@ import com.example.pagoflex.ui.theme.PagoFlexTheme
 import com.example.pagoflex.utils.FormatoMoneda
 import kotlinx.coroutines.delay
 
-// Detalle de un compromiso (RF-04): monto, recargo, total y accion de pago simulado (RF-05).
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DetalleCompromisoScreen(
@@ -53,7 +52,7 @@ fun DetalleCompromisoScreen(
     alReportar: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    // Animacion 8: al pagar, el boton muestra un spinner un instante antes de confirmar.
+
     var pagando by remember { mutableStateOf(false) }
     LaunchedEffect(pagando) {
         if (pagando && compromiso != null) {

@@ -15,7 +15,6 @@ interface EmpresaClienteDao {
     @Query("SELECT * FROM empresa_cliente ORDER BY codigo")
     fun observarTodas(): Flow<List<EmpresaClienteEntity>>
 
-    // Lectura de una sola vez, para resolver nombre y rubro de cada compromiso.
     @Query("SELECT * FROM empresa_cliente")
     suspend fun listarTodas(): List<EmpresaClienteEntity>
 

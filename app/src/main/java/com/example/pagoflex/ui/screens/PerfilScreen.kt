@@ -61,11 +61,6 @@ import com.example.pagoflex.ui.theme.Dimens
 import com.example.pagoflex.viewmodel.SesionViewModel
 import kotlinx.coroutines.launch
 
-/**
- * Perfil del usuario (R-01). Muestra la identidad con la que se registro (rol,
- * nombre, RUT y correo) en solo lectura, y deja editar los datos de contacto:
- * un correo secundario de emergencia y un telefono.
- */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PerfilScreen(
@@ -85,15 +80,12 @@ fun PerfilScreen(
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
 
-    // Abre la camara del dispositivo y guarda la miniatura que devuelve.
     val camaraLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.TakePicturePreview()
     ) { bitmap ->
         if (bitmap != null) sesion.cambiarFoto(bitmap)
     }
 
-    // Abre el selector de fotos nativo (Android Photo Picker). No pide permisos:
-    // la persona elige una sola imagen y el sistema nos entrega su Uri.
     val galeriaLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.PickVisualMedia()
     ) { uri ->
@@ -104,7 +96,6 @@ fun PerfilScreen(
         }
     }
 
-    // Solicita el permiso de camara; si la persona lo concede, abre la camara.
     val permisoLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { concedido ->
@@ -115,7 +106,6 @@ fun PerfilScreen(
         }
     }
 
-    // Si el permiso ya esta concedido abre la camara directo; si no, lo pide primero.
     fun tomarFoto() {
         val concedido = ContextCompat.checkSelfPermission(
             context, Manifest.permission.CAMERA
@@ -154,7 +144,7 @@ fun PerfilScreen(
                 .padding(Dimens.espacioPantalla),
             verticalArrangement = Arrangement.spacedBy(Dimens.espacioMedio)
         ) {
-            // --- Foto de perfil (recursos nativos: camara o galeria) ---
+
             Box(
                 modifier = Modifier.fillMaxWidth(),
                 contentAlignment = Alignment.Center
@@ -200,7 +190,6 @@ fun PerfilScreen(
                 modifier = Modifier.fillMaxWidth()
             )
 
-            // --- Identidad (solo lectura) ---
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = androidx.compose.foundation.shape.RoundedCornerShape(Dimens.radioTarjeta),
@@ -230,7 +219,6 @@ fun PerfilScreen(
                 }
             }
 
-            // --- Contacto (editable) ---
             Text(
                 text = "Datos de contacto",
                 style = MaterialTheme.typography.titleMedium,
@@ -270,9 +258,6 @@ fun PerfilScreen(
     }
 }
 
-// Decodifica la imagen que eligio la persona (Uri -> Bitmap). Se pide un bitmap
-// mutable/por software para que el Image de Compose (asImageBitmap) pueda pintarlo.
-// Devuelve null si la imagen no se puede leer, para avisar sin que la app caiga.
 private fun cargarBitmap(context: Context, uri: Uri): Bitmap? = try {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
         val fuente = ImageDecoder.createSource(context.contentResolver, uri)
@@ -287,7 +272,6 @@ private fun cargarBitmap(context: Context, uri: Uri): Bitmap? = try {
     null
 }
 
-// Fila de un dato en solo lectura: etiqueta pequeña arriba, valor abajo.
 @Composable
 private fun FilaDato(etiqueta: String, valor: String) {
     Column(modifier = Modifier.fillMaxWidth()) {

@@ -9,11 +9,6 @@ import org.junit.Assert.assertSame
 import org.junit.Test
 import org.junit.runner.RunWith
 
-/**
- * Prueba instrumentada (corre en emulador o dispositivo, donde Bitmap es real).
- * Verifica el funcionamiento del punto de entrada que usa el selector de galeria:
- * al guardar la imagen elegida, queda disponible en la sesion y se avisa en pantalla.
- */
 @RunWith(AndroidJUnit4::class)
 class SesionFotoInstrumentedTest {
 

@@ -26,9 +26,6 @@ import androidx.compose.ui.unit.dp
 import com.example.pagoflex.R
 import com.example.pagoflex.ui.theme.Dimens
 
-// Home provisional de un rol interno (agente / ejecutivo): barra con el titulo del
-// rol, accion de cerrar sesion y un mensaje de "en construccion". Las funciones
-// reales de cada rol se agregan en los proximos avances.
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PantallaRolPlaceholder(

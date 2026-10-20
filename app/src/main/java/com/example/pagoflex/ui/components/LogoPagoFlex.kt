@@ -21,12 +21,6 @@ import com.example.pagoflex.ui.theme.Acento
 import com.example.pagoflex.ui.theme.Pendiente
 import com.example.pagoflex.ui.theme.PagoFlexTheme
 
-/**
- * Logo de la marca: la letra P sobre un disco claro y la moneda ambar, igual
- * que el icono de la app. Es un componente reutilizable (se usa en el
- * encabezado del login, del registro y donde haga falta).
- * @param tamano diametro del disco; el resto escala en proporcion.
- */
 @Composable
 fun LogoPagoFlex(
     modifier: Modifier = Modifier,
@@ -44,7 +38,7 @@ fun LogoPagoFlex(
             fontWeight = FontWeight.Bold,
             fontSize = (tamano.value * 0.55f).sp
         )
-        // La moneda: disco ambar con un anillo cafe, abajo a la derecha.
+
         val moneda = tamano * 0.3f
         Box(
             modifier = Modifier

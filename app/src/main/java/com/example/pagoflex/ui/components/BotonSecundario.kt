@@ -14,7 +14,6 @@ import com.example.pagoflex.ui.styles.estiloAltoBoton
 import com.example.pagoflex.ui.theme.Dimens
 import com.example.pagoflex.ui.theme.PagoFlexTheme
 
-/** Accion de menor importancia (Cancelar, Cerrar sesion): solo borde, sin relleno. */
 @Composable
 fun BotonSecundario(
     texto: String,
@@ -26,7 +25,7 @@ fun BotonSecundario(
         modifier = modifier.estiloAltoBoton(),
         shape = EstilosBoton.forma,
         colors = EstilosBoton.coloresSecundario(),
-        border = EstilosBoton.bordeSecundario(),        // border: 2px solid
+        border = EstilosBoton.bordeSecundario(),
         contentPadding = EstilosBoton.relleno
     ) {
         Text(text = texto)

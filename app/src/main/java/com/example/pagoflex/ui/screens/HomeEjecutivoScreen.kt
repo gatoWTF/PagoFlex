@@ -51,7 +51,6 @@ import com.example.pagoflex.ui.theme.PagoFlexTheme
 import com.example.pagoflex.utils.FormatoMoneda
 import com.example.pagoflex.viewmodel.EjecutivoViewModel
 
-// Opciones del filtro de la lista de compromisos del ejecutivo.
 private enum class FiltroEjecutivo(val etiqueta: String) {
     TODOS("Todos"),
     VIGENTES("Vigentes"),
@@ -64,8 +63,6 @@ private enum class FiltroEjecutivo(val etiqueta: String) {
     }
 }
 
-// Home del ejecutivo de empresa cliente (R-03): cobranza del mes, lista de
-// compromisos de su empresa y acciones de registrar/anular (RF-17 a RF-20).
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeEjecutivoScreen(
@@ -76,12 +73,11 @@ fun HomeEjecutivoScreen(
     alCerrarSesion: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    // Compromiso que se esta por anular; null = sin dialogo abierto.
+
     var compromisoAAnular by remember { mutableStateOf<CompromisoEmpresa?>(null) }
-    // Filtro de la lista: todos, solo vigentes o solo anulados.
+
     var filtro by remember { mutableStateOf(FiltroEjecutivo.TODOS) }
 
-    // Animacion 4: Snackbar para "Compromiso registrado" / "Compromiso anulado".
     val snackbarHostState = remember { SnackbarHostState() }
     LaunchedEffect(viewModel.mensaje) {
         val texto = viewModel.mensaje
@@ -177,13 +173,12 @@ fun HomeEjecutivoScreen(
                 FilaCompromisoEmpresa(
                     compromiso = compromiso,
                     alAnular = { compromisoAAnular = compromiso },
-                    modifier = Modifier.animateItem() // Animacion 2: al anular, la fila se reubica
+                    modifier = Modifier.animateItem()
                 )
             }
         }
     }
 
-    // Confirmacion antes de anular (accion no reversible).
     val porAnular = compromisoAAnular
     if (porAnular != null) {
         AlertDialog(
@@ -203,7 +198,6 @@ fun HomeEjecutivoScreen(
     }
 }
 
-// Chips para filtrar la lista por estado (todos / vigentes / anulados).
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun FiltroChips(filtro: FiltroEjecutivo, alCambiar: (FiltroEjecutivo) -> Unit) {
@@ -218,10 +212,9 @@ private fun FiltroChips(filtro: FiltroEjecutivo, alCambiar: (FiltroEjecutivo) ->
     }
 }
 
-// Tarjeta superior con la tasa de cobranza y los montos del mes (RF-20, RN-24).
 @Composable
 private fun TarjetaCobranza(tasa: Int, recaudado: Int, porCobrar: Int) {
-    // Animacion 6: la tasa sube de 0 al valor al entrar a la pantalla.
+
     var objetivo by remember { mutableStateOf(0) }
     LaunchedEffect(tasa) { objetivo = tasa }
     val tasaAnimada by animateIntAsState(
@@ -259,7 +252,6 @@ private fun TarjetaCobranza(tasa: Int, recaudado: Int, porCobrar: Int) {
     }
 }
 
-// Fila de un compromiso de la empresa, con la opcion de anular si corresponde.
 @Composable
 private fun FilaCompromisoEmpresa(
     compromiso: CompromisoEmpresa,

@@ -77,6 +77,15 @@ abstract class PagoFlexDatabase : RoomDatabase() {
     private class SemillaCallback(private val context: Context) : RoomDatabase.Callback() {
         override fun onCreate(db: SupportSQLiteDatabase) {
             super.onCreate(db)
+            sembrar()
+        }
+
+        override fun onDestructiveMigration(db: SupportSQLiteDatabase) {
+            super.onDestructiveMigration(db)
+            sembrar()
+        }
+
+        private fun sembrar() {
             CoroutineScope(Dispatchers.IO).launch {
                 val base = obtener(context)
                 base.empresaClienteDao().insertarTodas(DatosSemilla.empresas)
@@ -90,3 +99,4 @@ abstract class PagoFlexDatabase : RoomDatabase() {
         }
     }
 }
+

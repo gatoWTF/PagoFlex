@@ -1,14 +1,20 @@
 package com.example.pagoflex.viewmodel
 
+import android.app.Application
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.lifecycle.ViewModel
-import com.example.pagoflex.data.DerivadorDeRol
+import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.pagoflex.data.local.PagoFlexDatabase
+import com.example.pagoflex.data.local.entity.CuentaEntity
 import com.example.pagoflex.model.RolUsuario
 import com.example.pagoflex.utils.Validaciones
+import kotlinx.coroutines.launch
 
-class RegistroViewModel : ViewModel() {
+class RegistroViewModel(app: Application) : AndroidViewModel(app) {
+
+    private val cuentaDao = PagoFlexDatabase.obtener(app).cuentaDao()
 
     var nombre by mutableStateOf("")
         private set
@@ -80,7 +86,22 @@ class RegistroViewModel : ViewModel() {
             errorContrasena != null || errorConfirmar != null
         ) return
 
-        rol = DerivadorDeRol.rolPorCorreo(correoLimpio)
+        viewModelScope.launch {
+            val existente = cuentaDao.buscarPorCorreo(correoLimpio)
+            if (existente != null) {
+                errorCorreo = "Ya existe una cuenta con este correo"
+            } else {
+                val nueva = CuentaEntity(
+                    correo = correoLimpio,
+                    nombre = nombre.trim(),
+                    rut = rut.trim(),
+                    contrasena = contrasena,
+                    rol = RolUsuario.USUARIO_FINAL
+                )
+                cuentaDao.insertar(nueva)
+                rol = RolUsuario.USUARIO_FINAL
+            }
+        }
     }
 
     fun consumirRol() { rol = null }

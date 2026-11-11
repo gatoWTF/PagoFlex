@@ -5,6 +5,7 @@ import com.example.pagoflex.model.AreaAgente
 import com.example.pagoflex.model.CanalPago
 import com.example.pagoflex.model.EstadoCompromiso
 import com.example.pagoflex.model.EstadoReporte
+import com.example.pagoflex.model.RolUsuario
 
 class Converters {
     @TypeConverter
@@ -30,4 +31,10 @@ class Converters {
 
     @TypeConverter
     fun textoAEstadoReporte(valor: String): EstadoReporte = EstadoReporte.valueOf(valor)
+
+    @TypeConverter
+    fun rolUsuarioATexto(valor: RolUsuario): String = valor.name
+
+    @TypeConverter
+    fun textoARolUsuario(valor: String): RolUsuario = RolUsuario.valueOf(valor)
 }

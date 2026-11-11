@@ -8,8 +8,19 @@ object Validaciones {
 
     fun correoValido(correo: String): Boolean = patronCorreo.matches(correo)
 
+    fun nombreLargo(nombre: String): Boolean = nombre.trim().length >= 6
+
+    fun nombreSoloLetras(nombre: String): Boolean =
+        nombre.trim().all(){it.isLetter() || it.isWhitespace()}
+
     fun contrasenaValida(contrasena: String): Boolean =
         contrasena.length >= LARGO_MINIMO_CONTRASENA
+
+    fun tieneMayuscula(texto: String): Boolean = texto.any {it.isUpperCase()}
+
+    fun tieneMinuscula(texto: String): Boolean = texto.any{it.isLowerCase()}
+
+    fun tieneNumero(texto:String): Boolean = texto.any{it.isDigit()}
 
     fun telefonoValido(texto: String): Boolean {
         val limpio = texto.trim()

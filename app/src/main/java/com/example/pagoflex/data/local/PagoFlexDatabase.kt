@@ -13,6 +13,7 @@ import com.example.pagoflex.data.local.dao.EjecutivoDao
 import com.example.pagoflex.data.local.dao.EmpresaClienteDao
 import com.example.pagoflex.data.local.dao.ReporteDao
 import com.example.pagoflex.data.local.dao.UsuarioFinalDao
+import com.example.pagoflex.data.local.dao.CuentaDao
 import com.example.pagoflex.data.local.entity.AgenteEntity
 import com.example.pagoflex.data.local.entity.ComprobanteEntity
 import com.example.pagoflex.data.local.entity.CompromisoEntity
@@ -20,6 +21,7 @@ import com.example.pagoflex.data.local.entity.EjecutivoEntity
 import com.example.pagoflex.data.local.entity.EmpresaClienteEntity
 import com.example.pagoflex.data.local.entity.ReporteEntity
 import com.example.pagoflex.data.local.entity.UsuarioFinalEntity
+import com.example.pagoflex.data.local.entity.CuentaEntity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -32,9 +34,10 @@ import kotlinx.coroutines.launch
         EjecutivoEntity::class,
         CompromisoEntity::class,
         ComprobanteEntity::class,
-        ReporteEntity::class
+        ReporteEntity::class,
+        CuentaEntity::class
     ],
-    version = 1,
+    version = 2,
     exportSchema = false
 )
 @TypeConverters(Converters::class)
@@ -43,6 +46,8 @@ abstract class PagoFlexDatabase : RoomDatabase() {
     abstract fun usuarioFinalDao(): UsuarioFinalDao
     abstract fun empresaClienteDao(): EmpresaClienteDao
     abstract fun agenteDao(): AgenteDao
+
+    abstract fun cuentaDao(): CuentaDao
     abstract fun ejecutivoDao(): EjecutivoDao
     abstract fun compromisoDao(): CompromisoDao
     abstract fun comprobanteDao(): ComprobanteDao
@@ -72,6 +77,15 @@ abstract class PagoFlexDatabase : RoomDatabase() {
     private class SemillaCallback(private val context: Context) : RoomDatabase.Callback() {
         override fun onCreate(db: SupportSQLiteDatabase) {
             super.onCreate(db)
+            sembrar()
+        }
+
+        override fun onDestructiveMigration(db: SupportSQLiteDatabase) {
+            super.onDestructiveMigration(db)
+            sembrar()
+        }
+
+        private fun sembrar() {
             CoroutineScope(Dispatchers.IO).launch {
                 val base = obtener(context)
                 base.empresaClienteDao().insertarTodas(DatosSemilla.empresas)
@@ -85,3 +99,4 @@ abstract class PagoFlexDatabase : RoomDatabase() {
         }
     }
 }
+

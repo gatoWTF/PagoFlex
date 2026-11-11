@@ -84,13 +84,13 @@ class RegistroViewModel : ViewModel() {
     private fun evaluarContrasena(): String? = when {
         contrasena.isEmpty() -> null
         !Validaciones.contrasenaValida(contrasena) ->
-            "La contraseña debe tener al menos ${Validaciones.LARGO_MINIMO_CONTRASENA} caracteres"
+            "La contraseña debe tener al menos ${Validaciones.LARGO_MINIMO_CONTRASENA} caracteres, una mayúscula, una minúscula y un número"
         !Validaciones.tieneMayuscula(contrasena) ->
             "Debe tener al menos una mayúscula"
         !Validaciones.tieneMinuscula(contrasena) ->
-            "Debe tener al menos una minuscula"
+            "Debe tener al menos una minúscula"
         !Validaciones.tieneNumero(contrasena) ->
-            "Debe tener al menos un numero"
+            "Debe tener al menos un número"
         else -> null
     }
 

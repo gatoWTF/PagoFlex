@@ -85,6 +85,12 @@ class RegistroViewModel : ViewModel() {
         contrasena.isEmpty() -> null
         !Validaciones.contrasenaValida(contrasena) ->
             "La contraseña debe tener al menos ${Validaciones.LARGO_MINIMO_CONTRASENA} caracteres"
+        !Validaciones.tieneMayuscula(contrasena) ->
+            "Debe tener al menos una mayúscula"
+        !Validaciones.tieneMinuscula(contrasena) ->
+            "Debe tener al menos una minuscula"
+        !Validaciones.tieneNumero(contrasena) ->
+            "Debe tener al menos un numero"
         else -> null
     }
 

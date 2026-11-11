@@ -11,6 +11,12 @@ object Validaciones {
     fun contrasenaValida(contrasena: String): Boolean =
         contrasena.length >= LARGO_MINIMO_CONTRASENA
 
+    fun tieneMayuscula(texto: String): Boolean = texto.any {it.isUpperCase()}
+
+    fun tieneMinuscula(texto: String): Boolean = texto.any{it.isLowerCase()}
+
+    fun tieneNumero(texto:String): Boolean = texto.any{it.isDigit()}
+
     fun telefonoValido(texto: String): Boolean {
         val limpio = texto.trim()
         if (!Regex("""^[0-9+\s-]+$""").matches(limpio)) return false

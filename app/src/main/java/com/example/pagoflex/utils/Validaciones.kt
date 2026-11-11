@@ -8,6 +8,11 @@ object Validaciones {
 
     fun correoValido(correo: String): Boolean = patronCorreo.matches(correo)
 
+    fun nombreLargo(nombre: String): Boolean = nombre.trim().length >= 6
+
+    fun nombreSoloLetras(nombre: String): Boolean =
+        nombre.trim().all(){it.isLetter() || it.isWhitespace()}
+
     fun contrasenaValida(contrasena: String): Boolean =
         contrasena.length >= LARGO_MINIMO_CONTRASENA
 

@@ -66,7 +66,11 @@ class RegistroViewModel : ViewModel() {
 
     fun crearCuenta() {
         val correoLimpio = correo.trim()
-        errorNombre = if (nombre.isBlank()) "Ingresa tu nombre" else null
+        errorNombre = when {
+            nombre.isBlank() -> "Ingresa tu nombre"
+            !Validaciones.nombreLargo(nombre) -> "El nombre es muy corto"
+            !Validaciones.nombreSoloLetras(nombre) -> "El nombre no puede llevar números"
+            else -> null}
         errorRut = if (Validaciones.rutValido(rut)) null else "RUT no válido"
         errorCorreo = if (Validaciones.correoValido(correoLimpio)) null else "Correo no válido"
         errorContrasena = evaluarContrasena() ?: contrasenaObligatoria()

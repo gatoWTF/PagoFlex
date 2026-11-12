@@ -26,7 +26,7 @@ class AgenteViewModel(app: Application) : AndroidViewModel(app) {
 
     private val db = PagoFlexDatabase.obtener(app)
 
-    private val agenteCodigo = "AG-01"
+    private var agenteCodigo: String? = null
 
     var reportes by mutableStateOf<List<ReporteGestion>>(emptyList())
         private set
@@ -51,18 +51,27 @@ class AgenteViewModel(app: Application) : AndroidViewModel(app) {
 
     val cantidadAbiertos: Int get() = reportes.count { it.estado == EstadoReporte.ABIERTO }
 
+    fun cargarAgente(correo: String) {
+        agenteCodigo = null
+        viewModelScope.launch {
+            agenteCodigo = db.agenteDao().buscarPorCorreo(correo.trim())?.codigo
+        }
+    }
+
     fun tomar(numero: String) {
+        val codigo = agenteCodigo ?: return
         val ent = entidades[numero] ?: return
         if (ent.estado != EstadoReporte.ABIERTO) return
         mensaje = "Reporte tomado"
         viewModelScope.launch {
             db.reporteDao().insertar(
-                ent.copy(estado = EstadoReporte.EN_GESTION, agenteResponsable = agenteCodigo)
+                ent.copy(estado = EstadoReporte.EN_GESTION, agenteResponsable = codigo)
             )
         }
     }
 
     fun resolver(numero: String) {
+        val codigo = agenteCodigo ?: return
         val ent = entidades[numero] ?: return
         if (ent.estado == EstadoReporte.RESUELTO) return
         mensaje = "Reporte resuelto"
@@ -70,7 +79,7 @@ class AgenteViewModel(app: Application) : AndroidViewModel(app) {
             db.reporteDao().insertar(
                 ent.copy(
                     estado = EstadoReporte.RESUELTO,
-                    agenteResponsable = ent.agenteResponsable ?: agenteCodigo,
+                    agenteResponsable = ent.agenteResponsable ?: codigo,
                     respuestaUsuario = "Gestionado por soporte."
                 )
             )

@@ -20,4 +20,7 @@ interface EjecutivoDao {
 
     @Query("SELECT * FROM ejecutivo WHERE codigo = :codigo")
     suspend fun obtenerPorCodigo(codigo: String): EjecutivoEntity?
+
+    @Query("SELECT * FROM ejecutivo WHERE correo = :correo COLLATE NOCASE")
+    suspend fun buscarPorCorreo(correo: String): EjecutivoEntity?
 }

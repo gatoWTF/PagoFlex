@@ -1,12 +1,21 @@
 package com.example.pagoflex
 
 import com.example.pagoflex.model.RolUsuario
+import com.example.pagoflex.model.Usuario
 import com.example.pagoflex.viewmodel.SesionViewModel
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Test
 
 class SesionViewModelFotoTest {
+
+    private val cuentaDePrueba = Usuario(
+        id = 7L,
+        nombre = "Ana Perez",
+        rut = "15.834.207-3",
+        correo = "ana@correo.cl",
+        rol = RolUsuario.USUARIO_FINAL
+    )
 
     @Test
     fun fotoPerfil_arranca_null() {
@@ -15,22 +24,19 @@ class SesionViewModelFotoTest {
     }
 
     @Test
-    fun iniciarDesdeRegistro_dejaLaFotoEnNull() {
+    fun iniciarSesion_dejaLaFotoEnNull() {
         val sesion = SesionViewModel()
-        sesion.iniciarDesdeRegistro(
-            nombre = "Ana Perez",
-            rut = "15.834.207-3",
-            correo = "ana@correo.cl",
-            rol = RolUsuario.USUARIO_FINAL
-        )
+        sesion.iniciarSesion(cuentaDePrueba)
         assertNull(sesion.fotoPerfil)
     }
 
     @Test
-    fun iniciarDesdeLogin_dejaLaFotoEnNull() {
+    fun iniciarSesion_guardaLosDatosDeLaCuenta() {
         val sesion = SesionViewModel()
-        sesion.iniciarDesdeLogin(correo = "alguien@correo.cl", rol = RolUsuario.USUARIO_FINAL)
-        assertNull(sesion.fotoPerfil)
+        sesion.iniciarSesion(cuentaDePrueba)
+        assertEquals(7L, sesion.idUsuario)
+        assertEquals("Ana Perez", sesion.nombre)
+        assertEquals(RolUsuario.USUARIO_FINAL, sesion.rol)
     }
 
     @Test

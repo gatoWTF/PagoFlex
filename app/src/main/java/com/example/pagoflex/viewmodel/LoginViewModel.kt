@@ -4,11 +4,15 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
-import com.example.pagoflex.data.DerivadorDeRol
-import com.example.pagoflex.model.RolUsuario
+import androidx.lifecycle.viewModelScope
+import com.example.pagoflex.data.UsuarioRepository
+import com.example.pagoflex.model.Usuario
 import com.example.pagoflex.utils.Validaciones
+import kotlinx.coroutines.launch
 
-class LoginViewModel : ViewModel() {
+class LoginViewModel(
+    private val repositorio: UsuarioRepository = UsuarioRepository()
+) : ViewModel() {
 
     var correo by mutableStateOf("")
         private set
@@ -20,23 +24,39 @@ class LoginViewModel : ViewModel() {
         private set
     var errorContrasena by mutableStateOf<String?>(null)
         private set
-
-    var rol by mutableStateOf<RolUsuario?>(null)
+    var errorGeneral by mutableStateOf<String?>(null)
+        private set
+    var cargando by mutableStateOf(false)
         private set
 
-    fun cambiarCorreo(nuevo: String) { correo = nuevo; errorCorreo = null }
-    fun cambiarContrasena(nueva: String) { contrasena = nueva; errorContrasena = null }
+    var usuario by mutableStateOf<Usuario?>(null)
+        private set
+
+    fun cambiarCorreo(nuevo: String) { correo = nuevo; errorCorreo = null; errorGeneral = null }
+    fun cambiarContrasena(nueva: String) { contrasena = nueva; errorContrasena = null; errorGeneral = null }
     fun alternarContrasenaVisible() { contrasenaVisible = !contrasenaVisible }
 
-    fun iniciarSesion() {
-        val correoLimpio = correo.trim()
-        errorCorreo = if (Validaciones.correoValido(correoLimpio)) null else "Correo no válido"
+    fun validar(): Boolean {
+        errorCorreo = if (Validaciones.correoValido(correo.trim())) null else "Correo no válido"
         errorContrasena = if (Validaciones.contrasenaValida(contrasena)) null
         else "La contraseña debe tener al menos ${Validaciones.LARGO_MINIMO_CONTRASENA} caracteres"
-        if (errorCorreo != null || errorContrasena != null) return
-
-        rol = DerivadorDeRol.rolPorCorreo(correoLimpio)
+        return errorCorreo == null && errorContrasena == null
     }
 
-    fun consumirRol() { rol = null }
+    fun iniciarSesion() {
+        if (cargando || !validar()) return
+        cargando = true
+        errorGeneral = null
+        viewModelScope.launch {
+            try {
+                usuario = repositorio.iniciarSesion(correo.trim(), contrasena)
+            } catch (e: Exception) {
+                errorGeneral = e.message
+            } finally {
+                cargando = false
+            }
+        }
+    }
+
+    fun consumirUsuario() { usuario = null }
 }

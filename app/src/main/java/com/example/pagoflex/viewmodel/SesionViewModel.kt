@@ -37,6 +37,9 @@ class SesionViewModel : ViewModel() {
     var mensaje by mutableStateOf<String?>(null)
         private set
 
+    var bienvenida by mutableStateOf<String?>(null)
+        private set
+
     fun iniciarSesion(usuario: Usuario) {
         this.idUsuario = usuario.id
         this.nombre = usuario.nombre
@@ -46,6 +49,7 @@ class SesionViewModel : ViewModel() {
         this.telefono = ""
         this.correoSecundario = ""
         this.fotoPerfil = null
+        this.bienvenida = "Ingresaste como ${usuario.rol.etiqueta}"
         limpiarErrores()
     }
 
@@ -79,6 +83,7 @@ class SesionViewModel : ViewModel() {
 
     fun consumirMensaje() { mensaje = null }
 
+    fun consumirBienvenida() { bienvenida = null }
     private fun limpiarErrores() {
         errorCorreoSecundario = null
         errorTelefono = null

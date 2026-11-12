@@ -171,7 +171,9 @@ private fun AppPagoFlex(configuracionViewModel: ConfiguracionViewModel) {
                 alAbrirPerfil = { navController.navigate(Rutas.Perfil.ruta) },
                 alAbrirHistorial = { navController.navigate(Rutas.Historial.ruta) },
                 alAbrirConfiguracion = { navController.navigate(Rutas.Configuracion.ruta) },
-                alCerrarSesion = { irALogin(navController) }
+                alCerrarSesion = { irALogin(navController) },
+                bienvenida = sesionViewModel.bienvenida,
+                alMostrarBienvenida = sesionViewModel::consumirBienvenida
             )
         }
 
@@ -254,7 +256,9 @@ private fun AppPagoFlex(configuracionViewModel: ConfiguracionViewModel) {
                 viewModel = agenteViewModel,
                 alAbrirPerfil = { navController.navigate(Rutas.Perfil.ruta) },
                 alAbrirConfiguracion = { navController.navigate(Rutas.Configuracion.ruta) },
-                alCerrarSesion = { irALogin(navController) }
+                alCerrarSesion = { irALogin(navController) },
+                bienvenida = sesionViewModel.bienvenida,
+                alMostrarBienvenida = sesionViewModel::consumirBienvenida
             )
         }
 
@@ -264,7 +268,9 @@ private fun AppPagoFlex(configuracionViewModel: ConfiguracionViewModel) {
                 alRegistrar = { navController.navigate(Rutas.RegistrarCompromiso.ruta) },
                 alAbrirPerfil = { navController.navigate(Rutas.Perfil.ruta) },
                 alAbrirConfiguracion = { navController.navigate(Rutas.Configuracion.ruta) },
-                alCerrarSesion = { irALogin(navController) }
+                alCerrarSesion = { irALogin(navController) },
+                bienvenida = sesionViewModel.bienvenida,
+                alMostrarBienvenida = sesionViewModel::consumirBienvenida
             )
         }
 

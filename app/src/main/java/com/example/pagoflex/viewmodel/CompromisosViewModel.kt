@@ -16,6 +16,7 @@ import com.example.pagoflex.model.Comprobante
 import com.example.pagoflex.model.Compromiso
 import com.example.pagoflex.model.EstadoCompromiso
 import com.example.pagoflex.model.EstadoReporte
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
@@ -26,7 +27,8 @@ class CompromisosViewModel(app: Application) : AndroidViewModel(app) {
 
     private val db = PagoFlexDatabase.obtener(app)
 
-    private val usuarioCodigo = "UF-01"
+    private var usuarioCodigo: String? = null
+    private var observacion: Job? = null
 
     var compromisos by mutableStateOf<List<Compromiso>>(emptyList())
         private set
@@ -43,13 +45,19 @@ class CompromisosViewModel(app: Application) : AndroidViewModel(app) {
     private var contadorComprobante = 460
     private var contadorReporte = 20
 
-    init {
-
-        viewModelScope.launch {
+    fun cargarUsuario(rut: String) {
+        observacion?.cancel()
+        usuarioCodigo = null
+        compromisos = emptyList()
+        comprobantes = emptyList()
+        observacion = viewModelScope.launch {
+            val rutSinFormato = rut.trim().uppercase().replace(".", "").replace("-", "")
+            val codigo = db.usuarioFinalDao().buscarPorRut(rutSinFormato)?.codigo ?: return@launch
+            usuarioCodigo = codigo
             combine(
                 db.empresaClienteDao().observarTodas(),
-                db.compromisoDao().observarPorUsuario(usuarioCodigo),
-                db.comprobanteDao().observarPorUsuario(usuarioCodigo)
+                db.compromisoDao().observarPorUsuario(codigo),
+                db.comprobanteDao().observarPorUsuario(codigo)
             ) { empresasList, compromisoEnts, comprobanteEnts ->
                 Triple(empresasList, compromisoEnts, comprobanteEnts)
             }.collect { (empresasList, compromisoEnts, comprobanteEnts) ->
@@ -102,6 +110,7 @@ class CompromisosViewModel(app: Application) : AndroidViewModel(app) {
         )
         ultimoComprobante = comprobante
 
+        val codigo = usuarioCodigo ?: return comprobante
         viewModelScope.launch {
             val ent = db.compromisoDao().obtenerPorFolio(folio) ?: return@launch
             db.compromisoDao().actualizar(ent.copy(estado = EstadoCompromiso.PAGADO, recargoAplicado = 0))
@@ -109,7 +118,7 @@ class CompromisosViewModel(app: Application) : AndroidViewModel(app) {
                 ComprobanteEntity(
                     numero = numero,
                     compromisoFolio = folio,
-                    usuarioCodigo = usuarioCodigo,
+                    usuarioCodigo = codigo,
                     empresaCodigo = ent.empresaCodigo,
                     fechaHora = fechaHora,
                     montoPagado = compromiso.totalAPagar,
@@ -123,6 +132,7 @@ class CompromisosViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     fun reportarProblema(folio: String, motivo: String, comentario: String) {
+        val codigo = usuarioCodigo ?: return
         mensaje = "Reporte enviado"
         val numero = "REP-" + String.format(Locale.US, "%04d", contadorReporte)
         contadorReporte++
@@ -136,7 +146,7 @@ class CompromisosViewModel(app: Application) : AndroidViewModel(app) {
                 ReporteEntity(
                     numero = numero,
                     compromisoFolio = folio,
-                    usuarioCodigo = usuarioCodigo,
+                    usuarioCodigo = codigo,
                     motivo = motivo,
                     comentario = comentario,
                     fecha = hoyFormateado(),

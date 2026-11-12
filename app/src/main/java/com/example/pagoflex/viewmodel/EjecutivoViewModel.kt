@@ -11,6 +11,7 @@ import com.example.pagoflex.data.local.entity.CompromisoEntity
 import com.example.pagoflex.data.local.entity.UsuarioFinalEntity
 import com.example.pagoflex.model.CompromisoEmpresa
 import com.example.pagoflex.model.EstadoCompromiso
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
@@ -21,8 +22,12 @@ class EjecutivoViewModel(app: Application) : AndroidViewModel(app) {
 
     private val db = PagoFlexDatabase.obtener(app)
 
-    private val empresaCodigo = "EC-03"
-    val empresa = "Crédito Andino"
+    private var empresaCodigo: String? = null
+    private var ejecutivoCodigo: String? = null
+    private var observacion: Job? = null
+
+    var empresa by mutableStateOf("")
+        private set
 
     var compromisos by mutableStateOf<List<CompromisoEmpresa>>(emptyList())
         private set
@@ -34,10 +39,20 @@ class EjecutivoViewModel(app: Application) : AndroidViewModel(app) {
     private var contadorFolio = 130
     private var contadorUsuario = 900
 
-    init {
-        viewModelScope.launch {
+    fun cargarEjecutivo(correo: String) {
+        observacion?.cancel()
+        empresaCodigo = null
+        ejecutivoCodigo = null
+        empresa = ""
+        compromisos = emptyList()
+        observacion = viewModelScope.launch {
+            val ejecutivo = db.ejecutivoDao().buscarPorCorreo(correo.trim()) ?: return@launch
+            ejecutivoCodigo = ejecutivo.codigo
+            empresaCodigo = ejecutivo.empresaCodigo
+            empresa = db.empresaClienteDao().obtenerPorCodigo(ejecutivo.empresaCodigo)?.nombreFantasia
+                ?: ejecutivo.empresaCodigo
             combine(
-                db.compromisoDao().observarPorEmpresa(empresaCodigo),
+                db.compromisoDao().observarPorEmpresa(ejecutivo.empresaCodigo),
                 db.usuarioFinalDao().observarTodos()
             ) { compromisoEnts, usuarioList ->
                 compromisoEnts to usuarioList
@@ -74,6 +89,8 @@ class EjecutivoViewModel(app: Application) : AndroidViewModel(app) {
         monto: Int,
         fechaVencimiento: String
     ) {
+        val empresaActual = empresaCodigo ?: return
+        val registrador = ejecutivoCodigo ?: return
         mensaje = "Compromiso registrado"
         val folio = "CP-2026-" + String.format(Locale.US, "%04d", contadorFolio)
         contadorFolio++
@@ -84,14 +101,14 @@ class EjecutivoViewModel(app: Application) : AndroidViewModel(app) {
                 CompromisoEntity(
                     folio = folio,
                     usuarioCodigo = codigoUsuario,
-                    empresaCodigo = empresaCodigo,
+                    empresaCodigo = empresaActual,
                     concepto = concepto.trim(),
                     numeroCuota = null,
                     monto = monto,
                     fechaVencimiento = fechaVencimiento.trim(),
                     estado = EstadoCompromiso.PENDIENTE,
                     recargoAplicado = 0,
-                    registradoPor = "EJ-03"
+                    registradoPor = registrador
                 )
             )
         }

@@ -23,6 +23,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.pagoflex.model.ModoTema
+import com.example.pagoflex.model.RolUsuario
+import com.example.pagoflex.model.Usuario
 import com.example.pagoflex.ui.navigation.Rutas
 import com.example.pagoflex.ui.screens.ComprobanteScreen
 import com.example.pagoflex.ui.screens.ConfiguracionScreen
@@ -79,6 +81,14 @@ private fun AppPagoFlex(configuracionViewModel: ConfiguracionViewModel) {
 
     val sesionViewModel: SesionViewModel = viewModel()
 
+    fun cargarDatosDelRol(usuario: Usuario) {
+        when (usuario.rol) {
+            RolUsuario.USUARIO_FINAL -> compromisosViewModel.cargarUsuario(usuario.rut)
+            RolUsuario.EJECUTIVO -> ejecutivoViewModel.cargarEjecutivo(usuario.correo)
+            RolUsuario.AGENTE -> agenteViewModel.cargarAgente(usuario.correo)
+        }
+    }
+
     NavHost(
         navController = navController,
         startDestination = Rutas.Login.ruta,
@@ -102,6 +112,7 @@ private fun AppPagoFlex(configuracionViewModel: ConfiguracionViewModel) {
             LaunchedEffect(loginViewModel.usuario) {
                 loginViewModel.usuario?.let { usuario ->
                     sesionViewModel.iniciarSesion(usuario)
+                    cargarDatosDelRol(usuario)
                     navController.navigate(Rutas.homeDeRol(usuario.rol).ruta) {
                         popUpTo(Rutas.Login.ruta) { inclusive = true }
                     }
@@ -129,6 +140,7 @@ private fun AppPagoFlex(configuracionViewModel: ConfiguracionViewModel) {
             LaunchedEffect(registroViewModel.usuario) {
                 registroViewModel.usuario?.let { usuario ->
                     sesionViewModel.iniciarSesion(usuario)
+                    cargarDatosDelRol(usuario)
                     navController.navigate(Rutas.homeDeRol(usuario.rol).ruta) {
                         popUpTo(Rutas.Login.ruta) { inclusive = true }
                     }

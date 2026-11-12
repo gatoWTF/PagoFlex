@@ -46,6 +46,8 @@ fun HomeAgenteScreen(
     alAbrirPerfil: () -> Unit,
     alAbrirConfiguracion: () -> Unit,
     alCerrarSesion: () -> Unit,
+    bienvenida: String? = null,
+    alMostrarBienvenida: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
@@ -54,6 +56,12 @@ fun HomeAgenteScreen(
         if (texto != null) {
             snackbarHostState.showSnackbar(texto, duration = SnackbarDuration.Long)
             viewModel.consumirMensaje()
+        }
+    }
+    LaunchedEffect(bienvenida) {
+        if (bienvenida != null) {
+            snackbarHostState.showSnackbar(bienvenida)
+            alMostrarBienvenida()
         }
     }
 

@@ -1,20 +1,18 @@
 package com.example.pagoflex.viewmodel
 
-import android.app.Application
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.pagoflex.data.local.PagoFlexDatabase
-import com.example.pagoflex.data.local.entity.CuentaEntity
-import com.example.pagoflex.model.RolUsuario
+import com.example.pagoflex.data.UsuarioRepository
+import com.example.pagoflex.model.Usuario
 import com.example.pagoflex.utils.Validaciones
 import kotlinx.coroutines.launch
 
-class RegistroViewModel(app: Application) : AndroidViewModel(app) {
-
-    private val cuentaDao = PagoFlexDatabase.obtener(app).cuentaDao()
+class RegistroViewModel(
+    private val repositorio: UsuarioRepository = UsuarioRepository()
+) : ViewModel() {
 
     var nombre by mutableStateOf("")
         private set
@@ -39,14 +37,18 @@ class RegistroViewModel(app: Application) : AndroidViewModel(app) {
         private set
     var errorConfirmar by mutableStateOf<String?>(null)
         private set
+    var errorGeneral by mutableStateOf<String?>(null)
+        private set
+    var cargando by mutableStateOf(false)
+        private set
 
-    var rol by mutableStateOf<RolUsuario?>(null)
+    var usuario by mutableStateOf<Usuario?>(null)
         private set
 
     fun cambiarNombre(nuevo: String) { nombre = nuevo; errorNombre = null }
 
     fun cambiarRut(nuevo: String) { rut = nuevo; errorRut = null }
-    fun cambiarCorreo(nuevo: String) { correo = nuevo; errorCorreo = null }
+    fun cambiarCorreo(nuevo: String) { correo = nuevo; errorCorreo = null; errorGeneral = null }
 
     fun cambiarContrasena(nueva: String) {
         contrasena = nueva
@@ -70,41 +72,37 @@ class RegistroViewModel(app: Application) : AndroidViewModel(app) {
         else "Correo no válido"
     }
 
-    fun crearCuenta() {
-        val correoLimpio = correo.trim()
+    fun validar(): Boolean {
         errorNombre = when {
             nombre.isBlank() -> "Ingresa tu nombre"
             !Validaciones.nombreLargo(nombre) -> "El nombre es muy corto"
             !Validaciones.nombreSoloLetras(nombre) -> "El nombre no puede llevar números"
             else -> null}
         errorRut = if (Validaciones.rutValido(rut)) null else "RUT no válido"
-        errorCorreo = if (Validaciones.correoValido(correoLimpio)) null else "Correo no válido"
+        errorCorreo = if (Validaciones.correoValido(correo.trim())) null else "Correo no válido"
         errorContrasena = evaluarContrasena() ?: contrasenaObligatoria()
         errorConfirmar = evaluarConfirmar() ?: confirmacionObligatoria()
 
-        if (errorNombre != null || errorRut != null || errorCorreo != null ||
-            errorContrasena != null || errorConfirmar != null
-        ) return
+        return errorNombre == null && errorRut == null && errorCorreo == null &&
+            errorContrasena == null && errorConfirmar == null
+    }
 
+    fun crearCuenta() {
+        if (cargando || !validar()) return
+        cargando = true
+        errorGeneral = null
         viewModelScope.launch {
-            val existente = cuentaDao.buscarPorCorreo(correoLimpio)
-            if (existente != null) {
-                errorCorreo = "Ya existe una cuenta con este correo"
-            } else {
-                val nueva = CuentaEntity(
-                    correo = correoLimpio,
-                    nombre = nombre.trim(),
-                    rut = rut.trim(),
-                    contrasena = contrasena,
-                    rol = RolUsuario.USUARIO_FINAL
-                )
-                cuentaDao.insertar(nueva)
-                rol = RolUsuario.USUARIO_FINAL
+            try {
+                usuario = repositorio.registrar(nombre.trim(), rut.trim(), correo.trim(), contrasena)
+            } catch (e: Exception) {
+                errorGeneral = e.message
+            } finally {
+                cargando = false
             }
         }
     }
 
-    fun consumirRol() { rol = null }
+    fun consumirUsuario() { usuario = null }
 
     private fun evaluarContrasena(): String? = when {
         contrasena.isEmpty() -> null

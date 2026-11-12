@@ -5,12 +5,14 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
-import com.example.pagoflex.data.local.DatosSemilla
 import com.example.pagoflex.model.RolUsuario
+import com.example.pagoflex.model.Usuario
 import com.example.pagoflex.utils.Validaciones
 
 class SesionViewModel : ViewModel() {
 
+    var idUsuario by mutableStateOf<Long?>(null)
+        private set
     var nombre by mutableStateOf("")
         private set
     var rut by mutableStateOf("")
@@ -35,29 +37,19 @@ class SesionViewModel : ViewModel() {
     var mensaje by mutableStateOf<String?>(null)
         private set
 
-    fun iniciarDesdeRegistro(nombre: String, rut: String, correo: String, rol: RolUsuario) {
-        this.nombre = nombre.trim()
-        this.rut = rut.trim()
-        this.correo = correo.trim()
-        this.rol = rol
+    var bienvenida by mutableStateOf<String?>(null)
+        private set
+
+    fun iniciarSesion(usuario: Usuario) {
+        this.idUsuario = usuario.id
+        this.nombre = usuario.nombre
+        this.rut = usuario.rut
+        this.correo = usuario.correo
+        this.rol = usuario.rol
         this.telefono = ""
         this.correoSecundario = ""
         this.fotoPerfil = null
-        limpiarErrores()
-    }
-
-    fun iniciarDesdeLogin(correo: String, rol: RolUsuario) {
-        val limpio = correo.trim()
-        val uf = DatosSemilla.usuariosFinales.firstOrNull { it.correo.equals(limpio, ignoreCase = true) }
-        val ej = DatosSemilla.ejecutivos.firstOrNull { it.correo.equals(limpio, ignoreCase = true) }
-        val ag = DatosSemilla.agentes.firstOrNull { it.correo.equals(limpio, ignoreCase = true) }
-        this.correo = limpio
-        this.rol = rol
-        this.nombre = uf?.nombreCompleto ?: ej?.nombre ?: ag?.nombre ?: ""
-        this.rut = uf?.rut ?: ej?.rut ?: ag?.rut ?: ""
-        this.telefono = uf?.telefono ?: ej?.telefono ?: ""
-        this.correoSecundario = ""
-        this.fotoPerfil = null
+        this.bienvenida = "Ingresaste como ${usuario.rol.etiqueta}"
         limpiarErrores()
     }
 
@@ -91,6 +83,7 @@ class SesionViewModel : ViewModel() {
 
     fun consumirMensaje() { mensaje = null }
 
+    fun consumirBienvenida() { bienvenida = null }
     private fun limpiarErrores() {
         errorCorreoSecundario = null
         errorTelefono = null

@@ -71,6 +71,8 @@ fun HomeEjecutivoScreen(
     alAbrirPerfil: () -> Unit,
     alAbrirConfiguracion: () -> Unit,
     alCerrarSesion: () -> Unit,
+    bienvenida: String? = null,
+    alMostrarBienvenida: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
 
@@ -84,6 +86,12 @@ fun HomeEjecutivoScreen(
         if (texto != null) {
             snackbarHostState.showSnackbar(texto, duration = SnackbarDuration.Long)
             viewModel.consumirMensaje()
+        }
+    }
+    LaunchedEffect(bienvenida) {
+        if (bienvenida != null) {
+            snackbarHostState.showSnackbar(bienvenida)
+            alMostrarBienvenida()
         }
     }
 

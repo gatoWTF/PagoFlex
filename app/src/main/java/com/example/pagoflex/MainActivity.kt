@@ -99,13 +99,13 @@ private fun AppPagoFlex(configuracionViewModel: ConfiguracionViewModel) {
 
         composable(Rutas.Login.ruta) {
             val loginViewModel: LoginViewModel = viewModel()
-            LaunchedEffect(loginViewModel.rol) {
-                loginViewModel.rol?.let { rol ->
-                    sesionViewModel.iniciarDesdeLogin(loginViewModel.correo, rol)
-                    navController.navigate(Rutas.homeDeRol(rol).ruta) {
+            LaunchedEffect(loginViewModel.usuario) {
+                loginViewModel.usuario?.let { usuario ->
+                    sesionViewModel.iniciarSesion(usuario)
+                    navController.navigate(Rutas.homeDeRol(usuario.rol).ruta) {
                         popUpTo(Rutas.Login.ruta) { inclusive = true }
                     }
-                    loginViewModel.consumirRol()
+                    loginViewModel.consumirUsuario()
                 }
             }
             LoginScreen(
@@ -118,24 +118,21 @@ private fun AppPagoFlex(configuracionViewModel: ConfiguracionViewModel) {
                 onIngresar = loginViewModel::iniciarSesion,
                 onIrARegistro = { navController.navigate(Rutas.Registro.ruta) },
                 errorCorreo = loginViewModel.errorCorreo,
-                errorContrasena = loginViewModel.errorContrasena
+                errorContrasena = loginViewModel.errorContrasena,
+                errorGeneral = loginViewModel.errorGeneral,
+                cargando = loginViewModel.cargando
             )
         }
 
         composable(Rutas.Registro.ruta) {
             val registroViewModel: RegistroViewModel = viewModel()
-            LaunchedEffect(registroViewModel.rol) {
-                registroViewModel.rol?.let { rol ->
-                    sesionViewModel.iniciarDesdeRegistro(
-                        registroViewModel.nombre,
-                        registroViewModel.rut,
-                        registroViewModel.correo,
-                        rol
-                    )
-                    navController.navigate(Rutas.homeDeRol(rol).ruta) {
+            LaunchedEffect(registroViewModel.usuario) {
+                registroViewModel.usuario?.let { usuario ->
+                    sesionViewModel.iniciarSesion(usuario)
+                    navController.navigate(Rutas.homeDeRol(usuario.rol).ruta) {
                         popUpTo(Rutas.Login.ruta) { inclusive = true }
                     }
-                    registroViewModel.consumirRol()
+                    registroViewModel.consumirUsuario()
                 }
             }
             RegistroScreen(
@@ -159,7 +156,9 @@ private fun AppPagoFlex(configuracionViewModel: ConfiguracionViewModel) {
                 errorRut = registroViewModel.errorRut,
                 errorCorreo = registroViewModel.errorCorreo,
                 errorContrasena = registroViewModel.errorContrasena,
-                errorConfirmar = registroViewModel.errorConfirmar
+                errorConfirmar = registroViewModel.errorConfirmar,
+                errorGeneral = registroViewModel.errorGeneral,
+                cargando = registroViewModel.cargando
             )
         }
 
@@ -172,7 +171,9 @@ private fun AppPagoFlex(configuracionViewModel: ConfiguracionViewModel) {
                 alAbrirPerfil = { navController.navigate(Rutas.Perfil.ruta) },
                 alAbrirHistorial = { navController.navigate(Rutas.Historial.ruta) },
                 alAbrirConfiguracion = { navController.navigate(Rutas.Configuracion.ruta) },
-                alCerrarSesion = { irALogin(navController) }
+                alCerrarSesion = { irALogin(navController) },
+                bienvenida = sesionViewModel.bienvenida,
+                alMostrarBienvenida = sesionViewModel::consumirBienvenida
             )
         }
 
@@ -255,7 +256,9 @@ private fun AppPagoFlex(configuracionViewModel: ConfiguracionViewModel) {
                 viewModel = agenteViewModel,
                 alAbrirPerfil = { navController.navigate(Rutas.Perfil.ruta) },
                 alAbrirConfiguracion = { navController.navigate(Rutas.Configuracion.ruta) },
-                alCerrarSesion = { irALogin(navController) }
+                alCerrarSesion = { irALogin(navController) },
+                bienvenida = sesionViewModel.bienvenida,
+                alMostrarBienvenida = sesionViewModel::consumirBienvenida
             )
         }
 
@@ -265,7 +268,9 @@ private fun AppPagoFlex(configuracionViewModel: ConfiguracionViewModel) {
                 alRegistrar = { navController.navigate(Rutas.RegistrarCompromiso.ruta) },
                 alAbrirPerfil = { navController.navigate(Rutas.Perfil.ruta) },
                 alAbrirConfiguracion = { navController.navigate(Rutas.Configuracion.ruta) },
-                alCerrarSesion = { irALogin(navController) }
+                alCerrarSesion = { irALogin(navController) },
+                bienvenida = sesionViewModel.bienvenida,
+                alMostrarBienvenida = sesionViewModel::consumirBienvenida
             )
         }
 

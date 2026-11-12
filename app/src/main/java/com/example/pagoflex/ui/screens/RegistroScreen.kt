@@ -54,7 +54,9 @@ fun RegistroScreen(
     errorRut: String? = null,
     errorCorreo: String? = null,
     errorContrasena: String? = null,
-    errorConfirmar: String? = null
+    errorConfirmar: String? = null,
+    errorGeneral: String? = null,
+    cargando: Boolean = false
 ) {
     Column(
         modifier = modifier
@@ -120,10 +122,19 @@ fun RegistroScreen(
 
             NotaInfo(texto = stringResource(R.string.nota_rol_correo))
 
+            if (errorGeneral != null) {
+                Text(
+                    text = errorGeneral,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.error
+                )
+            }
+
             BotonPrincipal(
                 texto = stringResource(R.string.btn_crear_cuenta),
                 onClick = onCrearCuenta,
                 icono = R.drawable.ic_ingresar,
+                cargando = cargando,
                 modifier = Modifier.fillMaxWidth()
             )
 

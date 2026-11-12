@@ -43,7 +43,8 @@ fun LoginScreen(
     modifier: Modifier = Modifier,
     errorCorreo: String? = null,
     errorContrasena: String? = null,
-    errorGeneral: String? = null
+    errorGeneral: String? = null,
+    cargando: Boolean = false
 ) {
     Column(
         modifier = modifier
@@ -97,6 +98,7 @@ fun LoginScreen(
                 texto = stringResource(R.string.btn_ingresar),
                 onClick = onIngresar,
                 icono = R.drawable.ic_ingresar,
+                cargando = cargando,
                 modifier = Modifier.fillMaxWidth()
             )
 

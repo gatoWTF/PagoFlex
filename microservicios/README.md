@@ -7,11 +7,22 @@ Servicios Spring Boot 4.1 (Java 21, Maven, JPA, MySQL) que consume la app con Re
 | `roles-service` | 8081 | `pagoflex_roles` | Catálogo de roles |
 | `usuarios-service` | 8082 | `pagoflex_usuarios` | Registro, login, perfil y cambio de contraseña (BCrypt). Le pide el nombre del rol a `roles-service` con WebClient |
 
-## Cómo levantarlos
+## Cómo levantarlos (desde Android Studio)
 
 1. Iniciar MySQL en Laragon (puerto 3306, usuario `root` sin contraseña). Las bases se crean solas.
-2. Abrir cada carpeta en IntelliJ con JDK 21 y ejecutar primero `roles-service`, después `usuarios-service`.
-3. La app (emulador) llega al PC por `http://10.0.2.2:8082/`.
+2. En Android Studio, pestaña **Terminal**, desde la carpeta del proyecto:
+   ```
+   .\microservicios\iniciar-roles.bat
+   ```
+3. Abrir otra pestaña de Terminal (botón **+**) y ejecutar:
+   ```
+   .\microservicios\iniciar-usuarios.bat
+   ```
+4. Para detener un servicio: `Ctrl+C` en su pestaña y responder `S`.
+
+Los scripts usan el Java que trae Android Studio y el Maven Wrapper (`mvnw`) de cada servicio, así que no hace falta instalar Maven ni usar IntelliJ. La primera vez descargan Maven y las librerías (tarda unos minutos).
+
+La app (emulador) llega al PC por `http://10.0.2.2:8082/`.
 
 ## Contrato de roles-service (los ids importan)
 

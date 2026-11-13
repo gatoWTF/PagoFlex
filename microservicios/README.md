@@ -58,12 +58,17 @@ Endpoints: `GET /api/roles` y `GET /api/roles/{id}` (404 si no existe).
 | GET | `/api/compromisos?rut=...` | — | Compromisos del usuario (el RUT puede ir con o sin puntos) |
 | GET | `/api/compromisos?empresa=EC-03` | — | Compromisos de una empresa |
 | GET | `/api/compromisos/{folio}` | — | 200 · 404 |
-| POST | `/api/compromisos` | `{"rutUsuario","nombreUsuario","empresaCodigo","concepto","numeroCuota","monto","fechaVencimiento","registradoPor"}` | 201 con el folio nuevo · 400 |
+| POST | `/api/compromisos` | `{"rutUsuario","nombreUsuario","empresaCodigo","concepto","totalCuotas","cuotaInicial","monto","fechaVencimiento","registradoPor"}` | 201 con la cuota inicial creada · 400 |
 | PUT | `/api/compromisos/{folio}/estado` | `{"estado"}` | 200 · 409 si el cambio no está permitido |
-| POST | `/api/compromisos/{folio}/pagar` | `{"canal","medioPago"}` (opcional) | 201 con el comprobante · 409 si no se puede pagar |
+| POST | `/api/compromisos/{folio}/pagar` | `{"canal","medioPago"}` (opcional) | 201 `{"comprobante", "siguienteCuota"}` · 409 si no se puede pagar |
 | GET | `/api/comprobantes?rut=...` | — | Historial de pagos del usuario |
 
-- El folio (`CP-2026-0113`, ...) y el número de comprobante los genera el servidor, siguiendo al último guardado.
+### Créditos en cuotas
+
+- Cada compromiso es **una cuota** de un crédito. Las cuotas del mismo crédito comparten `codigoCredito` (`CR-2026-0001`, ...) y guardan `cuotaActual` y `totalCuotas` ("8 de 24").
+- Al registrar, el ejecutivo indica la cantidad de cuotas, el monto de cada cuota, la cuota inicial y el vencimiento de esa cuota. La cuota inicial es 1 en un crédito nuevo; es mayor si la empresa trae un crédito que ya venía pagándose (las cuotas anteriores no se crean). Debe estar entre 1 y la cantidad de cuotas (máximo 120).
+- El servidor crea solo la cuota inicial. Al pagar una cuota crea la siguiente (mismo monto, vencimiento un mes después, folio nuevo) y la devuelve en `siguienteCuota`. Si era la última, `siguienteCuota` viene `null`.
+- El folio (`CP-2026-0115`, ...), el código de crédito y el número de comprobante los genera el servidor, siguiendo al último guardado.
 - Cambios de estado permitidos: pendiente o vencido → en revisión o anulado; en revisión → pendiente o vencido. Para pagar se usa `/pagar`, que suma el recargo y marca si fue a tiempo.
 
 ## Notas de usuarios-service

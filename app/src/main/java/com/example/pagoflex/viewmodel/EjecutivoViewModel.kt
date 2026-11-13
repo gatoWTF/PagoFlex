@@ -78,26 +78,29 @@ class EjecutivoViewModel(app: Application) : AndroidViewModel(app) {
         deudor: String,
         rutDeudor: String,
         concepto: String,
-        monto: Int,
+        totalCuotas: Int,
+        cuotaInicial: Int,
+        montoCuota: Int,
         fechaVencimiento: String
     ) {
         val empresaActual = empresaCodigo ?: return
         val registrador = ejecutivoCodigo ?: return
         viewModelScope.launch {
             try {
-                repositorio.registrar(
+                val creado = repositorio.registrar(
                     NuevoCompromisoRequest(
                         rutUsuario = rutDeudor.trim(),
                         nombreUsuario = deudor.trim(),
                         empresaCodigo = empresaActual,
                         concepto = concepto.trim(),
-                        numeroCuota = null,
-                        monto = monto,
+                        totalCuotas = totalCuotas,
+                        cuotaInicial = cuotaInicial,
+                        monto = montoCuota,
                         fechaVencimiento = fechaVencimiento.trim(),
                         registradoPor = registrador
                     )
                 )
-                mensaje = "Compromiso registrado"
+                mensaje = "Crédito registrado: cuota " + creado.cuotaActual + " de " + creado.totalCuotas
                 recargar()
             } catch (e: Exception) {
                 mensaje = e.message
@@ -122,6 +125,8 @@ class EjecutivoViewModel(app: Application) : AndroidViewModel(app) {
         deudor = nombreUsuario,
         rutDeudor = rutUsuario,
         concepto = concepto,
+        cuotaActual = cuotaActual,
+        totalCuotas = totalCuotas,
         monto = monto,
         fechaVencimiento = fechaVencimiento,
         estado = estado

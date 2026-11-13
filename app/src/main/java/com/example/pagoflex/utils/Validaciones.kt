@@ -33,6 +33,19 @@ object Validaciones {
         return numero > 0
     }
 
+    const val MAXIMO_CUOTAS = 120
+
+    fun cantidadCuotasValida(texto: String): Boolean {
+        val numero = texto.trim().toIntOrNull() ?: return false
+        return numero in 1..MAXIMO_CUOTAS
+    }
+
+    fun cuotaInicialValida(inicial: String, cantidad: String): Boolean {
+        if (!cantidadCuotasValida(cantidad)) return false
+        val numero = inicial.trim().toIntOrNull() ?: return false
+        return numero in 1..cantidad.trim().toInt()
+    }
+
     fun fechaValida(texto: String): Boolean {
         val coincidencia = Regex("""^(\d{2})-(\d{2})-(\d{4})$""").matchEntire(texto.trim())
             ?: return false

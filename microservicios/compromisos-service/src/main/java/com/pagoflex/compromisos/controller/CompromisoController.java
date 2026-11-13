@@ -1,10 +1,10 @@
 package com.pagoflex.compromisos.controller;
 
 import com.pagoflex.compromisos.dto.CambiarEstadoRequest;
-import com.pagoflex.compromisos.dto.ComprobanteResponse;
 import com.pagoflex.compromisos.dto.CompromisoResponse;
 import com.pagoflex.compromisos.dto.NuevoCompromisoRequest;
 import com.pagoflex.compromisos.dto.PagoRequest;
+import com.pagoflex.compromisos.dto.PagoResponse;
 import com.pagoflex.compromisos.service.CompromisoService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -58,7 +58,7 @@ public class CompromisoController {
 
     @PostMapping("/{folio}/pagar")
     @ResponseStatus(HttpStatus.CREATED)
-    public ComprobanteResponse pagar(@PathVariable String folio, @RequestBody(required = false) PagoRequest datos) {
+    public PagoResponse pagar(@PathVariable String folio, @RequestBody(required = false) PagoRequest datos) {
         return compromisoService.pagar(folio, datos);
     }
 }

@@ -5,11 +5,13 @@ import com.example.pagoflex.model.EstadoCompromiso
 
 data class CompromisoResponse(
     val folio: String,
+    val codigoCredito: String,
     val rutUsuario: String,
     val nombreUsuario: String,
     val empresaCodigo: String,
     val concepto: String,
-    val numeroCuota: String?,
+    val cuotaActual: Int,
+    val totalCuotas: Int,
     val monto: Int,
     val fechaVencimiento: String,
     val estado: EstadoCompromiso,
@@ -29,12 +31,18 @@ data class ComprobanteResponse(
     val medioPago: String
 )
 
+data class PagoResponse(
+    val comprobante: ComprobanteResponse,
+    val siguienteCuota: CompromisoResponse?
+)
+
 data class NuevoCompromisoRequest(
     val rutUsuario: String,
     val nombreUsuario: String,
     val empresaCodigo: String,
     val concepto: String,
-    val numeroCuota: String?,
+    val totalCuotas: Int,
+    val cuotaInicial: Int,
     val monto: Int,
     val fechaVencimiento: String,
     val registradoPor: String

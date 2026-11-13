@@ -301,8 +301,10 @@ private fun AppPagoFlex(configuracionViewModel: ConfiguracionViewModel) {
         composable(Rutas.RegistrarCompromiso.ruta) {
             RegistrarCompromisoScreen(
                 alVolver = { navController.popBackStack() },
-                onRegistrar = { deudor, rut, concepto, monto, fecha ->
-                    ejecutivoViewModel.registrarCompromiso(deudor, rut, concepto, monto, fecha)
+                onRegistrar = { deudor, rut, concepto, totalCuotas, cuotaInicial, montoCuota, fecha ->
+                    ejecutivoViewModel.registrarCompromiso(
+                        deudor, rut, concepto, totalCuotas, cuotaInicial, montoCuota, fecha
+                    )
                     navController.popBackStack()
                 }
             )

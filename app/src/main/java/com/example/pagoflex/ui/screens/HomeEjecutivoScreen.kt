@@ -288,7 +288,7 @@ private fun FilaCompromisoEmpresa(
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Text(
-                        text = "Vence " + compromiso.fechaVencimiento,
+                        text = "Cuota " + compromiso.cuota + " · vence " + compromiso.fechaVencimiento,
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )

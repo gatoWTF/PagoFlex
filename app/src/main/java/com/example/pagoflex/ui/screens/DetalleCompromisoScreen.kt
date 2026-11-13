@@ -136,7 +136,11 @@ fun DetalleCompromisoScreen(
             FilaDato("Total a pagar", FormatoMoneda.clp(compromiso.totalAPagar))
             HorizontalDivider(modifier = Modifier.padding(vertical = Dimens.espacioChico))
             FilaDato("Vence", compromiso.fechaVencimiento)
-            compromiso.cuota?.let { FilaDato("Cuota", it) }
+            FilaDato("Cuota", compromiso.cuota)
+            if (compromiso.estaPorPagar) {
+                FilaDato("Cuotas por pagar", compromiso.cuotasPorPagar.toString())
+                FilaDato("Saldo del crédito", FormatoMoneda.clp(compromiso.saldoCredito))
+            }
             FilaDato("Folio", compromiso.folio)
 
             Spacer(Modifier.weight(1f))
@@ -192,7 +196,8 @@ private fun DetalleCompromisoScreenPreview() {
                 empresa = "Club Los Halcones",
                 rubro = "Club deportivo",
                 concepto = "Cuota social octubre",
-                cuota = "10/12",
+                cuotaActual = 10,
+                totalCuotas = 12,
                 monto = 15000,
                 fechaVencimiento = "05-10-2026",
                 estado = EstadoCompromiso.VENCIDO,

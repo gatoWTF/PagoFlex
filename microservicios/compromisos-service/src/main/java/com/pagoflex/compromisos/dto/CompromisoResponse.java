@@ -5,11 +5,13 @@ import com.pagoflex.compromisos.model.EstadoCompromiso;
 
 public record CompromisoResponse(
         String folio,
+        String codigoCredito,
         String rutUsuario,
         String nombreUsuario,
         String empresaCodigo,
         String concepto,
-        String numeroCuota,
+        Integer cuotaActual,
+        Integer totalCuotas,
         Integer monto,
         String fechaVencimiento,
         EstadoCompromiso estado,
@@ -18,8 +20,8 @@ public record CompromisoResponse(
 ) {
     public static CompromisoResponse desde(Compromiso c) {
         return new CompromisoResponse(
-                c.getFolio(), c.getRutUsuario(), c.getNombreUsuario(), c.getEmpresaCodigo(),
-                c.getConcepto(), c.getNumeroCuota(), c.getMonto(), c.getFechaVencimiento(),
+                c.getFolio(), c.getCodigoCredito(), c.getRutUsuario(), c.getNombreUsuario(), c.getEmpresaCodigo(),
+                c.getConcepto(), c.getCuotaActual(), c.getTotalCuotas(), c.getMonto(), c.getFechaVencimiento(),
                 c.getEstado(), c.getRecargoAplicado(), c.getRegistradoPor()
         );
     }

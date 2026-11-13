@@ -45,8 +45,14 @@ public class Compromiso {
     @Column(nullable = false, length = 100)
     private String concepto;
 
-    @Column(name = "numero_cuota", length = 10)
-    private String numeroCuota;
+    @Column(name = "codigo_credito", nullable = false, length = 20)
+    private String codigoCredito;
+
+    @Column(name = "cuota_actual", nullable = false)
+    private Integer cuotaActual;
+
+    @Column(name = "total_cuotas", nullable = false)
+    private Integer totalCuotas;
 
     @Column(nullable = false)
     private Integer monto;

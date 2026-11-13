@@ -61,9 +61,9 @@ class CompromisosViewModel(app: Application) : AndroidViewModel(app) {
             empresas = db.empresaClienteDao().listarTodas().associateBy { it.codigo }
             val lista = repositorio.listarPorUsuario(rut)
             val pagos = repositorio.listarComprobantes(rut)
-            val conceptoPorFolio = lista.associate { it.folio to it.concepto }
             compromisos = lista.map { it.aModelo() }
-            comprobantes = pagos.map { it.aModelo(conceptoPorFolio) }
+            val compromisoPorFolio = compromisos.associateBy { it.folio }
+            comprobantes = pagos.map { it.aModelo(compromisoPorFolio) }
         } catch (e: Exception) {
             mensaje = e.message
         }
@@ -90,14 +90,16 @@ class CompromisosViewModel(app: Application) : AndroidViewModel(app) {
     fun buscarPorFolio(folio: String): Compromiso? = compromisos.find { it.folio == folio }
 
     fun buscarComprobante(folio: String): Comprobante? =
-        comprobantes.find { it.folio == folio } ?: ultimoComprobante?.takeIf { it.folio == folio }
+        ultimoComprobante?.takeIf { it.folio == folio } ?: comprobantes.find { it.folio == folio }
 
     fun pagar(folio: String, alTerminar: (Comprobante) -> Unit) {
         viewModelScope.launch {
             try {
                 val respuesta = repositorio.pagar(folio)
                 recargar()
-                val comprobante = respuesta.aModelo(compromisos.associate { it.folio to it.concepto })
+                val comprobante = respuesta.comprobante
+                    .aModelo(compromisos.associateBy { it.folio })
+                    .copy(siguienteCuota = respuesta.siguienteCuota?.aModelo())
                 ultimoComprobante = comprobante
                 alTerminar(comprobante)
             } catch (e: Exception) {
@@ -142,25 +144,30 @@ class CompromisosViewModel(app: Application) : AndroidViewModel(app) {
             empresa = empresa?.nombreFantasia ?: empresaCodigo,
             rubro = empresa?.rubro ?: "",
             concepto = concepto,
-            cuota = numeroCuota,
+            cuotaActual = cuotaActual,
+            totalCuotas = totalCuotas,
             monto = monto,
             fechaVencimiento = fechaVencimiento,
             estado = estado,
-            recargo = recargoAplicado
+            recargo = recargoAplicado,
+            codigoCredito = codigoCredito
         )
     }
 
-    private fun ComprobanteResponse.aModelo(conceptoPorFolio: Map<String, String>): Comprobante {
+    private fun ComprobanteResponse.aModelo(compromisoPorFolio: Map<String, Compromiso>): Comprobante {
         val nombreEmpresa = empresas[empresaCodigo]?.nombreFantasia ?: empresaCodigo
+        val compromisoPagado = compromisoPorFolio[compromisoFolio]
         return Comprobante(
             folio = numero,
             folioCompromiso = compromisoFolio,
-            concepto = conceptoPorFolio[compromisoFolio] ?: nombreEmpresa,
+            concepto = compromisoPagado?.concepto ?: nombreEmpresa,
             empresa = nombreEmpresa,
             monto = montoPagado,
             fechaHora = fechaHora,
             aTiempo = aTiempo,
-            canal = canal.etiqueta
+            canal = canal.etiqueta,
+            cuota = compromisoPagado?.cuota,
+            creditoTerminado = compromisoPagado?.esUltimaCuota == true
         )
     }
 

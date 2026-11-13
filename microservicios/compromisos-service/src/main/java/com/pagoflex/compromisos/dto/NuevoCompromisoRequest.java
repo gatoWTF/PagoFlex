@@ -5,7 +5,8 @@ public record NuevoCompromisoRequest(
         String nombreUsuario,
         String empresaCodigo,
         String concepto,
-        String numeroCuota,
+        Integer totalCuotas,
+        Integer cuotaInicial,
         Integer monto,
         String fechaVencimiento,
         String registradoPor

@@ -7,6 +7,7 @@ import com.example.pagoflex.data.remote.CompromisoResponse
 import com.example.pagoflex.data.remote.ErrorApi
 import com.example.pagoflex.data.remote.NuevoCompromisoRequest
 import com.example.pagoflex.data.remote.PagoRequest
+import com.example.pagoflex.data.remote.PagoResponse
 import com.example.pagoflex.data.remote.RetrofitClient
 import com.example.pagoflex.model.CanalPago
 import com.example.pagoflex.model.EstadoCompromiso
@@ -33,7 +34,7 @@ class CompromisoRepository(
     suspend fun cambiarEstado(folio: String, estado: EstadoCompromiso): CompromisoResponse =
         llamar { compromisoApi.cambiarEstado(folio, CambiarEstadoRequest(estado)) }
 
-    suspend fun pagar(folio: String): ComprobanteResponse =
+    suspend fun pagar(folio: String): PagoResponse =
         llamar { compromisoApi.pagar(folio, PagoRequest(CanalPago.APP, "Pago simulado")) }
 
     suspend fun listarComprobantes(rut: String): List<ComprobanteResponse> =

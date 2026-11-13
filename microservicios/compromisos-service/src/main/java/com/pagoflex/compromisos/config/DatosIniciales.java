@@ -32,18 +32,19 @@ public class DatosIniciales implements CommandLineRunner {
     public void run(String... args) {
         if (compromisoRepository.count() == 0) {
             compromisoRepository.saveAll(List.of(
-                    compromiso("CP-2026-0101", CAMILA, "Camila Andrea Rojas Peña", "EC-08", "Arriendo departamento octubre", "10/12", 520000, "10-10-2026", EstadoCompromiso.PENDIENTE, 0, "EJ-07"),
-                    compromiso("CP-2026-0102", CAMILA, "Camila Andrea Rojas Peña", "EC-06", "Cuota social octubre", "10/12", 15000, "05-10-2026", EstadoCompromiso.VENCIDO, 2000, "EJ-05"),
-                    compromiso("CP-2026-0103", CAMILA, "Camila Andrea Rojas Peña", "EC-05", "Aporte mensual octubre", null, 10000, "15-10-2026", EstadoCompromiso.PENDIENTE, 0, "PagoFlex"),
-                    compromiso("CP-2026-0104", CAMILA, "Camila Andrea Rojas Peña", "EC-03", "Crédito de consumo", "7/24", 86400, "25-09-2026", EstadoCompromiso.PAGADO, 0, "EJ-03"),
-                    compromiso("CP-2026-0105", CAMILA, "Camila Andrea Rojas Peña", "EC-03", "Crédito de consumo", "8/24", 86400, "25-10-2026", EstadoCompromiso.PENDIENTE, 0, "EJ-03"),
-                    compromiso("CP-2026-0106", LUIS, "Luis Alberto Muñoz Tapia", "EC-01", "Cuota pie departamento", "14/36", 310000, "30-09-2026", EstadoCompromiso.VENCIDO, 8500, "EJ-01"),
-                    compromiso("CP-2026-0107", LUIS, "Luis Alberto Muñoz Tapia", "EC-01", "Cuota pie departamento", "15/36", 310000, "30-10-2026", EstadoCompromiso.PENDIENTE, 0, "EJ-01"),
-                    compromiso("CP-2026-0108", ROSA, "Rosa Elena Contreras Díaz", "EC-04", "Seguro de hogar octubre", "10/12", 18900, "01-10-2026", EstadoCompromiso.PAGADO, 0, "PagoFlex"),
-                    compromiso("CP-2026-0109", MATIAS, "Matías Ignacio Soto Vergara", "EC-07", "Arancel octubre", "8/10", 142000, "05-10-2026", EstadoCompromiso.EN_REVISION, 0, "EJ-06"),
-                    compromiso("CP-2026-0110", FERNANDA, "Fernanda Paz Godoy Lagos", "EC-02", "Mensualidad octubre", "8/10", 185000, "10-10-2026", EstadoCompromiso.PENDIENTE, 0, "EJ-02"),
-                    compromiso("CP-2026-0111", HECTOR, "Héctor Manuel Pizarro Campos", "EC-03", "Crédito de consumo", "19/36", 54200, "20-09-2026", EstadoCompromiso.ANULADO, 0, "EJ-04"),
-                    compromiso("CP-2026-0112", JAVIERA, "Javiera Constanza Reyes Molina", "EC-06", "Cuota social octubre", "10/12", 15000, "05-10-2026", EstadoCompromiso.PAGADO, 0, "EJ-05")
+                    compromiso("CP-2026-0101", "CR-2026-0001", CAMILA, "Camila Andrea Rojas Peña", "EC-08", "Arriendo departamento", 10, 12, 520000, "10-10-2026", EstadoCompromiso.PENDIENTE, 0, "EJ-07"),
+                    compromiso("CP-2026-0102", "CR-2026-0002", CAMILA, "Camila Andrea Rojas Peña", "EC-06", "Cuota social", 10, 12, 15000, "05-10-2026", EstadoCompromiso.VENCIDO, 2000, "EJ-05"),
+                    compromiso("CP-2026-0103", "CR-2026-0003", CAMILA, "Camila Andrea Rojas Peña", "EC-05", "Aporte mensual", 10, 12, 10000, "15-10-2026", EstadoCompromiso.PENDIENTE, 0, "PagoFlex"),
+                    compromiso("CP-2026-0104", "CR-2026-0004", CAMILA, "Camila Andrea Rojas Peña", "EC-03", "Crédito de consumo", 7, 24, 86400, "25-09-2026", EstadoCompromiso.PAGADO, 0, "EJ-03"),
+                    compromiso("CP-2026-0105", "CR-2026-0004", CAMILA, "Camila Andrea Rojas Peña", "EC-03", "Crédito de consumo", 8, 24, 86400, "25-10-2026", EstadoCompromiso.PENDIENTE, 0, "EJ-03"),
+                    compromiso("CP-2026-0106", "CR-2026-0005", LUIS, "Luis Alberto Muñoz Tapia", "EC-01", "Cuota pie departamento", 14, 36, 310000, "30-09-2026", EstadoCompromiso.VENCIDO, 8500, "EJ-01"),
+                    compromiso("CP-2026-0108", "CR-2026-0006", ROSA, "Rosa Elena Contreras Díaz", "EC-04", "Seguro de hogar", 10, 12, 18900, "01-10-2026", EstadoCompromiso.PAGADO, 0, "PagoFlex"),
+                    compromiso("CP-2026-0113", "CR-2026-0006", ROSA, "Rosa Elena Contreras Díaz", "EC-04", "Seguro de hogar", 11, 12, 18900, "01-11-2026", EstadoCompromiso.PENDIENTE, 0, "PagoFlex"),
+                    compromiso("CP-2026-0109", "CR-2026-0007", MATIAS, "Matías Ignacio Soto Vergara", "EC-07", "Arancel", 8, 10, 142000, "05-10-2026", EstadoCompromiso.EN_REVISION, 0, "EJ-06"),
+                    compromiso("CP-2026-0110", "CR-2026-0008", FERNANDA, "Fernanda Paz Godoy Lagos", "EC-02", "Mensualidad", 8, 10, 185000, "10-10-2026", EstadoCompromiso.PENDIENTE, 0, "EJ-02"),
+                    compromiso("CP-2026-0111", "CR-2026-0009", HECTOR, "Héctor Manuel Pizarro Campos", "EC-03", "Crédito de consumo", 19, 36, 54200, "20-09-2026", EstadoCompromiso.ANULADO, 0, "EJ-04"),
+                    compromiso("CP-2026-0112", "CR-2026-0010", JAVIERA, "Javiera Constanza Reyes Molina", "EC-06", "Cuota social", 10, 12, 15000, "05-10-2026", EstadoCompromiso.PAGADO, 0, "EJ-05"),
+                    compromiso("CP-2026-0114", "CR-2026-0010", JAVIERA, "Javiera Constanza Reyes Molina", "EC-06", "Cuota social", 11, 12, 15000, "05-11-2026", EstadoCompromiso.PENDIENTE, 0, "EJ-05")
             ));
         }
         if (comprobanteRepository.count() == 0) {
@@ -60,17 +61,19 @@ public class DatosIniciales implements CommandLineRunner {
         }
     }
 
-    private Compromiso compromiso(String folio, String rut, String nombre, String empresa, String concepto,
-                                  String cuota, int monto, String vencimiento, EstadoCompromiso estado,
-                                  int recargo, String registradoPor) {
+    private Compromiso compromiso(String folio, String credito, String rut, String nombre, String empresa,
+                                  String concepto, int cuota, int totalCuotas, int monto, String vencimiento,
+                                  EstadoCompromiso estado, int recargo, String registradoPor) {
         return Compromiso.builder()
                 .folio(folio)
+                .codigoCredito(credito)
                 .rutUsuario(rut)
                 .rutClave(Rut.clave(rut))
                 .nombreUsuario(nombre)
                 .empresaCodigo(empresa)
                 .concepto(concepto)
-                .numeroCuota(cuota)
+                .cuotaActual(cuota)
+                .totalCuotas(totalCuotas)
                 .monto(monto)
                 .fechaVencimiento(vencimiento)
                 .estado(estado)

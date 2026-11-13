@@ -5,6 +5,7 @@ import com.pagoflex.compromisos.dto.ComprobanteResponse;
 import com.pagoflex.compromisos.dto.CompromisoResponse;
 import com.pagoflex.compromisos.dto.NuevoCompromisoRequest;
 import com.pagoflex.compromisos.dto.PagoRequest;
+import com.pagoflex.compromisos.dto.PagoResponse;
 import com.pagoflex.compromisos.model.CanalPago;
 import com.pagoflex.compromisos.model.Comprobante;
 import com.pagoflex.compromisos.model.Compromiso;
@@ -15,6 +16,7 @@ import com.pagoflex.compromisos.repository.CompromisoRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
@@ -30,6 +32,7 @@ public class CompromisoService {
 
     private static final DateTimeFormatter FORMATO_FECHA = DateTimeFormatter.ofPattern("dd-MM-yyyy");
     private static final DateTimeFormatter FORMATO_FECHA_HORA = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm");
+    private static final int MAXIMO_CUOTAS = 120;
 
     private final CompromisoRepository compromisoRepository;
     private final ComprobanteRepository comprobanteRepository;
@@ -51,19 +54,29 @@ public class CompromisoService {
                 || vacio(datos.concepto()) || vacio(datos.registradoPor())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "RUT, nombre, empresa, concepto y ejecutivo son obligatorios");
         }
+        Integer total = datos.totalCuotas();
+        if (total == null || total < 1 || total > MAXIMO_CUOTAS) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "La cantidad de cuotas debe estar entre 1 y " + MAXIMO_CUOTAS);
+        }
+        Integer inicial = datos.cuotaInicial();
+        if (inicial == null || inicial < 1 || inicial > total) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "La cuota inicial debe estar entre 1 y " + total);
+        }
         if (datos.monto() == null || datos.monto() <= 0) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El monto debe ser mayor a cero");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El monto de la cuota debe ser mayor a cero");
         }
         validarFecha(datos.fechaVencimiento());
 
         Compromiso nuevo = Compromiso.builder()
                 .folio(siguienteFolio())
+                .codigoCredito(siguienteCodigoCredito())
                 .rutUsuario(datos.rutUsuario().trim())
                 .rutClave(Rut.clave(datos.rutUsuario()))
                 .nombreUsuario(datos.nombreUsuario().trim())
                 .empresaCodigo(datos.empresaCodigo().trim())
                 .concepto(datos.concepto().trim())
-                .numeroCuota(vacio(datos.numeroCuota()) ? null : datos.numeroCuota().trim())
+                .cuotaActual(inicial)
+                .totalCuotas(total)
                 .monto(datos.monto())
                 .fechaVencimiento(datos.fechaVencimiento().trim())
                 .estado(EstadoCompromiso.PENDIENTE)
@@ -98,7 +111,8 @@ public class CompromisoService {
         return CompromisoResponse.desde(compromisoRepository.save(compromiso));
     }
 
-    public ComprobanteResponse pagar(String folio, PagoRequest datos) {
+    @Transactional
+    public PagoResponse pagar(String folio, PagoRequest datos) {
         Compromiso compromiso = buscar(folio);
         EstadoCompromiso estado = compromiso.getEstado();
         if (estado != EstadoCompromiso.PENDIENTE && estado != EstadoCompromiso.VENCIDO) {
@@ -124,7 +138,41 @@ public class CompromisoService {
         compromiso.setEstado(EstadoCompromiso.PAGADO);
         compromiso.setRecargoAplicado(0);
         compromisoRepository.save(compromiso);
-        return ComprobanteResponse.desde(comprobanteRepository.save(comprobante));
+        Comprobante guardado = comprobanteRepository.save(comprobante);
+
+        Compromiso siguiente = generarSiguienteCuota(compromiso);
+        return new PagoResponse(
+                ComprobanteResponse.desde(guardado),
+                siguiente == null ? null : CompromisoResponse.desde(siguiente)
+        );
+    }
+
+    private Compromiso generarSiguienteCuota(Compromiso pagada) {
+        int numeroSiguiente = pagada.getCuotaActual() + 1;
+        if (numeroSiguiente > pagada.getTotalCuotas()) {
+            return null;
+        }
+        return compromisoRepository.findByCodigoCreditoAndCuotaActual(pagada.getCodigoCredito(), numeroSiguiente)
+                .orElseGet(() -> {
+                    LocalDate vencimiento = LocalDate.parse(pagada.getFechaVencimiento(), FORMATO_FECHA).plusMonths(1);
+                    Compromiso siguiente = Compromiso.builder()
+                            .folio(siguienteFolio())
+                            .codigoCredito(pagada.getCodigoCredito())
+                            .rutUsuario(pagada.getRutUsuario())
+                            .rutClave(pagada.getRutClave())
+                            .nombreUsuario(pagada.getNombreUsuario())
+                            .empresaCodigo(pagada.getEmpresaCodigo())
+                            .concepto(pagada.getConcepto())
+                            .cuotaActual(numeroSiguiente)
+                            .totalCuotas(pagada.getTotalCuotas())
+                            .monto(pagada.getMonto())
+                            .fechaVencimiento(vencimiento.format(FORMATO_FECHA))
+                            .estado(EstadoCompromiso.PENDIENTE)
+                            .recargoAplicado(0)
+                            .registradoPor(pagada.getRegistradoPor())
+                            .build();
+                    return compromisoRepository.save(siguiente);
+                });
     }
 
     public List<ComprobanteResponse> listarComprobantes(String rut) {
@@ -151,6 +199,14 @@ public class CompromisoService {
                 .max()
                 .orElse(100);
         return "CP-" + LocalDate.now().getYear() + "-" + String.format("%04d", mayor + 1);
+    }
+
+    private String siguienteCodigoCredito() {
+        int mayor = compromisoRepository.findAll().stream()
+                .mapToInt(c -> numeroFinal(c.getCodigoCredito()))
+                .max()
+                .orElse(0);
+        return "CR-" + LocalDate.now().getYear() + "-" + String.format("%04d", mayor + 1);
     }
 
     private String siguienteNumeroComprobante() {

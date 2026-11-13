@@ -6,6 +6,7 @@ Servicios Spring Boot 4.1 (Java 21, Maven, JPA, MySQL) que consume la app con Re
 |---|---|---|---|
 | `roles-service` | 8081 | `pagoflex_roles` | Catálogo de roles |
 | `usuarios-service` | 8082 | `pagoflex_usuarios` | Registro, login, perfil y cambio de contraseña (BCrypt). Le pide el nombre del rol a `roles-service` con WebClient |
+| `compromisos-service` | 8083 | `pagoflex_compromisos` | Compromisos de pago y comprobantes. Cada compromiso guarda el RUT de su dueño (el mismo de su cuenta) |
 
 ## Cómo levantarlos (desde Android Studio)
 
@@ -18,7 +19,11 @@ Servicios Spring Boot 4.1 (Java 21, Maven, JPA, MySQL) que consume la app con Re
    ```
    .\microservicios\iniciar-usuarios.bat
    ```
-4. Para detener un servicio: `Ctrl+C` en su pestaña y responder `S`.
+4. En una tercera pestaña:
+   ```
+   .\microservicios\iniciar-compromisos.bat
+   ```
+5. Para detener un servicio: `Ctrl+C` en su pestaña y responder `S`.
 
 Los scripts usan el Java que trae Android Studio y el Maven Wrapper (`mvnw`) de cada servicio, así que no hace falta instalar Maven ni usar IntelliJ. La primera vez descargan Maven y las librerías (tarda unos minutos).
 
@@ -45,6 +50,23 @@ Endpoints: `GET /api/roles` y `GET /api/roles/{id}` (404 si no existe).
 | POST | `/api/usuarios/login` | `{"correo","contrasena"}` | 200 usuario · 401 credenciales incorrectas |
 | PUT | `/api/usuarios/{id}` | `{"nombre","rut","correo"}` | 200 · 404 · 409 |
 | PUT | `/api/usuarios/{id}/contrasena` | `{"actual","nueva"}` | 204 · 401 clave actual incorrecta · 400 |
+
+## compromisos-service — `http://localhost:8083`
+
+| Método | Ruta | Cuerpo | Respuesta |
+|---|---|---|---|
+| GET | `/api/compromisos?rut=...` | — | Compromisos del usuario (el RUT puede ir con o sin puntos) |
+| GET | `/api/compromisos?empresa=EC-03` | — | Compromisos de una empresa |
+| GET | `/api/compromisos/{folio}` | — | 200 · 404 |
+| POST | `/api/compromisos` | `{"rutUsuario","nombreUsuario","empresaCodigo","concepto","numeroCuota","monto","fechaVencimiento","registradoPor"}` | 201 con el folio nuevo · 400 |
+| PUT | `/api/compromisos/{folio}/estado` | `{"estado"}` | 200 · 409 si el cambio no está permitido |
+| POST | `/api/compromisos/{folio}/pagar` | `{"canal","medioPago"}` (opcional) | 201 con el comprobante · 409 si no se puede pagar |
+| GET | `/api/comprobantes?rut=...` | — | Historial de pagos del usuario |
+
+- El folio (`CP-2026-0113`, ...) y el número de comprobante los genera el servidor, siguiendo al último guardado.
+- Cambios de estado permitidos: pendiente o vencido → en revisión o anulado; en revisión → pendiente o vencido. Para pagar se usa `/pagar`, que suma el recargo y marca si fue a tiempo.
+
+## Notas de usuarios-service
 
 - La contraseña se guarda con **BCrypt** (nunca en texto plano) y la respuesta nunca la incluye.
 - Toda cuenta creada desde la app queda como usuario final (rol 1).

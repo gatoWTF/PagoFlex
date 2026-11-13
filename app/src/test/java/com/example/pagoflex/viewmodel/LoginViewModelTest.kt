@@ -1,4 +1,4 @@
-package viewmodel
+package com.example.pagoflex.viewmodel
 
 import com.example.pagoflex.viewmodel.LoginViewModel
 import org.junit.Assert.assertEquals

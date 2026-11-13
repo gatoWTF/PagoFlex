@@ -6,9 +6,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.pagoflex.data.CompromisoRepository
 import com.example.pagoflex.data.local.PagoFlexDatabase
 import com.example.pagoflex.data.local.entity.ReporteEntity
 import com.example.pagoflex.data.local.entity.UsuarioFinalEntity
+import com.example.pagoflex.model.EstadoCompromiso
 import com.example.pagoflex.model.EstadoReporte
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
@@ -25,6 +27,7 @@ data class ReporteGestion(
 class AgenteViewModel(app: Application) : AndroidViewModel(app) {
 
     private val db = PagoFlexDatabase.obtener(app)
+    private val repositorio = CompromisoRepository()
 
     private var agenteCodigo: String? = null
 
@@ -83,6 +86,16 @@ class AgenteViewModel(app: Application) : AndroidViewModel(app) {
                     respuestaUsuario = "Gestionado por soporte."
                 )
             )
+            try {
+                val compromiso = repositorio.obtener(ent.compromisoFolio)
+                if (compromiso.estado == EstadoCompromiso.EN_REVISION) {
+                    val estadoNuevo = if (compromiso.recargoAplicado > 0) EstadoCompromiso.VENCIDO
+                    else EstadoCompromiso.PENDIENTE
+                    repositorio.cambiarEstado(ent.compromisoFolio, estadoNuevo)
+                }
+            } catch (e: Exception) {
+                mensaje = "Reporte resuelto, pero no se pudo actualizar el compromiso"
+            }
         }
     }
 

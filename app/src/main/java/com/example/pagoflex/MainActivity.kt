@@ -233,10 +233,10 @@ private fun AppPagoFlex(configuracionViewModel: ConfiguracionViewModel) {
                 compromiso = folio?.let { compromisosViewModel.buscarPorFolio(it) },
                 alVolver = { navController.popBackStack() },
                 alPagar = { folioPagado ->
-                    val comprobante = compromisosViewModel.pagar(folioPagado)
-
-                    navController.navigate(Rutas.Comprobante.crear(comprobante.folio)) {
-                        popUpTo(Rutas.InicioUsuario.ruta)
+                    compromisosViewModel.pagar(folioPagado) { comprobante ->
+                        navController.navigate(Rutas.Comprobante.crear(comprobante.folio)) {
+                            popUpTo(Rutas.InicioUsuario.ruta)
+                        }
                     }
                 },
                 alReportar = { folioReporte ->

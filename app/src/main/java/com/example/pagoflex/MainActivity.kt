@@ -35,6 +35,7 @@ import com.example.pagoflex.ui.screens.HomeEjecutivoScreen
 import com.example.pagoflex.ui.screens.InicioScreen
 import com.example.pagoflex.ui.screens.LoginScreen
 import com.example.pagoflex.ui.screens.PerfilScreen
+import com.example.pagoflex.ui.screens.CambiarContrasenaScreen
 import com.example.pagoflex.ui.screens.RegistrarCompromisoScreen
 import com.example.pagoflex.ui.screens.RegistroScreen
 import com.example.pagoflex.ui.screens.ReportarProblemaScreen
@@ -46,6 +47,7 @@ import com.example.pagoflex.viewmodel.EjecutivoViewModel
 import com.example.pagoflex.viewmodel.LoginViewModel
 import com.example.pagoflex.viewmodel.RegistroViewModel
 import com.example.pagoflex.viewmodel.SesionViewModel
+import com.example.pagoflex.viewmodel.CambiarContrasenaViewModel
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -192,6 +194,16 @@ private fun AppPagoFlex(configuracionViewModel: ConfiguracionViewModel) {
         composable(Rutas.Perfil.ruta) {
             PerfilScreen(
                 sesion = sesionViewModel,
+                alVolver = { navController.popBackStack() },
+                alCambiarContrasena = { navController.navigate(Rutas.CambiarContrasena.ruta) },
+            )
+        }
+
+        composable(Rutas.CambiarContrasena.ruta) {
+            val cambiarContrasenaViewModel: CambiarContrasenaViewModel = viewModel()
+            CambiarContrasenaScreen(
+                viewModel = cambiarContrasenaViewModel,
+                idUsuario = sesionViewModel.idUsuario,
                 alVolver = { navController.popBackStack() }
             )
         }

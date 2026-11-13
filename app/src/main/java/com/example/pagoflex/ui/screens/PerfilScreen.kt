@@ -66,6 +66,7 @@ import kotlinx.coroutines.launch
 fun PerfilScreen(
     sesion: SesionViewModel,
     alVolver: () -> Unit,
+    alCambiarContrasena: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
@@ -217,6 +218,11 @@ fun PerfilScreen(
                     FilaDato("RUT", sesion.rut.ifBlank { "Sin registrar" })
                     FilaDato("Correo", sesion.correo.ifBlank { "Sin registrar" })
                 }
+                BotonSecundario(
+                    texto = "Cambiar contraseña",
+                    onClick = alCambiarContrasena,
+                    modifier = Modifier.fillMaxWidth()
+                )
             }
 
             Text(

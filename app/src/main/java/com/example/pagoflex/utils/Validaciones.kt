@@ -1,6 +1,9 @@
 package com.example.pagoflex.utils
 
 import com.example.pagoflex.model.MotivoAnulacion
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 object Validaciones {
     const val LARGO_MINIMO_CONTRASENA = 6
@@ -61,6 +64,14 @@ object Validaciones {
         if (mes !in 1..12) return false
         val diasPorMes = intArrayOf(31, if (esBisiesto(anio)) 29 else 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31)
         return dia in 1..diasPorMes[mes - 1]
+    }
+
+    fun fechaNoAnteriorAHoy(texto: String, hoy: Date = Date()): Boolean {
+        if (!fechaValida(texto)) return false
+        val (dia, mes, anio) = texto.trim().split("-")
+        val fecha = anio + mes + dia
+        val fechaDeHoy = SimpleDateFormat("yyyyMMdd", Locale.US).format(hoy)
+        return fecha >= fechaDeHoy
     }
 
     private fun esBisiesto(anio: Int): Boolean =

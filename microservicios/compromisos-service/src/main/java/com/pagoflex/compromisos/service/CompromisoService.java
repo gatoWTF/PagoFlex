@@ -275,10 +275,14 @@ public class CompromisoService {
     }
 
     private void validarFecha(String fecha) {
+        LocalDate vencimiento;
         try {
-            LocalDate.parse(fecha == null ? "" : fecha.trim(), FORMATO_FECHA);
+            vencimiento = LocalDate.parse(fecha == null ? "" : fecha.trim(), FORMATO_FECHA);
         } catch (DateTimeParseException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "La fecha de vencimiento debe tener el formato dd-MM-aaaa");
+        }
+        if (vencimiento.isBefore(LocalDate.now())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "La fecha de vencimiento no puede ser anterior a hoy");
         }
     }
 

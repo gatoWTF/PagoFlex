@@ -20,6 +20,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SelectableDates
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -97,7 +98,12 @@ fun RegistrarCompromisoScreen(
     val errorMonto = if (intentoEnvio && !Validaciones.montoValido(monto)) "Monto inválido (entero positivo)" else null
 
     val fechaConGuiones = fecha.replace("/", "-")
-    val errorFecha = if (intentoEnvio && !Validaciones.fechaValida(fechaConGuiones)) "Ingresa una fecha válida (DD/MM/AAAA)" else null
+    val errorFecha = when {
+        !intentoEnvio -> null
+        !Validaciones.fechaValida(fechaConGuiones) -> "Ingresa una fecha válida (DD/MM/AAAA)"
+        !Validaciones.fechaNoAnteriorAHoy(fechaConGuiones) -> "La fecha no puede ser anterior a hoy"
+        else -> null
+    }
 
     Scaffold(
         modifier = modifier,
@@ -214,7 +220,8 @@ fun RegistrarCompromisoScreen(
                         Validaciones.cantidadCuotasValida(totalCuotas) &&
                         Validaciones.cuotaInicialValida(cuotaInicial, totalCuotas) &&
                         Validaciones.montoValido(monto) &&
-                        Validaciones.fechaValida(fechaConGuiones)
+                        Validaciones.fechaValida(fechaConGuiones) &&
+                        Validaciones.fechaNoAnteriorAHoy(fechaConGuiones)
                     if (valido) registrando = true
                 },
                 cargando = registrando,
@@ -231,7 +238,15 @@ fun RegistrarCompromisoScreen(
         }
 
         if (mostrarCalendario) {
-            val estadoCalendario = rememberDatePickerState()
+            val estadoCalendario = rememberDatePickerState(
+                selectableDates = object : SelectableDates {
+                    override fun isSelectableDate(utcTimeMillis: Long): Boolean {
+                        val formato = SimpleDateFormat("dd-MM-yyyy", Locale.US)
+                        formato.timeZone = TimeZone.getTimeZone("UTC")
+                        return Validaciones.fechaNoAnteriorAHoy(formato.format(Date(utcTimeMillis)))
+                    }
+                }
+            )
             DatePickerDialog(
                 onDismissRequest = { mostrarCalendario = false },
                 confirmButton = {

@@ -88,8 +88,8 @@ private fun AppPagoFlex(configuracionViewModel: ConfiguracionViewModel) {
     fun cargarDatosDelRol(usuario: Usuario) {
         when (usuario.rol) {
             RolUsuario.USUARIO_FINAL -> compromisosViewModel.cargarUsuario(usuario.rut)
-            RolUsuario.EJECUTIVO -> ejecutivoViewModel.cargarEjecutivo(usuario.correo)
-            RolUsuario.AGENTE -> agenteViewModel.cargarAgente(usuario.correo)
+            RolUsuario.EJECUTIVO -> ejecutivoViewModel.cargarEjecutivo(usuario.rut)
+            RolUsuario.AGENTE -> agenteViewModel.cargarAgente(usuario.rut)
         }
     }
 

@@ -20,4 +20,7 @@ interface AgenteDao {
 
     @Query("SELECT * FROM agente WHERE correo = :correo COLLATE NOCASE")
     suspend fun buscarPorCorreo(correo: String): AgenteEntity?
+
+    @Query("SELECT * FROM agente WHERE REPLACE(REPLACE(UPPER(rut), '.', ''), '-', '') = :rutSinFormato")
+    suspend fun buscarPorRut(rutSinFormato: String): AgenteEntity?
 }

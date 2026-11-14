@@ -23,4 +23,9 @@ interface EjecutivoDao {
 
     @Query("SELECT * FROM ejecutivo WHERE correo = :correo COLLATE NOCASE")
     suspend fun buscarPorCorreo(correo: String): EjecutivoEntity?
+
+    @Query("SELECT * FROM ejecutivo WHERE REPLACE(REPLACE(UPPER(rut), '.', ''), '-', '') = :rutSinFormato")
+    suspend fun buscarPorRut(rutSinFormato: String): EjecutivoEntity?
 }
+
+

@@ -54,10 +54,11 @@ class AgenteViewModel(app: Application) : AndroidViewModel(app) {
 
     val cantidadAbiertos: Int get() = reportes.count { it.estado == EstadoReporte.ABIERTO }
 
-    fun cargarAgente(correo: String) {
+    fun cargarAgente(rut: String) {
         agenteCodigo = null
         viewModelScope.launch {
-            agenteCodigo = db.agenteDao().buscarPorCorreo(correo.trim())?.codigo
+            val rutSinFormato = rut.trim().uppercase().replace(".", "").replace("-", "")
+            agenteCodigo = db.agenteDao().buscarPorRut(rutSinFormato)?.codigo
         }
     }
 

@@ -33,13 +33,14 @@ class EjecutivoViewModel(app: Application) : AndroidViewModel(app) {
     var mensaje by mutableStateOf<String?>(null)
         private set
 
-    fun cargarEjecutivo(correo: String) {
+    fun cargarEjecutivo(rut: String) {
         empresaCodigo = null
         ejecutivoCodigo = null
         empresa = ""
         compromisos = emptyList()
         viewModelScope.launch {
-            val ejecutivo = db.ejecutivoDao().buscarPorCorreo(correo.trim()) ?: return@launch
+            val rutSinFormato = rut.trim().uppercase().replace(".", "").replace("-", "")
+            val ejecutivo = db.ejecutivoDao().buscarPorRut(rutSinFormato) ?: return@launch
             ejecutivoCodigo = ejecutivo.codigo
             empresaCodigo = ejecutivo.empresaCodigo
             empresa = db.empresaClienteDao().obtenerPorCodigo(ejecutivo.empresaCodigo)?.nombreFantasia

@@ -20,7 +20,6 @@ class RegistroViewModelTest {
     @Test
     fun validar_conFormularioVacio_devuelveFalseYPideLosDatos() {
         val resultado = viewModel.validar()
-
         assertFalse(resultado)
         assertEquals("Ingresa tu nombre", viewModel.errorNombre)
         assertEquals("Ingresa una contraseña", viewModel.errorContrasena)
@@ -29,25 +28,20 @@ class RegistroViewModelTest {
     @Test
     fun validar_conNombreConNumeros_muestraError() {
         viewModel.cambiarNombre("Camila 2")
-
         viewModel.validar()
-
         assertEquals("El nombre no puede llevar números", viewModel.errorNombre)
     }
 
     @Test
     fun validar_conRutConDigitoVerificadorMalo_muestraError() {
         viewModel.cambiarRut("15.834.207-0")
-
         viewModel.validar()
-
         assertEquals("RUT no válido", viewModel.errorRut)
     }
 
     @Test
     fun cambiarContrasena_sinMayuscula_muestraError() {
         viewModel.cambiarContrasena("clave123")
-
         assertEquals("Debe tener al menos una mayúscula", viewModel.errorContrasena)
     }
 
@@ -60,7 +54,6 @@ class RegistroViewModelTest {
         viewModel.cambiarConfirmar("Clave123")
 
         val resultado = viewModel.validar()
-
         assertTrue(resultado)
         assertNull(viewModel.errorNombre)
         assertNull(viewModel.errorRut)

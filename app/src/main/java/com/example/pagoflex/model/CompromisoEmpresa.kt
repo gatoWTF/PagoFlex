@@ -9,11 +9,15 @@ data class CompromisoEmpresa(
     val totalCuotas: Int,
     val monto: Int,
     val fechaVencimiento: String,
-    val estado: EstadoCompromiso
+    val estado: EstadoCompromiso,
+    val recargo: Int = 0,
+    val motivoAnulacion: String? = null
 ) {
 
     val cuota: String get() = "$cuotaActual de $totalCuotas"
 
     val sePuedeAnular: Boolean
-        get() = estado == EstadoCompromiso.PENDIENTE || estado == EstadoCompromiso.VENCIDO
+        get() = estado == EstadoCompromiso.PENDIENTE ||
+            estado == EstadoCompromiso.VENCIDO ||
+            estado == EstadoCompromiso.EN_REVISION
 }

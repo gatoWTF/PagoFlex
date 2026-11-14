@@ -1,5 +1,6 @@
 package com.pagoflex.compromisos.service;
 
+import com.pagoflex.compromisos.dto.AnularRequest;
 import com.pagoflex.compromisos.dto.CambiarEstadoRequest;
 import com.pagoflex.compromisos.dto.ComprobanteResponse;
 import com.pagoflex.compromisos.dto.CompromisoResponse;
@@ -10,6 +11,7 @@ import com.pagoflex.compromisos.model.CanalPago;
 import com.pagoflex.compromisos.model.Comprobante;
 import com.pagoflex.compromisos.model.Compromiso;
 import com.pagoflex.compromisos.model.EstadoCompromiso;
+import com.pagoflex.compromisos.model.MotivoAnulacion;
 import com.pagoflex.compromisos.model.Rut;
 import com.pagoflex.compromisos.repository.ComprobanteRepository;
 import com.pagoflex.compromisos.repository.CompromisoRepository;
@@ -36,16 +38,20 @@ public class CompromisoService {
 
     private final CompromisoRepository compromisoRepository;
     private final ComprobanteRepository comprobanteRepository;
+    private final VencimientoService vencimientoService;
 
     public List<CompromisoResponse> listarPorUsuario(String rut) {
+        vencimientoService.actualizarVencidos();
         return ordenar(compromisoRepository.findByRutClave(Rut.clave(rut)));
     }
 
     public List<CompromisoResponse> listarPorEmpresa(String empresaCodigo) {
+        vencimientoService.actualizarVencidos();
         return ordenar(compromisoRepository.findByEmpresaCodigo(empresaCodigo));
     }
 
     public CompromisoResponse obtener(String folio) {
+        vencimientoService.actualizarVencidos();
         return CompromisoResponse.desde(buscar(folio));
     }
 
@@ -97,9 +103,12 @@ public class CompromisoService {
         if (nuevo == EstadoCompromiso.PAGADO) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Para pagar un compromiso usa la opción de pago");
         }
+        if (nuevo == EstadoCompromiso.ANULADO) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Para anular un compromiso usa la opción de anular, con su motivo");
+        }
         boolean vigente = actual == EstadoCompromiso.PENDIENTE || actual == EstadoCompromiso.VENCIDO;
         boolean permitido = switch (nuevo) {
-            case ANULADO, EN_REVISION -> vigente;
+            case EN_REVISION -> vigente;
             case PENDIENTE, VENCIDO -> actual == EstadoCompromiso.EN_REVISION;
             default -> false;
         };
@@ -107,12 +116,49 @@ public class CompromisoService {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "No se puede pasar de " + actual + " a " + nuevo);
         }
 
-        compromiso.setEstado(nuevo);
+        boolean atrasado = vencimientoService.estaAtrasado(compromiso, LocalDate.now());
+        if (nuevo == EstadoCompromiso.VENCIDO || (nuevo == EstadoCompromiso.PENDIENTE && atrasado)) {
+            vencimientoService.marcarVencido(compromiso);
+        } else {
+            compromiso.setEstado(nuevo);
+        }
+        return CompromisoResponse.desde(compromisoRepository.save(compromiso));
+    }
+
+    public CompromisoResponse anular(String folio, AnularRequest datos) {
+        Compromiso compromiso = buscar(folio);
+
+        if (datos == null || datos.motivo() == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Indica el motivo de la anulación");
+        }
+        if (datos.motivo() == MotivoAnulacion.OTRO && vacio(datos.comentario())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Si el motivo es Otro, escribe un comentario");
+        }
+        if (vacio(datos.ejecutivoCodigo())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Indica el ejecutivo que anula");
+        }
+        if (!compromiso.getEmpresaCodigo().equals(datos.empresaCodigo())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Solo la empresa dueña del compromiso puede anularlo");
+        }
+        EstadoCompromiso estado = compromiso.getEstado();
+        if (estado == EstadoCompromiso.PAGADO) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Un compromiso pagado nunca se anula");
+        }
+        if (estado == EstadoCompromiso.ANULADO) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "El compromiso ya está anulado");
+        }
+
+        compromiso.setEstado(EstadoCompromiso.ANULADO);
+        compromiso.setMotivoAnulacion(datos.motivo());
+        compromiso.setComentarioAnulacion(vacio(datos.comentario()) ? null : datos.comentario().trim());
+        compromiso.setAnuladoPor(datos.ejecutivoCodigo().trim());
+        compromiso.setFechaAnulacion(LocalDateTime.now().format(FORMATO_FECHA_HORA));
         return CompromisoResponse.desde(compromisoRepository.save(compromiso));
     }
 
     @Transactional
     public PagoResponse pagar(String folio, PagoRequest datos) {
+        vencimientoService.actualizarVencidos();
         Compromiso compromiso = buscar(folio);
         EstadoCompromiso estado = compromiso.getEstado();
         if (estado != EstadoCompromiso.PENDIENTE && estado != EstadoCompromiso.VENCIDO) {
@@ -131,7 +177,7 @@ public class CompromisoService {
                 .fechaHora(LocalDateTime.now().format(FORMATO_FECHA_HORA))
                 .montoPagado(compromiso.getMonto() + compromiso.getRecargoAplicado())
                 .canal(canal)
-                .aTiempo(estado != EstadoCompromiso.VENCIDO)
+                .aTiempo(!vencimientoService.estaAtrasado(compromiso, LocalDate.now()))
                 .medioPago(medio)
                 .build();
 
@@ -171,6 +217,9 @@ public class CompromisoService {
                             .recargoAplicado(0)
                             .registradoPor(pagada.getRegistradoPor())
                             .build();
+                    if (vencimientoService.estaAtrasado(siguiente, LocalDate.now())) {
+                        vencimientoService.marcarVencido(siguiente);
+                    }
                     return compromisoRepository.save(siguiente);
                 });
     }

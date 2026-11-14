@@ -11,7 +11,8 @@ data class Compromiso(
     val fechaVencimiento: String,
     val estado: EstadoCompromiso,
     val recargo: Int = 0,
-    val codigoCredito: String = ""
+    val codigoCredito: String = "",
+    val motivoAnulacion: String? = null
 ) {
 
     val cuota: String get() = "$cuotaActual de $totalCuotas"

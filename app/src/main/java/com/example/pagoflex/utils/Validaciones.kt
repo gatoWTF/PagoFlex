@@ -1,5 +1,7 @@
 package com.example.pagoflex.utils
 
+import com.example.pagoflex.model.MotivoAnulacion
+
 object Validaciones {
     const val LARGO_MINIMO_CONTRASENA = 6
 
@@ -45,6 +47,9 @@ object Validaciones {
         val numero = inicial.trim().toIntOrNull() ?: return false
         return numero in 1..cantidad.trim().toInt()
     }
+
+    fun motivoAnulacionValido(motivo: MotivoAnulacion?, comentario: String): Boolean =
+        motivo != null && (motivo != MotivoAnulacion.OTRO || comentario.isNotBlank())
 
     fun fechaValida(texto: String): Boolean {
         val coincidencia = Regex("""^(\d{2})-(\d{2})-(\d{4})$""").matchEntire(texto.trim())

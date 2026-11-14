@@ -3,10 +3,13 @@ package com.pagoflex.compromisos.config;
 import com.pagoflex.compromisos.model.CanalPago;
 import com.pagoflex.compromisos.model.Comprobante;
 import com.pagoflex.compromisos.model.Compromiso;
+import com.pagoflex.compromisos.model.Empresa;
 import com.pagoflex.compromisos.model.EstadoCompromiso;
+import com.pagoflex.compromisos.model.MotivoAnulacion;
 import com.pagoflex.compromisos.model.Rut;
 import com.pagoflex.compromisos.repository.ComprobanteRepository;
 import com.pagoflex.compromisos.repository.CompromisoRepository;
+import com.pagoflex.compromisos.repository.EmpresaRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
@@ -27,9 +30,22 @@ public class DatosIniciales implements CommandLineRunner {
 
     private final CompromisoRepository compromisoRepository;
     private final ComprobanteRepository comprobanteRepository;
+    private final EmpresaRepository empresaRepository;
 
     @Override
     public void run(String... args) {
+        if (empresaRepository.count() == 0) {
+            empresaRepository.saveAll(List.of(
+                    new Empresa("EC-01", "Altos del Maipo", 8500),
+                    new Empresa("EC-02", "Colegio Bosque Nativo", 5000),
+                    new Empresa("EC-03", "Crédito Andino", 12000),
+                    new Empresa("EC-04", "Horizonte Sur", 3000),
+                    new Empresa("EC-05", "Manos Abiertas", 0),
+                    new Empresa("EC-06", "Club Los Halcones", 2000),
+                    new Empresa("EC-07", "Instituto Cordillera", 6000),
+                    new Empresa("EC-08", "Plaza Oriente", 7500)
+            ));
+        }
         if (compromisoRepository.count() == 0) {
             compromisoRepository.saveAll(List.of(
                     compromiso("CP-2026-0101", "CR-2026-0001", CAMILA, "Camila Andrea Rojas Peña", "EC-08", "Arriendo departamento", 10, 12, 520000, "10-10-2026", EstadoCompromiso.PENDIENTE, 0, "EJ-07"),
@@ -42,7 +58,8 @@ public class DatosIniciales implements CommandLineRunner {
                     compromiso("CP-2026-0113", "CR-2026-0006", ROSA, "Rosa Elena Contreras Díaz", "EC-04", "Seguro de hogar", 11, 12, 18900, "01-11-2026", EstadoCompromiso.PENDIENTE, 0, "PagoFlex"),
                     compromiso("CP-2026-0109", "CR-2026-0007", MATIAS, "Matías Ignacio Soto Vergara", "EC-07", "Arancel", 8, 10, 142000, "05-10-2026", EstadoCompromiso.EN_REVISION, 0, "EJ-06"),
                     compromiso("CP-2026-0110", "CR-2026-0008", FERNANDA, "Fernanda Paz Godoy Lagos", "EC-02", "Mensualidad", 8, 10, 185000, "10-10-2026", EstadoCompromiso.PENDIENTE, 0, "EJ-02"),
-                    compromiso("CP-2026-0111", "CR-2026-0009", HECTOR, "Héctor Manuel Pizarro Campos", "EC-03", "Crédito de consumo", 19, 36, 54200, "20-09-2026", EstadoCompromiso.ANULADO, 0, "EJ-04"),
+                    anulado(compromiso("CP-2026-0111", "CR-2026-0009", HECTOR, "Héctor Manuel Pizarro Campos", "EC-03", "Crédito de consumo", 19, 36, 54200, "20-09-2026", EstadoCompromiso.ANULADO, 0, "EJ-04"),
+                            MotivoAnulacion.REPACTACION, "EJ-04", "22-09-2026 10:00"),
                     compromiso("CP-2026-0112", "CR-2026-0010", JAVIERA, "Javiera Constanza Reyes Molina", "EC-06", "Cuota social", 10, 12, 15000, "05-10-2026", EstadoCompromiso.PAGADO, 0, "EJ-05"),
                     compromiso("CP-2026-0114", "CR-2026-0010", JAVIERA, "Javiera Constanza Reyes Molina", "EC-06", "Cuota social", 11, 12, 15000, "05-11-2026", EstadoCompromiso.PENDIENTE, 0, "EJ-05")
             ));
@@ -80,6 +97,13 @@ public class DatosIniciales implements CommandLineRunner {
                 .recargoAplicado(recargo)
                 .registradoPor(registradoPor)
                 .build();
+    }
+
+    private Compromiso anulado(Compromiso compromiso, MotivoAnulacion motivo, String ejecutivo, String fecha) {
+        compromiso.setMotivoAnulacion(motivo);
+        compromiso.setAnuladoPor(ejecutivo);
+        compromiso.setFechaAnulacion(fecha);
+        return compromiso;
     }
 
     private Comprobante comprobante(String numero, String folio, String rut, String empresa, String fechaHora,

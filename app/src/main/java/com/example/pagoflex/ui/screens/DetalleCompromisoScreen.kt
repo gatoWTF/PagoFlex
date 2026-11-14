@@ -141,6 +141,7 @@ fun DetalleCompromisoScreen(
                 FilaDato("Cuotas por pagar", compromiso.cuotasPorPagar.toString())
                 FilaDato("Saldo del crédito", FormatoMoneda.clp(compromiso.saldoCredito))
             }
+            compromiso.motivoAnulacion?.let { FilaDato("Motivo de anulación", it) }
             FilaDato("Folio", compromiso.folio)
 
             Spacer(Modifier.weight(1f))

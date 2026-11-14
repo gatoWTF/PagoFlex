@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -21,6 +22,8 @@ import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
@@ -38,17 +41,20 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.pagoflex.R
 import com.example.pagoflex.model.CompromisoEmpresa
 import com.example.pagoflex.model.EstadoCompromiso
+import com.example.pagoflex.model.MotivoAnulacion
 import com.example.pagoflex.ui.components.BotonPrincipal
 import com.example.pagoflex.ui.components.EtiquetaEstado
 import com.example.pagoflex.ui.components.SnackbarPagoFlex
 import com.example.pagoflex.ui.theme.Dimens
 import com.example.pagoflex.ui.theme.PagoFlexTheme
 import com.example.pagoflex.utils.FormatoMoneda
+import com.example.pagoflex.utils.Validaciones
 import com.example.pagoflex.viewmodel.EjecutivoViewModel
 
 private enum class FiltroEjecutivo(val etiqueta: String) {
@@ -189,21 +195,82 @@ fun HomeEjecutivoScreen(
 
     val porAnular = compromisoAAnular
     if (porAnular != null) {
-        AlertDialog(
-            onDismissRequest = { compromisoAAnular = null },
-            title = { Text("Anular compromiso") },
-            text = { Text("¿Seguro que quieres anular \"" + porAnular.concepto + "\" de " + porAnular.deudor + "? Esta acción no se puede deshacer.") },
-            confirmButton = {
-                TextButton(onClick = {
-                    viewModel.anular(porAnular.folio)
-                    compromisoAAnular = null
-                }) { Text("Anular") }
+        DialogoAnulacion(
+            compromiso = porAnular,
+            alConfirmar = { motivo, comentario ->
+                viewModel.anular(porAnular.folio, motivo, comentario)
+                compromisoAAnular = null
             },
-            dismissButton = {
-                TextButton(onClick = { compromisoAAnular = null }) { Text("Cancelar") }
-            }
+            alCancelar = { compromisoAAnular = null }
         )
     }
+}
+
+@Composable
+private fun DialogoAnulacion(
+    compromiso: CompromisoEmpresa,
+    alConfirmar: (MotivoAnulacion, String) -> Unit,
+    alCancelar: () -> Unit
+) {
+    var motivo by remember { mutableStateOf<MotivoAnulacion?>(null) }
+    var comentario by remember { mutableStateOf("") }
+    var intentoAnular by remember { mutableStateOf(false) }
+
+    val error = when {
+        !intentoAnular -> null
+        motivo == null -> "Elige el motivo de la anulación"
+        !Validaciones.motivoAnulacionValido(motivo, comentario) -> "Si el motivo es Otro, escribe un comentario"
+        else -> null
+    }
+
+    AlertDialog(
+        onDismissRequest = alCancelar,
+        title = { Text("Anular compromiso") },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(Dimens.espacioMini)) {
+                Text("\"" + compromiso.concepto + "\" de " + compromiso.deudor + ", cuota " + compromiso.cuota + ". Esta acción no se puede deshacer.")
+                Text("Motivo", style = MaterialTheme.typography.titleSmall)
+                MotivoAnulacion.entries.forEach { opcion ->
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .selectable(
+                                selected = motivo == opcion,
+                                onClick = { motivo = opcion },
+                                role = Role.RadioButton
+                            ),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        RadioButton(selected = motivo == opcion, onClick = null)
+                        Text(opcion.etiqueta, modifier = Modifier.padding(start = Dimens.espacioChico))
+                    }
+                }
+                OutlinedTextField(
+                    value = comentario,
+                    onValueChange = { comentario = it },
+                    label = {
+                        Text(if (motivo == MotivoAnulacion.OTRO) "Comentario (obligatorio)" else "Comentario (opcional)")
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                )
+                if (error != null) {
+                    Text(error, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = {
+                intentoAnular = true
+                val elegido = motivo
+                if (elegido != null && Validaciones.motivoAnulacionValido(elegido, comentario)) {
+                    alConfirmar(elegido, comentario)
+                }
+            }) { Text("Anular") }
+        },
+        dismissButton = {
+            TextButton(onClick = alCancelar) { Text("Cancelar") }
+        }
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -292,9 +359,16 @@ private fun FilaCompromisoEmpresa(
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
+                    compromiso.motivoAnulacion?.let { motivo ->
+                        Text(
+                            text = "Motivo: $motivo",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
                 }
                 Text(
-                    text = FormatoMoneda.clp(compromiso.monto),
+                    text = FormatoMoneda.clp(compromiso.monto + compromiso.recargo),
                     style = MaterialTheme.typography.titleSmall,
                     color = MaterialTheme.colorScheme.onSurface
                 )

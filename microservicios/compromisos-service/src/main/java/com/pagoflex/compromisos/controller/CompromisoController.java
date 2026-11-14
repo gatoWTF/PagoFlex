@@ -1,5 +1,6 @@
 package com.pagoflex.compromisos.controller;
 
+import com.pagoflex.compromisos.dto.AnularRequest;
 import com.pagoflex.compromisos.dto.CambiarEstadoRequest;
 import com.pagoflex.compromisos.dto.CompromisoResponse;
 import com.pagoflex.compromisos.dto.NuevoCompromisoRequest;
@@ -54,6 +55,11 @@ public class CompromisoController {
     @PutMapping("/{folio}/estado")
     public CompromisoResponse cambiarEstado(@PathVariable String folio, @RequestBody CambiarEstadoRequest datos) {
         return compromisoService.cambiarEstado(folio, datos);
+    }
+
+    @PutMapping("/{folio}/anular")
+    public CompromisoResponse anular(@PathVariable String folio, @RequestBody AnularRequest datos) {
+        return compromisoService.anular(folio, datos);
     }
 
     @PostMapping("/{folio}/pagar")

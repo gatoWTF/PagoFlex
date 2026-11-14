@@ -12,6 +12,7 @@ import com.example.pagoflex.data.local.entity.EmpresaClienteEntity
 import com.example.pagoflex.data.local.entity.ReporteEntity
 import com.example.pagoflex.data.remote.ComprobanteResponse
 import com.example.pagoflex.data.remote.CompromisoResponse
+import com.example.pagoflex.data.remote.textoAnulacion
 import com.example.pagoflex.model.Comprobante
 import com.example.pagoflex.model.Compromiso
 import com.example.pagoflex.model.EstadoCompromiso
@@ -150,7 +151,8 @@ class CompromisosViewModel(app: Application) : AndroidViewModel(app) {
             fechaVencimiento = fechaVencimiento,
             estado = estado,
             recargo = recargoAplicado,
-            codigoCredito = codigoCredito
+            codigoCredito = codigoCredito,
+            motivoAnulacion = textoAnulacion()
         )
     }
 

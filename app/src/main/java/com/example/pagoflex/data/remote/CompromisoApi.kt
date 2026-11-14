@@ -24,6 +24,9 @@ interface CompromisoApi {
     @PUT("api/compromisos/{folio}/estado")
     suspend fun cambiarEstado(@Path("folio") folio: String, @Body datos: CambiarEstadoRequest): CompromisoResponse
 
+    @PUT("api/compromisos/{folio}/anular")
+    suspend fun anular(@Path("folio") folio: String, @Body datos: AnularRequest): CompromisoResponse
+
     @POST("api/compromisos/{folio}/pagar")
     suspend fun pagar(@Path("folio") folio: String, @Body datos: PagoRequest): PagoResponse
 

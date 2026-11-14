@@ -2,6 +2,7 @@ package com.pagoflex.compromisos.dto;
 
 import com.pagoflex.compromisos.model.Compromiso;
 import com.pagoflex.compromisos.model.EstadoCompromiso;
+import com.pagoflex.compromisos.model.MotivoAnulacion;
 
 public record CompromisoResponse(
         String folio,
@@ -16,13 +17,18 @@ public record CompromisoResponse(
         String fechaVencimiento,
         EstadoCompromiso estado,
         Integer recargoAplicado,
-        String registradoPor
+        String registradoPor,
+        MotivoAnulacion motivoAnulacion,
+        String comentarioAnulacion,
+        String anuladoPor,
+        String fechaAnulacion
 ) {
     public static CompromisoResponse desde(Compromiso c) {
         return new CompromisoResponse(
                 c.getFolio(), c.getCodigoCredito(), c.getRutUsuario(), c.getNombreUsuario(), c.getEmpresaCodigo(),
                 c.getConcepto(), c.getCuotaActual(), c.getTotalCuotas(), c.getMonto(), c.getFechaVencimiento(),
-                c.getEstado(), c.getRecargoAplicado(), c.getRegistradoPor()
+                c.getEstado(), c.getRecargoAplicado(), c.getRegistradoPor(),
+                c.getMotivoAnulacion(), c.getComentarioAnulacion(), c.getAnuladoPor(), c.getFechaAnulacion()
         );
     }
 }

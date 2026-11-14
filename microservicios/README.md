@@ -59,7 +59,8 @@ Endpoints: `GET /api/roles` y `GET /api/roles/{id}` (404 si no existe).
 | GET | `/api/compromisos?empresa=EC-03` | — | Compromisos de una empresa |
 | GET | `/api/compromisos/{folio}` | — | 200 · 404 |
 | POST | `/api/compromisos` | `{"rutUsuario","nombreUsuario","empresaCodigo","concepto","totalCuotas","cuotaInicial","monto","fechaVencimiento","registradoPor"}` | 201 con la cuota inicial creada · 400 |
-| PUT | `/api/compromisos/{folio}/estado` | `{"estado"}` | 200 · 409 si el cambio no está permitido |
+| PUT | `/api/compromisos/{folio}/estado` | `{"estado"}` (`EN_REVISION`, `PENDIENTE` o `VENCIDO`) | 200 · 400 si se pide `ANULADO` o `PAGADO` · 409 si el cambio no está permitido |
+| PUT | `/api/compromisos/{folio}/anular` | `{"motivo","comentario","ejecutivoCodigo","empresaCodigo"}` | 200 · 400 sin motivo, u `OTRO` sin comentario · 403 otra empresa · 409 pagado o ya anulado |
 | POST | `/api/compromisos/{folio}/pagar` | `{"canal","medioPago"}` (opcional) | 201 `{"comprobante", "siguienteCuota"}` · 409 si no se puede pagar |
 | GET | `/api/comprobantes?rut=...` | — | Historial de pagos del usuario |
 
@@ -69,7 +70,20 @@ Endpoints: `GET /api/roles` y `GET /api/roles/{id}` (404 si no existe).
 - Al registrar, el ejecutivo indica la cantidad de cuotas, el monto de cada cuota, la cuota inicial y el vencimiento de esa cuota. La cuota inicial es 1 en un crédito nuevo; es mayor si la empresa trae un crédito que ya venía pagándose (las cuotas anteriores no se crean). Debe estar entre 1 y la cantidad de cuotas (máximo 120).
 - El servidor crea solo la cuota inicial. Al pagar una cuota crea la siguiente (mismo monto, vencimiento un mes después, folio nuevo) y la devuelve en `siguienteCuota`. Si era la última, `siguienteCuota` viene `null`.
 - El folio (`CP-2026-0115`, ...), el código de crédito y el número de comprobante los genera el servidor, siguiendo al último guardado.
-- Cambios de estado permitidos: pendiente o vencido → en revisión o anulado; en revisión → pendiente o vencido. Para pagar se usa `/pagar`, que suma el recargo y marca si fue a tiempo.
+- Cambios de estado permitidos: pendiente o vencido → en revisión; en revisión → pendiente o vencido. Para pagar se usa `/pagar` y para anular `/anular`.
+
+### Vencimiento y recargo (RN-02, RN-03)
+
+- Una cuota vence a las 23:59 de su fecha. Desde el día siguiente pasa sola a **Vencido** y se le suma **una sola vez** el recargo fijo de su empresa (tabla `empresas`, columna `recargo_atraso`; las ONG tienen $0).
+- La revisión la hace `VencimientoService`: todos los días a las 00:01 (`@Scheduled`) y además antes de cada consulta o pago, así la app siempre ve el estado al día.
+- Al pagar se cobra monto + recargo, y el comprobante marca `aTiempo` comparando la fecha de pago con la de vencimiento.
+- Si un agente devuelve a pendiente una cuota en revisión cuya fecha ya pasó, queda Vencido con su recargo.
+
+### Anulación (RN-21)
+
+- Solo la empresa dueña puede anular, desde Pendiente, Vencido o En revisión. Un compromiso pagado nunca se anula.
+- Motivo obligatorio: `REPACTACION`, `ERROR_DE_REGISTRO`, `PAGADO_DIRECTAMENTE` u `OTRO` (este último exige comentario). Se guardan el motivo, el comentario, el ejecutivo y la fecha.
+- No existe `DELETE` de compromisos ni de comprobantes: en una fintech no se borran deudas ni pagos (RN-05: un comprobante nunca se modifica ni se elimina). Anular es un borrado lógico que deja la trazabilidad.
 
 ## Notas de usuarios-service
 

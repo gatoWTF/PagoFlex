@@ -10,8 +10,10 @@ import com.example.pagoflex.data.CompromisoRepository
 import com.example.pagoflex.data.local.PagoFlexDatabase
 import com.example.pagoflex.data.remote.CompromisoResponse
 import com.example.pagoflex.data.remote.NuevoCompromisoRequest
+import com.example.pagoflex.data.remote.textoAnulacion
 import com.example.pagoflex.model.CompromisoEmpresa
 import com.example.pagoflex.model.EstadoCompromiso
+import com.example.pagoflex.model.MotivoAnulacion
 import kotlinx.coroutines.launch
 
 class EjecutivoViewModel(app: Application) : AndroidViewModel(app) {
@@ -66,7 +68,7 @@ class EjecutivoViewModel(app: Application) : AndroidViewModel(app) {
         get() = compromisos.filter { it.estado == EstadoCompromiso.PAGADO }
 
     val totalRecaudado: Int get() = pagados.sumOf { it.monto }
-    val totalPorCobrar: Int get() = porCobrar.sumOf { it.monto }
+    val totalPorCobrar: Int get() = porCobrar.sumOf { it.monto + it.recargo }
 
     val tasaCobranza: Int
         get() {
@@ -108,11 +110,13 @@ class EjecutivoViewModel(app: Application) : AndroidViewModel(app) {
         }
     }
 
-    fun anular(folio: String) {
+    fun anular(folio: String, motivo: MotivoAnulacion, comentario: String) {
+        val empresaActual = empresaCodigo ?: return
+        val ejecutivo = ejecutivoCodigo ?: return
         viewModelScope.launch {
             try {
-                repositorio.cambiarEstado(folio, EstadoCompromiso.ANULADO)
-                mensaje = "Compromiso anulado"
+                repositorio.anular(folio, motivo, comentario, ejecutivo, empresaActual)
+                mensaje = "Compromiso anulado: " + motivo.etiqueta
                 recargar()
             } catch (e: Exception) {
                 mensaje = e.message
@@ -129,6 +133,8 @@ class EjecutivoViewModel(app: Application) : AndroidViewModel(app) {
         totalCuotas = totalCuotas,
         monto = monto,
         fechaVencimiento = fechaVencimiento,
-        estado = estado
+        estado = estado,
+        recargo = recargoAplicado,
+        motivoAnulacion = textoAnulacion()
     )
 }

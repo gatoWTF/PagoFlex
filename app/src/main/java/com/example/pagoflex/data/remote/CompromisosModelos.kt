@@ -2,6 +2,7 @@ package com.example.pagoflex.data.remote
 
 import com.example.pagoflex.model.CanalPago
 import com.example.pagoflex.model.EstadoCompromiso
+import com.example.pagoflex.model.MotivoAnulacion
 
 data class CompromisoResponse(
     val folio: String,
@@ -16,7 +17,24 @@ data class CompromisoResponse(
     val fechaVencimiento: String,
     val estado: EstadoCompromiso,
     val recargoAplicado: Int,
-    val registradoPor: String
+    val registradoPor: String,
+    val motivoAnulacion: MotivoAnulacion?,
+    val comentarioAnulacion: String?,
+    val anuladoPor: String?,
+    val fechaAnulacion: String?
+)
+
+fun CompromisoResponse.textoAnulacion(): String? {
+    val motivo = motivoAnulacion ?: return null
+    return if (comentarioAnulacion.isNullOrBlank()) motivo.etiqueta
+    else motivo.etiqueta + ": " + comentarioAnulacion
+}
+
+data class AnularRequest(
+    val motivo: MotivoAnulacion,
+    val comentario: String?,
+    val ejecutivoCodigo: String,
+    val empresaCodigo: String
 )
 
 data class ComprobanteResponse(

@@ -34,7 +34,9 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.pagoflex.R
 import com.example.pagoflex.ui.components.BotonPrincipal
@@ -173,8 +175,8 @@ fun RegistrarCompromisoScreen(
             )
 
             OutlinedTextField(
-                value = fecha,
-                onValueChange = { fecha = formatearFechaEntrada(it) },
+                value = TextFieldValue(fecha, selection = TextRange(fecha.length)),
+                onValueChange = { fecha = formatearFechaEntrada(it.text) },
                 modifier = Modifier.fillMaxWidth(),
                 label = { Text("Vencimiento de la cuota inicial") },
                 placeholder = { Text("DD/MM/AAAA") },

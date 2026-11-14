@@ -69,4 +69,17 @@ public class Compromiso {
 
     @Column(name = "registrado_por", nullable = false, length = 20)
     private String registradoPor;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "motivo_anulacion", length = 25)
+    private MotivoAnulacion motivoAnulacion;
+
+    @Column(name = "comentario_anulacion", length = 200)
+    private String comentarioAnulacion;
+
+    @Column(name = "anulado_por", length = 20)
+    private String anuladoPor;
+
+    @Column(name = "fecha_anulacion", length = 16)
+    private String fechaAnulacion;
 }

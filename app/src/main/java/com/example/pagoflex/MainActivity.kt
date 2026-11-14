@@ -48,6 +48,8 @@ import com.example.pagoflex.viewmodel.LoginViewModel
 import com.example.pagoflex.viewmodel.RegistroViewModel
 import com.example.pagoflex.viewmodel.SesionViewModel
 import com.example.pagoflex.viewmodel.CambiarContrasenaViewModel
+import com.example.pagoflex.ui.screens.EditarPerfilScreen
+import com.example.pagoflex.viewmodel.EditarPerfilViewModel
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -196,6 +198,27 @@ private fun AppPagoFlex(configuracionViewModel: ConfiguracionViewModel) {
                 sesion = sesionViewModel,
                 alVolver = { navController.popBackStack() },
                 alCambiarContrasena = { navController.navigate(Rutas.CambiarContrasena.ruta) },
+                alEditarPerfil = { navController.navigate(Rutas.EditarPerfil.ruta) },
+            )
+        }
+        composable(Rutas.EditarPerfil.ruta) {
+            val editarPerfilViewModel: EditarPerfilViewModel = viewModel()
+            LaunchedEffect(Unit) {
+                editarPerfilViewModel.cargar(sesionViewModel.nombre, sesionViewModel.correo)
+            }
+            val actualizado = editarPerfilViewModel.usuarioActualizado
+            LaunchedEffect(actualizado) {
+                if (actualizado != null) {
+                    sesionViewModel.actualizarDatos(actualizado)
+                    editarPerfilViewModel.consumirUsuario()
+                    navController.popBackStack()
+                }
+            }
+            EditarPerfilScreen(
+                viewModel = editarPerfilViewModel,
+                idUsuario = sesionViewModel.idUsuario,
+                rut = sesionViewModel.rut,
+                alVolver = { navController.popBackStack() }
             )
         }
 

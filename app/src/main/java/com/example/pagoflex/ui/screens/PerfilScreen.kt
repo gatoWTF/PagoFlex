@@ -53,6 +53,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import com.example.pagoflex.R
+import com.example.pagoflex.model.RolUsuario
 import com.example.pagoflex.ui.components.BotonPrincipal
 import com.example.pagoflex.ui.components.BotonSecundario
 import com.example.pagoflex.ui.components.CampoTexto
@@ -67,6 +68,7 @@ fun PerfilScreen(
     sesion: SesionViewModel,
     alVolver: () -> Unit,
     alCambiarContrasena: () -> Unit = {},
+    alEditarPerfil: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
@@ -208,7 +210,8 @@ fun PerfilScreen(
                         style = MaterialTheme.typography.titleMedium
                     )
                     Text(
-                        text = "Estos datos no se pueden editar.",
+                        text = if (sesion.rol == RolUsuario.USUARIO_FINAL) "Puedes editar tu nombre y tu correo."
+                        else "Estos datos los administra tu empresa.",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -218,6 +221,15 @@ fun PerfilScreen(
                     FilaDato("RUT", sesion.rut.ifBlank { "Sin registrar" })
                     FilaDato("Correo", sesion.correo.ifBlank { "Sin registrar" })
                 }
+
+                if (sesion.rol == RolUsuario.USUARIO_FINAL) {
+                    BotonSecundario(
+                        texto = "Editar mis datos",
+                        onClick = alEditarPerfil,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+
                 BotonSecundario(
                     texto = "Cambiar contraseña",
                     onClick = alCambiarContrasena,

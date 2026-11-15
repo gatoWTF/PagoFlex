@@ -8,5 +8,8 @@ data class Comprobante(
     val monto: Int,
     val fechaHora: String,
     val aTiempo: Boolean,
-    val canal: String = "App"
+    val canal: String = "App",
+    val cuota: String? = null,
+    val siguienteCuota: Compromiso? = null,
+    val creditoTerminado: Boolean = false
 )

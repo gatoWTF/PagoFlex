@@ -8,11 +8,11 @@ import com.example.pagoflex.model.EstadoCompromiso
 object MemoriaDatos {
 
     val compromisosDeEjemplo = listOf(
-        Compromiso("CP-2026-0101", "Plaza Oriente", "Administración de arriendos", "Arriendo departamento octubre", "10/12", 520000, "10-10-2026", EstadoCompromiso.PENDIENTE),
-        Compromiso("CP-2026-0102", "Club Los Halcones", "Club deportivo", "Cuota social octubre", "10/12", 15000, "05-10-2026", EstadoCompromiso.VENCIDO, recargo = 2000),
-        Compromiso("CP-2026-0103", "Manos Abiertas", "ONG", "Aporte mensual octubre", null, 10000, "15-10-2026", EstadoCompromiso.PENDIENTE),
-        Compromiso("CP-2026-0104", "Crédito Andino", "Crédito de consumo", "Crédito de consumo", "7/24", 86400, "25-09-2026", EstadoCompromiso.PAGADO),
-        Compromiso("CP-2026-0105", "Crédito Andino", "Crédito de consumo", "Crédito de consumo", "8/24", 86400, "25-10-2026", EstadoCompromiso.PENDIENTE)
+        Compromiso("CP-2026-0101", "Plaza Oriente", "Administración de arriendos", "Arriendo departamento octubre", 10, 12, 520000, "10-10-2026", EstadoCompromiso.PENDIENTE),
+        Compromiso("CP-2026-0102", "Club Los Halcones", "Club deportivo", "Cuota social octubre", 10, 12, 15000, "05-10-2026", EstadoCompromiso.VENCIDO, recargo = 2000),
+        Compromiso("CP-2026-0103", "Manos Abiertas", "ONG", "Aporte mensual octubre", 1, 1, 10000, "15-10-2026", EstadoCompromiso.PENDIENTE),
+        Compromiso("CP-2026-0104", "Crédito Andino", "Crédito de consumo", "Crédito de consumo", 7, 24, 86400, "25-09-2026", EstadoCompromiso.PAGADO),
+        Compromiso("CP-2026-0105", "Crédito Andino", "Crédito de consumo", "Crédito de consumo", 8, 24, 86400, "25-10-2026", EstadoCompromiso.PENDIENTE)
     )
 
     val historialDeEjemplo = listOf(
@@ -23,9 +23,9 @@ object MemoriaDatos {
     )
 
     val compromisosEmpresaDeEjemplo = listOf(
-        CompromisoEmpresa("CP-2026-0104", "Camila Rojas", "15.834.207-3", "Crédito de consumo 7/24", 86400, "25-09-2026", EstadoCompromiso.PAGADO),
-        CompromisoEmpresa("CP-2026-0105", "Camila Rojas", "15.834.207-3", "Crédito de consumo 8/24", 86400, "25-10-2026", EstadoCompromiso.PENDIENTE),
-        CompromisoEmpresa("CP-2026-0111", "Héctor Pizarro", "10.318.265-4", "Crédito de consumo 19/36", 54200, "20-09-2026", EstadoCompromiso.ANULADO),
-        CompromisoEmpresa("CP-2026-0120", "Luis Muñoz", "12.476.318-5", "Crédito de consumo 3/12", 120000, "28-09-2026", EstadoCompromiso.VENCIDO)
+        CompromisoEmpresa("CP-2026-0104", "Camila Rojas", "15.834.207-3", "Crédito de consumo", 7, 24, 86400, "25-09-2026", EstadoCompromiso.PAGADO),
+        CompromisoEmpresa("CP-2026-0105", "Camila Rojas", "15.834.207-3", "Crédito de consumo", 8, 24, 86400, "25-10-2026", EstadoCompromiso.PENDIENTE),
+        CompromisoEmpresa("CP-2026-0111", "Héctor Pizarro", "10.318.265-4", "Crédito de consumo", 19, 36, 54200, "20-09-2026", EstadoCompromiso.ANULADO),
+        CompromisoEmpresa("CP-2026-0120", "Luis Muñoz", "12.476.318-5", "Crédito de consumo", 3, 12, 120000, "28-09-2026", EstadoCompromiso.VENCIDO)
     )
 }

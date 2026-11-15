@@ -68,6 +68,13 @@ class SesionViewModel : ViewModel() {
         errorTelefono = null
     }
 
+    fun actualizarDatos(usuario: Usuario) {
+        nombre = usuario.nombre
+        rut = usuario.rut
+        correo = usuario.correo
+        mensaje = "Datos actualizados"
+    }
+
     fun guardarContacto() {
         val correo2 = correoSecundario.trim()
         errorCorreoSecundario =

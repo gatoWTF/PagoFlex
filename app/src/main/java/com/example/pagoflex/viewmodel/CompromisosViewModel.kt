@@ -6,17 +6,17 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.pagoflex.data.CompromisoRepository
 import com.example.pagoflex.data.local.PagoFlexDatabase
-import com.example.pagoflex.data.local.entity.ComprobanteEntity
-import com.example.pagoflex.data.local.entity.CompromisoEntity
 import com.example.pagoflex.data.local.entity.EmpresaClienteEntity
 import com.example.pagoflex.data.local.entity.ReporteEntity
-import com.example.pagoflex.model.CanalPago
+import com.example.pagoflex.data.remote.ComprobanteResponse
+import com.example.pagoflex.data.remote.CompromisoResponse
+import com.example.pagoflex.data.remote.textoAnulacion
 import com.example.pagoflex.model.Comprobante
 import com.example.pagoflex.model.Compromiso
 import com.example.pagoflex.model.EstadoCompromiso
 import com.example.pagoflex.model.EstadoReporte
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -25,8 +25,10 @@ import java.util.Locale
 class CompromisosViewModel(app: Application) : AndroidViewModel(app) {
 
     private val db = PagoFlexDatabase.obtener(app)
+    private val repositorio = CompromisoRepository()
 
-    private val usuarioCodigo = "UF-01"
+    private var rutUsuario: String? = null
+    private var usuarioCodigo: String? = null
 
     var compromisos by mutableStateOf<List<Compromiso>>(emptyList())
         private set
@@ -40,24 +42,31 @@ class CompromisosViewModel(app: Application) : AndroidViewModel(app) {
     private var empresas: Map<String, EmpresaClienteEntity> = emptyMap()
 
     private var ultimoComprobante: Comprobante? = null
-    private var contadorComprobante = 460
     private var contadorReporte = 20
 
-    init {
-
+    fun cargarUsuario(rut: String) {
+        rutUsuario = rut
+        usuarioCodigo = null
+        compromisos = emptyList()
+        comprobantes = emptyList()
         viewModelScope.launch {
-            combine(
-                db.empresaClienteDao().observarTodas(),
-                db.compromisoDao().observarPorUsuario(usuarioCodigo),
-                db.comprobanteDao().observarPorUsuario(usuarioCodigo)
-            ) { empresasList, compromisoEnts, comprobanteEnts ->
-                Triple(empresasList, compromisoEnts, comprobanteEnts)
-            }.collect { (empresasList, compromisoEnts, comprobanteEnts) ->
-                empresas = empresasList.associateBy { it.codigo }
-                val conceptoPorFolio = compromisoEnts.associate { it.folio to it.concepto }
-                compromisos = compromisoEnts.map { it.aModelo() }
-                comprobantes = comprobanteEnts.map { it.aModelo(conceptoPorFolio) }
-            }
+            val rutSinFormato = rut.trim().uppercase().replace(".", "").replace("-", "")
+            usuarioCodigo = db.usuarioFinalDao().buscarPorRut(rutSinFormato)?.codigo
+            recargar()
+        }
+    }
+
+    private suspend fun recargar() {
+        val rut = rutUsuario ?: return
+        try {
+            empresas = db.empresaClienteDao().listarTodas().associateBy { it.codigo }
+            val lista = repositorio.listarPorUsuario(rut)
+            val pagos = repositorio.listarComprobantes(rut)
+            compromisos = lista.map { it.aModelo() }
+            val compromisoPorFolio = compromisos.associateBy { it.folio }
+            comprobantes = pagos.map { it.aModelo(compromisoPorFolio) }
+        } catch (e: Exception) {
+            mensaje = e.message
         }
     }
 
@@ -82,104 +91,87 @@ class CompromisosViewModel(app: Application) : AndroidViewModel(app) {
     fun buscarPorFolio(folio: String): Compromiso? = compromisos.find { it.folio == folio }
 
     fun buscarComprobante(folio: String): Comprobante? =
-        comprobantes.find { it.folio == folio } ?: ultimoComprobante?.takeIf { it.folio == folio }
+        ultimoComprobante?.takeIf { it.folio == folio } ?: comprobantes.find { it.folio == folio }
 
-    fun pagar(folio: String): Comprobante {
-        val compromiso = compromisos.first { it.folio == folio }
-        val aTiempo = compromiso.estado != EstadoCompromiso.VENCIDO
-        val numero = "CPR-" + String.format(Locale.US, "%06d", contadorComprobante)
-        contadorComprobante++
-        val fechaHora = ahoraFormateado()
-
-        val comprobante = Comprobante(
-            folio = numero,
-            folioCompromiso = compromiso.folio,
-            concepto = compromiso.concepto,
-            empresa = compromiso.empresa,
-            monto = compromiso.totalAPagar,
-            fechaHora = fechaHora,
-            aTiempo = aTiempo
-        )
-        ultimoComprobante = comprobante
-
+    fun pagar(folio: String, alTerminar: (Comprobante) -> Unit) {
         viewModelScope.launch {
-            val ent = db.compromisoDao().obtenerPorFolio(folio) ?: return@launch
-            db.compromisoDao().actualizar(ent.copy(estado = EstadoCompromiso.PAGADO, recargoAplicado = 0))
-            db.comprobanteDao().insertar(
-                ComprobanteEntity(
-                    numero = numero,
-                    compromisoFolio = folio,
-                    usuarioCodigo = usuarioCodigo,
-                    empresaCodigo = ent.empresaCodigo,
-                    fechaHora = fechaHora,
-                    montoPagado = compromiso.totalAPagar,
-                    canal = CanalPago.APP,
-                    aTiempo = aTiempo,
-                    medioPago = "Pago simulado"
-                )
-            )
+            try {
+                val respuesta = repositorio.pagar(folio)
+                recargar()
+                val comprobante = respuesta.comprobante
+                    .aModelo(compromisos.associateBy { it.folio })
+                    .copy(siguienteCuota = respuesta.siguienteCuota?.aModelo())
+                ultimoComprobante = comprobante
+                alTerminar(comprobante)
+            } catch (e: Exception) {
+                mensaje = e.message
+            }
         }
-        return comprobante
     }
 
     fun reportarProblema(folio: String, motivo: String, comentario: String) {
-        mensaje = "Reporte enviado"
+        val rut = rutUsuario ?: return
         val numero = "REP-" + String.format(Locale.US, "%04d", contadorReporte)
         contadorReporte++
 
         viewModelScope.launch {
-            val ent = db.compromisoDao().obtenerPorFolio(folio)
-            if (ent != null) {
-                db.compromisoDao().actualizar(ent.copy(estado = EstadoCompromiso.EN_REVISION))
-            }
-            db.reporteDao().insertar(
-                ReporteEntity(
-                    numero = numero,
-                    compromisoFolio = folio,
-                    usuarioCodigo = usuarioCodigo,
-                    motivo = motivo,
-                    comentario = comentario,
-                    fecha = hoyFormateado(),
-                    estado = EstadoReporte.ABIERTO,
-                    agenteResponsable = null,
-                    respuestaUsuario = null
+            try {
+                repositorio.cambiarEstado(folio, EstadoCompromiso.EN_REVISION)
+                db.reporteDao().insertar(
+                    ReporteEntity(
+                        numero = numero,
+                        compromisoFolio = folio,
+                        usuarioCodigo = usuarioCodigo ?: rut,
+                        motivo = motivo,
+                        comentario = comentario,
+                        fecha = hoyFormateado(),
+                        estado = EstadoReporte.ABIERTO,
+                        agenteResponsable = null,
+                        respuestaUsuario = null
+                    )
                 )
-            )
+                mensaje = "Reporte enviado"
+                recargar()
+            } catch (e: Exception) {
+                mensaje = e.message
+            }
         }
     }
 
-    private fun CompromisoEntity.aModelo(): Compromiso {
+    private fun CompromisoResponse.aModelo(): Compromiso {
         val empresa = empresas[empresaCodigo]
         return Compromiso(
             folio = folio,
             empresa = empresa?.nombreFantasia ?: empresaCodigo,
             rubro = empresa?.rubro ?: "",
             concepto = concepto,
-            cuota = numeroCuota,
+            cuotaActual = cuotaActual,
+            totalCuotas = totalCuotas,
             monto = monto,
             fechaVencimiento = fechaVencimiento,
             estado = estado,
-            recargo = recargoAplicado
+            recargo = recargoAplicado,
+            codigoCredito = codigoCredito,
+            motivoAnulacion = textoAnulacion()
         )
     }
 
-    private fun ComprobanteEntity.aModelo(conceptoPorFolio: Map<String, String>): Comprobante {
+    private fun ComprobanteResponse.aModelo(compromisoPorFolio: Map<String, Compromiso>): Comprobante {
         val nombreEmpresa = empresas[empresaCodigo]?.nombreFantasia ?: empresaCodigo
+        val compromisoPagado = compromisoPorFolio[compromisoFolio]
         return Comprobante(
             folio = numero,
             folioCompromiso = compromisoFolio,
-
-            concepto = conceptoPorFolio[compromisoFolio] ?: nombreEmpresa,
+            concepto = compromisoPagado?.concepto ?: nombreEmpresa,
             empresa = nombreEmpresa,
             monto = montoPagado,
             fechaHora = fechaHora,
             aTiempo = aTiempo,
-            canal = canal.etiqueta
+            canal = canal.etiqueta,
+            cuota = compromisoPagado?.cuota,
+            creditoTerminado = compromisoPagado?.esUltimaCuota == true
         )
     }
-
-    private fun ahoraFormateado(): String =
-        SimpleDateFormat("dd-MM-yyyy HH:mm", Locale.US).format(Date())
 
     private fun hoyFormateado(): String =
         SimpleDateFormat("dd-MM-yyyy", Locale.US).format(Date())

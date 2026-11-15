@@ -23,6 +23,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.pagoflex.model.ModoTema
+import com.example.pagoflex.model.RolUsuario
+import com.example.pagoflex.model.Usuario
 import com.example.pagoflex.ui.navigation.Rutas
 import com.example.pagoflex.ui.screens.ComprobanteScreen
 import com.example.pagoflex.ui.screens.ConfiguracionScreen
@@ -33,6 +35,7 @@ import com.example.pagoflex.ui.screens.HomeEjecutivoScreen
 import com.example.pagoflex.ui.screens.InicioScreen
 import com.example.pagoflex.ui.screens.LoginScreen
 import com.example.pagoflex.ui.screens.PerfilScreen
+import com.example.pagoflex.ui.screens.CambiarContrasenaScreen
 import com.example.pagoflex.ui.screens.RegistrarCompromisoScreen
 import com.example.pagoflex.ui.screens.RegistroScreen
 import com.example.pagoflex.ui.screens.ReportarProblemaScreen
@@ -44,6 +47,9 @@ import com.example.pagoflex.viewmodel.EjecutivoViewModel
 import com.example.pagoflex.viewmodel.LoginViewModel
 import com.example.pagoflex.viewmodel.RegistroViewModel
 import com.example.pagoflex.viewmodel.SesionViewModel
+import com.example.pagoflex.viewmodel.CambiarContrasenaViewModel
+import com.example.pagoflex.ui.screens.EditarPerfilScreen
+import com.example.pagoflex.viewmodel.EditarPerfilViewModel
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -79,6 +85,14 @@ private fun AppPagoFlex(configuracionViewModel: ConfiguracionViewModel) {
 
     val sesionViewModel: SesionViewModel = viewModel()
 
+    fun cargarDatosDelRol(usuario: Usuario) {
+        when (usuario.rol) {
+            RolUsuario.USUARIO_FINAL -> compromisosViewModel.cargarUsuario(usuario.rut)
+            RolUsuario.EJECUTIVO -> ejecutivoViewModel.cargarEjecutivo(usuario.rut)
+            RolUsuario.AGENTE -> agenteViewModel.cargarAgente(usuario.rut)
+        }
+    }
+
     NavHost(
         navController = navController,
         startDestination = Rutas.Login.ruta,
@@ -102,6 +116,7 @@ private fun AppPagoFlex(configuracionViewModel: ConfiguracionViewModel) {
             LaunchedEffect(loginViewModel.usuario) {
                 loginViewModel.usuario?.let { usuario ->
                     sesionViewModel.iniciarSesion(usuario)
+                    cargarDatosDelRol(usuario)
                     navController.navigate(Rutas.homeDeRol(usuario.rol).ruta) {
                         popUpTo(Rutas.Login.ruta) { inclusive = true }
                     }
@@ -129,6 +144,7 @@ private fun AppPagoFlex(configuracionViewModel: ConfiguracionViewModel) {
             LaunchedEffect(registroViewModel.usuario) {
                 registroViewModel.usuario?.let { usuario ->
                     sesionViewModel.iniciarSesion(usuario)
+                    cargarDatosDelRol(usuario)
                     navController.navigate(Rutas.homeDeRol(usuario.rol).ruta) {
                         popUpTo(Rutas.Login.ruta) { inclusive = true }
                     }
@@ -180,6 +196,37 @@ private fun AppPagoFlex(configuracionViewModel: ConfiguracionViewModel) {
         composable(Rutas.Perfil.ruta) {
             PerfilScreen(
                 sesion = sesionViewModel,
+                alVolver = { navController.popBackStack() },
+                alCambiarContrasena = { navController.navigate(Rutas.CambiarContrasena.ruta) },
+                alEditarPerfil = { navController.navigate(Rutas.EditarPerfil.ruta) },
+            )
+        }
+        composable(Rutas.EditarPerfil.ruta) {
+            val editarPerfilViewModel: EditarPerfilViewModel = viewModel()
+            LaunchedEffect(Unit) {
+                editarPerfilViewModel.cargar(sesionViewModel.nombre, sesionViewModel.correo)
+            }
+            val actualizado = editarPerfilViewModel.usuarioActualizado
+            LaunchedEffect(actualizado) {
+                if (actualizado != null) {
+                    sesionViewModel.actualizarDatos(actualizado)
+                    editarPerfilViewModel.consumirUsuario()
+                    navController.popBackStack()
+                }
+            }
+            EditarPerfilScreen(
+                viewModel = editarPerfilViewModel,
+                idUsuario = sesionViewModel.idUsuario,
+                rut = sesionViewModel.rut,
+                alVolver = { navController.popBackStack() }
+            )
+        }
+
+        composable(Rutas.CambiarContrasena.ruta) {
+            val cambiarContrasenaViewModel: CambiarContrasenaViewModel = viewModel()
+            CambiarContrasenaScreen(
+                viewModel = cambiarContrasenaViewModel,
+                idUsuario = sesionViewModel.idUsuario,
                 alVolver = { navController.popBackStack() }
             )
         }
@@ -209,10 +256,10 @@ private fun AppPagoFlex(configuracionViewModel: ConfiguracionViewModel) {
                 compromiso = folio?.let { compromisosViewModel.buscarPorFolio(it) },
                 alVolver = { navController.popBackStack() },
                 alPagar = { folioPagado ->
-                    val comprobante = compromisosViewModel.pagar(folioPagado)
-
-                    navController.navigate(Rutas.Comprobante.crear(comprobante.folio)) {
-                        popUpTo(Rutas.InicioUsuario.ruta)
+                    compromisosViewModel.pagar(folioPagado) { comprobante ->
+                        navController.navigate(Rutas.Comprobante.crear(comprobante.folio)) {
+                            popUpTo(Rutas.InicioUsuario.ruta)
+                        }
                     }
                 },
                 alReportar = { folioReporte ->
@@ -277,8 +324,10 @@ private fun AppPagoFlex(configuracionViewModel: ConfiguracionViewModel) {
         composable(Rutas.RegistrarCompromiso.ruta) {
             RegistrarCompromisoScreen(
                 alVolver = { navController.popBackStack() },
-                onRegistrar = { deudor, rut, concepto, monto, fecha ->
-                    ejecutivoViewModel.registrarCompromiso(deudor, rut, concepto, monto, fecha)
+                onRegistrar = { deudor, rut, concepto, totalCuotas, cuotaInicial, montoCuota, fecha ->
+                    ejecutivoViewModel.registrarCompromiso(
+                        deudor, rut, concepto, totalCuotas, cuotaInicial, montoCuota, fecha
+                    )
                     navController.popBackStack()
                 }
             )

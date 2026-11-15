@@ -4,6 +4,8 @@ import com.example.pagoflex.utils.Validaciones
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import java.text.SimpleDateFormat
+import java.util.Locale
 
 class ValidacionesTest {
 
@@ -57,5 +59,19 @@ class ValidacionesTest {
         assertFalse(Validaciones.fechaValida("10-13-2026"))
         assertFalse(Validaciones.fechaValida("29-02-2025"))
         assertFalse(Validaciones.fechaValida("5-6-2026"))
+    }
+
+    private val hoy = SimpleDateFormat("dd-MM-yyyy", Locale.US).parse("14-11-2026")!!
+
+    @Test
+    fun fechaDeHoyOFutura_noEsAnterior() {
+        assertTrue(Validaciones.fechaNoAnteriorAHoy("14-11-2026", hoy))
+        assertTrue(Validaciones.fechaNoAnteriorAHoy("01-01-2027", hoy))
+    }
+
+    @Test
+    fun fechaPasada_esAnterior() {
+        assertFalse(Validaciones.fechaNoAnteriorAHoy("13-11-2026", hoy))
+        assertFalse(Validaciones.fechaNoAnteriorAHoy("25-12-2025", hoy))
     }
 }

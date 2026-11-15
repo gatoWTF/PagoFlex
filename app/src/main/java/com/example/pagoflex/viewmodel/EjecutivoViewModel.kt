@@ -6,23 +6,26 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.pagoflex.data.CompromisoRepository
 import com.example.pagoflex.data.local.PagoFlexDatabase
-import com.example.pagoflex.data.local.entity.CompromisoEntity
-import com.example.pagoflex.data.local.entity.UsuarioFinalEntity
+import com.example.pagoflex.data.remote.CompromisoResponse
+import com.example.pagoflex.data.remote.NuevoCompromisoRequest
+import com.example.pagoflex.data.remote.textoAnulacion
 import com.example.pagoflex.model.CompromisoEmpresa
 import com.example.pagoflex.model.EstadoCompromiso
-import kotlinx.coroutines.flow.combine
+import com.example.pagoflex.model.MotivoAnulacion
 import kotlinx.coroutines.launch
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
 
 class EjecutivoViewModel(app: Application) : AndroidViewModel(app) {
 
     private val db = PagoFlexDatabase.obtener(app)
+    private val repositorio = CompromisoRepository()
 
-    private val empresaCodigo = "EC-03"
-    val empresa = "Crédito Andino"
+    private var empresaCodigo: String? = null
+    private var ejecutivoCodigo: String? = null
+
+    var empresa by mutableStateOf("")
+        private set
 
     var compromisos by mutableStateOf<List<CompromisoEmpresa>>(emptyList())
         private set
@@ -30,21 +33,28 @@ class EjecutivoViewModel(app: Application) : AndroidViewModel(app) {
     var mensaje by mutableStateOf<String?>(null)
         private set
 
-    private var usuarios: Map<String, UsuarioFinalEntity> = emptyMap()
-    private var contadorFolio = 130
-    private var contadorUsuario = 900
-
-    init {
+    fun cargarEjecutivo(rut: String) {
+        empresaCodigo = null
+        ejecutivoCodigo = null
+        empresa = ""
+        compromisos = emptyList()
         viewModelScope.launch {
-            combine(
-                db.compromisoDao().observarPorEmpresa(empresaCodigo),
-                db.usuarioFinalDao().observarTodos()
-            ) { compromisoEnts, usuarioList ->
-                compromisoEnts to usuarioList
-            }.collect { (compromisoEnts, usuarioList) ->
-                usuarios = usuarioList.associateBy { it.codigo }
-                compromisos = compromisoEnts.map { it.aModelo() }
-            }
+            val rutSinFormato = rut.trim().uppercase().replace(".", "").replace("-", "")
+            val ejecutivo = db.ejecutivoDao().buscarPorRut(rutSinFormato) ?: return@launch
+            ejecutivoCodigo = ejecutivo.codigo
+            empresaCodigo = ejecutivo.empresaCodigo
+            empresa = db.empresaClienteDao().obtenerPorCodigo(ejecutivo.empresaCodigo)?.nombreFantasia
+                ?: ejecutivo.empresaCodigo
+            recargar()
+        }
+    }
+
+    private suspend fun recargar() {
+        val codigo = empresaCodigo ?: return
+        try {
+            compromisos = repositorio.listarPorEmpresa(codigo).map { it.aModelo() }
+        } catch (e: Exception) {
+            mensaje = e.message
         }
     }
 
@@ -59,7 +69,7 @@ class EjecutivoViewModel(app: Application) : AndroidViewModel(app) {
         get() = compromisos.filter { it.estado == EstadoCompromiso.PAGADO }
 
     val totalRecaudado: Int get() = pagados.sumOf { it.monto }
-    val totalPorCobrar: Int get() = porCobrar.sumOf { it.monto }
+    val totalPorCobrar: Int get() = porCobrar.sumOf { it.monto + it.recargo }
 
     val tasaCobranza: Int
         get() {
@@ -71,82 +81,61 @@ class EjecutivoViewModel(app: Application) : AndroidViewModel(app) {
         deudor: String,
         rutDeudor: String,
         concepto: String,
-        monto: Int,
+        totalCuotas: Int,
+        cuotaInicial: Int,
+        montoCuota: Int,
         fechaVencimiento: String
     ) {
-        mensaje = "Compromiso registrado"
-        val folio = "CP-2026-" + String.format(Locale.US, "%04d", contadorFolio)
-        contadorFolio++
-
+        val empresaActual = empresaCodigo ?: return
+        val registrador = ejecutivoCodigo ?: return
         viewModelScope.launch {
-            val codigoUsuario = resolverUsuario(deudor.trim(), rutDeudor.trim())
-            db.compromisoDao().insertar(
-                CompromisoEntity(
-                    folio = folio,
-                    usuarioCodigo = codigoUsuario,
-                    empresaCodigo = empresaCodigo,
-                    concepto = concepto.trim(),
-                    numeroCuota = null,
-                    monto = monto,
-                    fechaVencimiento = fechaVencimiento.trim(),
-                    estado = EstadoCompromiso.PENDIENTE,
-                    recargoAplicado = 0,
-                    registradoPor = "EJ-03"
+            try {
+                val creado = repositorio.registrar(
+                    NuevoCompromisoRequest(
+                        rutUsuario = rutDeudor.trim(),
+                        nombreUsuario = deudor.trim(),
+                        empresaCodigo = empresaActual,
+                        concepto = concepto.trim(),
+                        totalCuotas = totalCuotas,
+                        cuotaInicial = cuotaInicial,
+                        monto = montoCuota,
+                        fechaVencimiento = fechaVencimiento.trim(),
+                        registradoPor = registrador
+                    )
                 )
-            )
-        }
-    }
-
-    fun anular(folio: String) {
-        mensaje = "Compromiso anulado"
-        viewModelScope.launch {
-            val ent = db.compromisoDao().obtenerPorFolio(folio) ?: return@launch
-            if (ent.estado == EstadoCompromiso.PENDIENTE || ent.estado == EstadoCompromiso.VENCIDO) {
-                db.compromisoDao().actualizar(ent.copy(estado = EstadoCompromiso.ANULADO))
+                mensaje = "Crédito registrado: cuota " + creado.cuotaActual + " de " + creado.totalCuotas
+                recargar()
+            } catch (e: Exception) {
+                mensaje = e.message
             }
         }
     }
 
-    private suspend fun resolverUsuario(nombre: String, rut: String): String {
-        val existente = usuarios.values.find { normalizarRut(it.rut) == normalizarRut(rut) }
-        if (existente != null) return existente.codigo
-
-        val codigo = "UF-" + String.format(Locale.US, "%03d", contadorUsuario)
-        contadorUsuario++
-        db.usuarioFinalDao().insertarTodos(
-            listOf(
-                UsuarioFinalEntity(
-                    codigo = codigo,
-                    nombreCompleto = nombre,
-                    rut = rut,
-                    correo = "",
-                    telefono = "",
-                    comuna = "",
-                    fechaIncorporacion = hoyFormateado(),
-                    diasAviso = 3,
-                    avisosActivos = true
-                )
-            )
-        )
-        return codigo
+    fun anular(folio: String, motivo: MotivoAnulacion, comentario: String) {
+        val empresaActual = empresaCodigo ?: return
+        val ejecutivo = ejecutivoCodigo ?: return
+        viewModelScope.launch {
+            try {
+                repositorio.anular(folio, motivo, comentario, ejecutivo, empresaActual)
+                mensaje = "Compromiso anulado: " + motivo.etiqueta
+                recargar()
+            } catch (e: Exception) {
+                mensaje = e.message
+            }
+        }
     }
 
-    private fun CompromisoEntity.aModelo(): CompromisoEmpresa {
-        val usuario = usuarios[usuarioCodigo]
-        return CompromisoEmpresa(
-            folio = folio,
-            deudor = usuario?.nombreCompleto ?: usuarioCodigo,
-            rutDeudor = usuario?.rut ?: "",
-            concepto = concepto,
-            monto = monto,
-            fechaVencimiento = fechaVencimiento,
-            estado = estado
-        )
-    }
-
-    private fun normalizarRut(rut: String): String =
-        rut.trim().uppercase().replace(".", "").replace("-", "")
-
-    private fun hoyFormateado(): String =
-        SimpleDateFormat("dd-MM-yyyy", Locale.US).format(Date())
+    private fun CompromisoResponse.aModelo(): CompromisoEmpresa = CompromisoEmpresa(
+        folio = folio,
+        deudor = nombreUsuario,
+        rutDeudor = rutUsuario,
+        concepto = concepto,
+        cuotaActual = cuotaActual,
+        totalCuotas = totalCuotas,
+        monto = monto,
+        fechaVencimiento = fechaVencimiento,
+        estado = estado,
+        recargo = recargoAplicado,
+        motivoAnulacion = textoAnulacion()
+    )
 }

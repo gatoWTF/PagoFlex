@@ -1,4 +1,4 @@
-package viewmodel
+package com.example.pagoflex.viewmodel
 
 import com.example.pagoflex.viewmodel.LoginViewModel
 import org.junit.Assert.assertEquals
@@ -19,7 +19,6 @@ class LoginViewModelTest {
     fun iniciarSesion_conCorreoInvalido_mostrarError(){
         viewModel.cambiarCorreo("camila")
         viewModel.cambiarContrasena("Clave123")
-
         viewModel.iniciarSesion()
 
         assertEquals("Correo no válido", viewModel.errorCorreo)

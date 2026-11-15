@@ -7,7 +7,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.pagoflex.data.UsuarioRepository
 import com.example.pagoflex.model.Usuario
-import com.example.pagoflex.utils.Validaciones
 import kotlinx.coroutines.launch
 
 class LoginViewModel(
@@ -37,9 +36,8 @@ class LoginViewModel(
     fun alternarContrasenaVisible() { contrasenaVisible = !contrasenaVisible }
 
     fun validar(): Boolean {
-        errorCorreo = if (Validaciones.correoValido(correo.trim())) null else "Correo no válido"
-        errorContrasena = if (Validaciones.contrasenaValida(contrasena)) null
-        else "La contraseña debe tener al menos ${Validaciones.LARGO_MINIMO_CONTRASENA} caracteres"
+        errorCorreo = if (correo.isBlank()) "Ingresa tu correo" else null
+        errorContrasena = if (contrasena.isBlank()) "Ingresa tu contraseña" else null
         return errorCorreo == null && errorContrasena == null
     }
 

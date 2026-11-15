@@ -76,6 +76,11 @@ fun FilaCompromiso(
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
+                Text(
+                    text = "Cuota " + compromiso.cuota,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             }
             Spacer(Modifier.width(Dimens.espacioChico))
             Column(horizontalAlignment = Alignment.End) {
@@ -103,7 +108,8 @@ private fun FilaCompromisoPreview() {
                     empresa = "Club Los Halcones",
                     rubro = "Club deportivo",
                     concepto = "Cuota social octubre",
-                    cuota = "10/12",
+                    cuotaActual = 10,
+                    totalCuotas = 12,
                     monto = 15000,
                     fechaVencimiento = "05-10-2026",
                     estado = EstadoCompromiso.VENCIDO,

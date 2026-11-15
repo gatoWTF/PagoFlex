@@ -20,4 +20,7 @@ interface UsuarioFinalDao {
 
     @Query("SELECT COUNT(*) FROM usuario_final")
     suspend fun contar(): Int
+
+    @Query("SELECT * FROM usuario_final WHERE REPLACE(REPLACE(UPPER(rut), '.', ''), '-', '') = :rutSinFormato")
+    suspend fun buscarPorRut(rutSinFormato: String): UsuarioFinalEntity?
 }

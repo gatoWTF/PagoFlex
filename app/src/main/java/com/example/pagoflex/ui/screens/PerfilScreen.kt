@@ -66,6 +66,8 @@ import kotlinx.coroutines.launch
 fun PerfilScreen(
     sesion: SesionViewModel,
     alVolver: () -> Unit,
+    alCambiarContrasena: () -> Unit = {},
+    alEditarPerfil: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
@@ -207,7 +209,7 @@ fun PerfilScreen(
                         style = MaterialTheme.typography.titleMedium
                     )
                     Text(
-                        text = "Estos datos no se pueden editar.",
+                        text = "Estos datos los administra tu empresa",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -217,6 +219,20 @@ fun PerfilScreen(
                     FilaDato("RUT", sesion.rut.ifBlank { "Sin registrar" })
                     FilaDato("Correo", sesion.correo.ifBlank { "Sin registrar" })
                 }
+
+
+                    BotonSecundario(
+                        texto = "Editar mis datos",
+                        onClick = alEditarPerfil,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+
+                BotonSecundario(
+                    texto = "Cambiar contraseña",
+                    onClick = alCambiarContrasena,
+                    modifier = Modifier.fillMaxWidth()
+                )
             }
 
             Text(

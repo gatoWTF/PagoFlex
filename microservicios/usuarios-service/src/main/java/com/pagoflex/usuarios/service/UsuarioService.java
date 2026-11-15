@@ -62,7 +62,7 @@ public class UsuarioService {
         }
         Usuario usuario = usuarioRepository.findByCorreo(limpiarCorreo(datos.correo()))
                 .filter(u -> passwordEncoder.matches(datos.contrasena(), u.getContrasena()))
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Correo o contraseña incorrectos"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Correo y/o contraseña incorrectos"));
         return aRespuesta(usuario);
     }
 

@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -129,11 +130,46 @@ fun ComprobanteScreen(
                 Column(modifier = Modifier.padding(Dimens.espacioMedio)) {
                     FilaDato("Concepto", comprobante.concepto)
                     FilaDato("Empresa", comprobante.empresa)
+                    comprobante.cuota?.let { FilaDato("Cuota pagada", it) }
                     HorizontalDivider(modifier = Modifier.padding(vertical = Dimens.espacioChico))
                     FilaDato("Monto pagado", FormatoMoneda.clp(comprobante.monto))
                     FilaDato("Fecha y hora", comprobante.fechaHora)
                     FilaDato("Canal", comprobante.canal)
                     FilaDato("N° comprobante", comprobante.folio)
+                }
+            }
+
+            val siguiente = comprobante.siguienteCuota
+            if (siguiente != null || comprobante.creditoTerminado) {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = androidx.compose.foundation.shape.RoundedCornerShape(Dimens.radioTarjeta),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.primaryContainer,
+                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
+                ) {
+                    Column(modifier = Modifier.padding(Dimens.espacioMedio)) {
+                        if (siguiente != null) {
+                            Text(
+                                text = "Siguiente cuota",
+                                style = MaterialTheme.typography.titleSmall
+                            )
+                            Text(
+                                text = "Cuota " + siguiente.cuota + " · vence " + siguiente.fechaVencimiento,
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                            Text(
+                                text = FormatoMoneda.clp(siguiente.totalAPagar),
+                                style = MaterialTheme.typography.titleMedium
+                            )
+                        } else {
+                            Text(
+                                text = "Pagaste la última cuota. Este crédito quedó pagado.",
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                        }
+                    }
                 }
             }
 

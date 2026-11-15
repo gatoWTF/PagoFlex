@@ -20,6 +20,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SelectableDates
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -34,7 +35,9 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.pagoflex.R
 import com.example.pagoflex.ui.components.BotonPrincipal
@@ -54,12 +57,14 @@ import java.util.TimeZone
 @Composable
 fun RegistrarCompromisoScreen(
     alVolver: () -> Unit,
-    onRegistrar: (deudor: String, rut: String, concepto: String, monto: Int, fecha: String) -> Unit,
+    onRegistrar: (deudor: String, rut: String, concepto: String, totalCuotas: Int, cuotaInicial: Int, montoCuota: Int, fecha: String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     var deudor by rememberSaveable { mutableStateOf("") }
     var rut by rememberSaveable { mutableStateOf("") }
     var concepto by rememberSaveable { mutableStateOf("") }
+    var totalCuotas by rememberSaveable { mutableStateOf("") }
+    var cuotaInicial by rememberSaveable { mutableStateOf("1") }
     var monto by rememberSaveable { mutableStateOf("") }
     var fecha by rememberSaveable { mutableStateOf("") }
     var intentoEnvio by remember { mutableStateOf(false) }
@@ -71,17 +76,34 @@ fun RegistrarCompromisoScreen(
     LaunchedEffect(registrando) {
         if (registrando) {
             delay(1000)
-            onRegistrar(deudor, rut, concepto, monto.trim().toInt(), fecha.replace("/", "-"))
+            onRegistrar(
+                deudor,
+                rut,
+                concepto,
+                totalCuotas.trim().toInt(),
+                cuotaInicial.trim().toInt(),
+                monto.trim().toInt(),
+                fecha.replace("/", "-")
+            )
         }
     }
 
     val errorDeudor = if (intentoEnvio && deudor.isBlank()) "Ingresa el nombre del deudor" else null
     val errorRut = if (intentoEnvio && !Validaciones.rutValido(rut)) "RUT inválido" else null
     val errorConcepto = if (intentoEnvio && concepto.isBlank()) "Ingresa el concepto" else null
+    val errorTotalCuotas = if (intentoEnvio && !Validaciones.cantidadCuotasValida(totalCuotas))
+        "Ingresa una cantidad entre 1 y ${Validaciones.MAXIMO_CUOTAS}" else null
+    val errorCuotaInicial = if (intentoEnvio && !Validaciones.cuotaInicialValida(cuotaInicial, totalCuotas))
+        "Debe estar entre 1 y la cantidad de cuotas" else null
     val errorMonto = if (intentoEnvio && !Validaciones.montoValido(monto)) "Monto inválido (entero positivo)" else null
 
     val fechaConGuiones = fecha.replace("/", "-")
-    val errorFecha = if (intentoEnvio && !Validaciones.fechaValida(fechaConGuiones)) "Ingresa una fecha válida (DD/MM/AAAA)" else null
+    val errorFecha = when {
+        !intentoEnvio -> null
+        !Validaciones.fechaValida(fechaConGuiones) -> "Ingresa una fecha válida (DD/MM/AAAA)"
+        !Validaciones.fechaNoAnteriorAHoy(fechaConGuiones) -> "La fecha no puede ser anterior a hoy"
+        else -> null
+    }
 
     Scaffold(
         modifier = modifier,
@@ -134,19 +156,35 @@ fun RegistrarCompromisoScreen(
                 error = errorConcepto
             )
             CampoTexto(
+                valor = totalCuotas,
+                onValorCambia = { totalCuotas = it },
+                etiqueta = "Cantidad de cuotas",
+                icono = R.drawable.ic_otro,
+                error = errorTotalCuotas,
+                tipoTeclado = KeyboardType.Number
+            )
+            CampoTexto(
+                valor = cuotaInicial,
+                onValorCambia = { cuotaInicial = it },
+                etiqueta = "Cuota inicial",
+                icono = R.drawable.ic_otro,
+                error = errorCuotaInicial,
+                tipoTeclado = KeyboardType.Number
+            )
+            CampoTexto(
                 valor = monto,
                 onValorCambia = { monto = it },
-                etiqueta = "Monto (pesos)",
+                etiqueta = "Monto de cada cuota (pesos)",
                 icono = R.drawable.ic_pagar,
                 error = errorMonto,
                 tipoTeclado = KeyboardType.Number
             )
 
             OutlinedTextField(
-                value = fecha,
-                onValueChange = { fecha = formatearFechaEntrada(it) },
+                value = TextFieldValue(fecha, selection = TextRange(fecha.length)),
+                onValueChange = { fecha = formatearFechaEntrada(it.text) },
                 modifier = Modifier.fillMaxWidth(),
-                label = { Text("Vencimiento (DD/MM/AAAA)") },
+                label = { Text("Vencimiento de la cuota inicial") },
                 placeholder = { Text("DD/MM/AAAA") },
                 leadingIcon = {
                     Icon(
@@ -179,8 +217,11 @@ fun RegistrarCompromisoScreen(
                     val valido = deudor.isNotBlank() &&
                         Validaciones.rutValido(rut) &&
                         concepto.isNotBlank() &&
+                        Validaciones.cantidadCuotasValida(totalCuotas) &&
+                        Validaciones.cuotaInicialValida(cuotaInicial, totalCuotas) &&
                         Validaciones.montoValido(monto) &&
-                        Validaciones.fechaValida(fechaConGuiones)
+                        Validaciones.fechaValida(fechaConGuiones) &&
+                        Validaciones.fechaNoAnteriorAHoy(fechaConGuiones)
                     if (valido) registrando = true
                 },
                 cargando = registrando,
@@ -197,7 +238,15 @@ fun RegistrarCompromisoScreen(
         }
 
         if (mostrarCalendario) {
-            val estadoCalendario = rememberDatePickerState()
+            val estadoCalendario = rememberDatePickerState(
+                selectableDates = object : SelectableDates {
+                    override fun isSelectableDate(utcTimeMillis: Long): Boolean {
+                        val formato = SimpleDateFormat("dd-MM-yyyy", Locale.US)
+                        formato.timeZone = TimeZone.getTimeZone("UTC")
+                        return Validaciones.fechaNoAnteriorAHoy(formato.format(Date(utcTimeMillis)))
+                    }
+                }
+            )
             DatePickerDialog(
                 onDismissRequest = { mostrarCalendario = false },
                 confirmButton = {
@@ -235,6 +284,6 @@ private fun formatearFechaEntrada(entrada: String): String {
 @Composable
 private fun RegistrarCompromisoScreenPreview() {
     PagoFlexTheme {
-        RegistrarCompromisoScreen(alVolver = {}, onRegistrar = { _, _, _, _, _ -> })
+        RegistrarCompromisoScreen(alVolver = {}, onRegistrar = { _, _, _, _, _, _, _ -> })
     }
 }

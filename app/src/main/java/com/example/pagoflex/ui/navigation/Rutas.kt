@@ -9,6 +9,10 @@ sealed class Rutas(val ruta: String) {
 
     object InicioUsuario : Rutas("usuario/inicio")
     object Perfil : Rutas("usuario/perfil")
+
+    object CambiarContrasena : Rutas("usuario/contrasena")
+
+    object EditarPerfil : Rutas("usuario/perfil/editar")
     object Historial : Rutas("usuario/historial")
     object Configuracion : Rutas("usuario/configuracion")
     object DetalleCompromiso : Rutas("usuario/detalle/{folio}") {

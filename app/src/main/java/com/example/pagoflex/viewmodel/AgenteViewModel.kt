@@ -6,9 +6,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.pagoflex.data.CompromisoRepository
 import com.example.pagoflex.data.local.PagoFlexDatabase
 import com.example.pagoflex.data.local.entity.ReporteEntity
 import com.example.pagoflex.data.local.entity.UsuarioFinalEntity
+import com.example.pagoflex.model.EstadoCompromiso
 import com.example.pagoflex.model.EstadoReporte
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
@@ -25,8 +27,9 @@ data class ReporteGestion(
 class AgenteViewModel(app: Application) : AndroidViewModel(app) {
 
     private val db = PagoFlexDatabase.obtener(app)
+    private val repositorio = CompromisoRepository()
 
-    private val agenteCodigo = "AG-01"
+    private var agenteCodigo: String? = null
 
     var reportes by mutableStateOf<List<ReporteGestion>>(emptyList())
         private set
@@ -51,18 +54,28 @@ class AgenteViewModel(app: Application) : AndroidViewModel(app) {
 
     val cantidadAbiertos: Int get() = reportes.count { it.estado == EstadoReporte.ABIERTO }
 
+    fun cargarAgente(rut: String) {
+        agenteCodigo = null
+        viewModelScope.launch {
+            val rutSinFormato = rut.trim().uppercase().replace(".", "").replace("-", "")
+            agenteCodigo = db.agenteDao().buscarPorRut(rutSinFormato)?.codigo
+        }
+    }
+
     fun tomar(numero: String) {
+        val codigo = agenteCodigo ?: return
         val ent = entidades[numero] ?: return
         if (ent.estado != EstadoReporte.ABIERTO) return
         mensaje = "Reporte tomado"
         viewModelScope.launch {
             db.reporteDao().insertar(
-                ent.copy(estado = EstadoReporte.EN_GESTION, agenteResponsable = agenteCodigo)
+                ent.copy(estado = EstadoReporte.EN_GESTION, agenteResponsable = codigo)
             )
         }
     }
 
     fun resolver(numero: String) {
+        val codigo = agenteCodigo ?: return
         val ent = entidades[numero] ?: return
         if (ent.estado == EstadoReporte.RESUELTO) return
         mensaje = "Reporte resuelto"
@@ -70,10 +83,20 @@ class AgenteViewModel(app: Application) : AndroidViewModel(app) {
             db.reporteDao().insertar(
                 ent.copy(
                     estado = EstadoReporte.RESUELTO,
-                    agenteResponsable = ent.agenteResponsable ?: agenteCodigo,
+                    agenteResponsable = ent.agenteResponsable ?: codigo,
                     respuestaUsuario = "Gestionado por soporte."
                 )
             )
+            try {
+                val compromiso = repositorio.obtener(ent.compromisoFolio)
+                if (compromiso.estado == EstadoCompromiso.EN_REVISION) {
+                    val estadoNuevo = if (compromiso.recargoAplicado > 0) EstadoCompromiso.VENCIDO
+                    else EstadoCompromiso.PENDIENTE
+                    repositorio.cambiarEstado(ent.compromisoFolio, estadoNuevo)
+                }
+            } catch (e: Exception) {
+                mensaje = "Reporte resuelto, pero no se pudo actualizar el compromiso"
+            }
         }
     }
 

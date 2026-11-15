@@ -1,11 +1,14 @@
 package com.example.pagoflex.utils
 
+import android.Manifest
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
+import android.content.pm.PackageManager
 import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import androidx.core.content.ContextCompat
 import com.example.pagoflex.R
 
 object Notificaciones {
@@ -25,7 +28,16 @@ object Notificaciones {
         }
     }
 
+    fun tienePermiso(context: Context): Boolean =
+        Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU ||
+            ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) ==
+            PackageManager.PERMISSION_GRANTED
+
     fun mostrarAviso(context: Context, titulo: String, texto: String) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+            ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) !=
+            PackageManager.PERMISSION_GRANTED
+        ) return
         val aviso = NotificationCompat.Builder(context, CANAL_AVISOS)
             .setSmallIcon(R.drawable.ic_avisos)
             .setContentTitle(titulo)

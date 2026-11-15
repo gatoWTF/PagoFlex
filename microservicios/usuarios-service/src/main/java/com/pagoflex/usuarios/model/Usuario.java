@@ -39,4 +39,10 @@ public class Usuario {
 
     @Column(name = "rol_id", nullable = false)
     private Long rolId;
+
+    @Column(name = "correo_secundario", length = 100)
+    private String correoSecundario;
+
+    @Column(length = 20)
+    private String telefono;
 }

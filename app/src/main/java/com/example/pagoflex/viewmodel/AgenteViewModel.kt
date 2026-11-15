@@ -8,16 +8,17 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.pagoflex.data.CompromisoRepository
 import com.example.pagoflex.data.local.PagoFlexDatabase
-import com.example.pagoflex.data.local.entity.ReporteEntity
-import com.example.pagoflex.data.local.entity.UsuarioFinalEntity
-import com.example.pagoflex.model.EstadoCompromiso
+import com.example.pagoflex.data.remote.ReporteResponse
 import com.example.pagoflex.model.EstadoReporte
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 
 data class ReporteGestion(
     val numero: String,
     val usuario: String,
+    val folio: String,
+    val empresa: String,
+    val detalleCompromiso: String,
+    val montoCuota: Int?,
     val motivo: String,
     val comentario: String,
     val fecha: String,
@@ -36,78 +37,71 @@ class AgenteViewModel(app: Application) : AndroidViewModel(app) {
     var mensaje by mutableStateOf<String?>(null)
         private set
 
-    private var entidades: Map<String, ReporteEntity> = emptyMap()
-    private var usuarios: Map<String, UsuarioFinalEntity> = emptyMap()
-
-    init {
-        viewModelScope.launch {
-            combine(
-                db.reporteDao().observarTodos(),
-                db.usuarioFinalDao().observarTodos()
-            ) { reps, users -> reps to users }.collect { (reps, users) ->
-                usuarios = users.associateBy { it.codigo }
-                entidades = reps.associateBy { it.numero }
-                reportes = reps.map { it.aGestion() }
-            }
-        }
-    }
-
     val cantidadAbiertos: Int get() = reportes.count { it.estado == EstadoReporte.ABIERTO }
 
     fun cargarAgente(rut: String) {
         agenteCodigo = null
+        reportes = emptyList()
         viewModelScope.launch {
             val rutSinFormato = rut.trim().uppercase().replace(".", "").replace("-", "")
             agenteCodigo = db.agenteDao().buscarPorRut(rutSinFormato)?.codigo
+            recargar()
         }
+    }
+
+    fun actualizar() {
+        viewModelScope.launch { recargar() }
     }
 
     fun tomar(numero: String) {
         val codigo = agenteCodigo ?: return
-        val ent = entidades[numero] ?: return
-        if (ent.estado != EstadoReporte.ABIERTO) return
-        mensaje = "Reporte tomado"
         viewModelScope.launch {
-            db.reporteDao().insertar(
-                ent.copy(estado = EstadoReporte.EN_GESTION, agenteResponsable = codigo)
-            )
+            try {
+                repositorio.tomarReporte(numero, codigo)
+                mensaje = "Reporte tomado"
+            } catch (e: Exception) {
+                mensaje = e.message
+            }
+            recargar()
         }
     }
 
     fun resolver(numero: String) {
         val codigo = agenteCodigo ?: return
-        val ent = entidades[numero] ?: return
-        if (ent.estado == EstadoReporte.RESUELTO) return
-        mensaje = "Reporte resuelto"
         viewModelScope.launch {
-            db.reporteDao().insertar(
-                ent.copy(
-                    estado = EstadoReporte.RESUELTO,
-                    agenteResponsable = ent.agenteResponsable ?: codigo,
-                    respuestaUsuario = "Gestionado por soporte."
-                )
-            )
             try {
-                val compromiso = repositorio.obtener(ent.compromisoFolio)
-                if (compromiso.estado == EstadoCompromiso.EN_REVISION) {
-                    val estadoNuevo = if (compromiso.recargoAplicado > 0) EstadoCompromiso.VENCIDO
-                    else EstadoCompromiso.PENDIENTE
-                    repositorio.cambiarEstado(ent.compromisoFolio, estadoNuevo)
-                }
+                repositorio.resolverReporte(numero, codigo)
+                mensaje = "Reporte resuelto"
             } catch (e: Exception) {
-                mensaje = "Reporte resuelto, pero no se pudo actualizar el compromiso"
+                mensaje = e.message
             }
+            recargar()
         }
     }
 
     fun consumirMensaje() { mensaje = null }
 
-    private fun ReporteEntity.aGestion(): ReporteGestion = ReporteGestion(
-        numero = numero,
-        usuario = usuarios[usuarioCodigo]?.nombreCompleto ?: usuarioCodigo,
-        motivo = motivo,
-        comentario = comentario,
-        fecha = fecha,
-        estado = estado
-    )
+    private suspend fun recargar() {
+        try {
+            reportes = repositorio.listarReportes().map { it.aGestion() }
+        } catch (e: Exception) {
+            mensaje = e.message
+        }
+    }
+
+    private fun ReporteResponse.aGestion(): ReporteGestion {
+        val cuota = if (cuotaActual != null && totalCuotas != null) "cuota $cuotaActual de $totalCuotas" else null
+        return ReporteGestion(
+            numero = numero,
+            usuario = nombreUsuario ?: rutUsuario,
+            folio = compromisoFolio,
+            empresa = empresaNombre ?: "Compromiso no encontrado",
+            detalleCompromiso = listOfNotNull(concepto, cuota).joinToString(" · "),
+            montoCuota = montoCuota,
+            motivo = motivo,
+            comentario = comentario,
+            fecha = fecha,
+            estado = estado
+        )
+    }
 }

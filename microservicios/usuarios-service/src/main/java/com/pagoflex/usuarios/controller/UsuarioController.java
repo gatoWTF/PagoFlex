@@ -2,6 +2,7 @@ package com.pagoflex.usuarios.controller;
 
 import com.pagoflex.usuarios.dto.ActualizarUsuarioRequest;
 import com.pagoflex.usuarios.dto.CambiarContrasenaRequest;
+import com.pagoflex.usuarios.dto.ContactoRequest;
 import com.pagoflex.usuarios.dto.LoginRequest;
 import com.pagoflex.usuarios.dto.RegistroRequest;
 import com.pagoflex.usuarios.dto.UsuarioResponse;
@@ -43,6 +44,11 @@ public class UsuarioController {
     @PutMapping("/{id}")
     public UsuarioResponse actualizar(@PathVariable Long id, @RequestBody ActualizarUsuarioRequest datos) {
         return usuarioService.actualizar(id, datos);
+    }
+
+    @PutMapping("/{id}/contacto")
+    public UsuarioResponse guardarContacto(@PathVariable Long id, @RequestBody ContactoRequest datos) {
+        return usuarioService.guardarContacto(id, datos);
     }
 
     @PutMapping("/{id}/contrasena")

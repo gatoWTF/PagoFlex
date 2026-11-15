@@ -20,6 +20,9 @@ interface UsuarioApi {
     @PUT("api/usuarios/{id}")
     suspend fun actualizar(@Path("id") id: Long, @Body datos: ActualizarUsuarioRequest): UsuarioResponse
 
+    @PUT("api/usuarios/{id}/contacto")
+    suspend fun guardarContacto(@Path("id") id: Long, @Body datos: ContactoRequest): UsuarioResponse
+
     @PUT("api/usuarios/{id}/contrasena")
     suspend fun cambiarContrasena(@Path("id") id: Long, @Body datos: CambiarContrasenaRequest)
 }

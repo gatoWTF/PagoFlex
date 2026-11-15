@@ -6,9 +6,12 @@ import com.example.pagoflex.data.remote.ComprobanteResponse
 import com.example.pagoflex.data.remote.CompromisoApi
 import com.example.pagoflex.data.remote.CompromisoResponse
 import com.example.pagoflex.data.remote.ErrorApi
+import com.example.pagoflex.data.remote.GestionReporteRequest
 import com.example.pagoflex.data.remote.NuevoCompromisoRequest
+import com.example.pagoflex.data.remote.NuevoReporteRequest
 import com.example.pagoflex.data.remote.PagoRequest
 import com.example.pagoflex.data.remote.PagoResponse
+import com.example.pagoflex.data.remote.ReporteResponse
 import com.example.pagoflex.data.remote.RetrofitClient
 import com.example.pagoflex.model.CanalPago
 import com.example.pagoflex.model.EstadoCompromiso
@@ -55,6 +58,18 @@ class CompromisoRepository(
 
     suspend fun listarComprobantes(rut: String): List<ComprobanteResponse> =
         llamar { compromisoApi.listarComprobantes(rut) }
+
+    suspend fun listarReportes(): List<ReporteResponse> =
+        llamar { compromisoApi.listarReportes() }
+
+    suspend fun crearReporte(folio: String, rut: String, motivo: String, comentario: String): ReporteResponse =
+        llamar { compromisoApi.crearReporte(NuevoReporteRequest(folio, rut, motivo, comentario)) }
+
+    suspend fun tomarReporte(numero: String, agenteCodigo: String): ReporteResponse =
+        llamar { compromisoApi.tomarReporte(numero, GestionReporteRequest(agenteCodigo)) }
+
+    suspend fun resolverReporte(numero: String, agenteCodigo: String): ReporteResponse =
+        llamar { compromisoApi.resolverReporte(numero, GestionReporteRequest(agenteCodigo)) }
 
     private suspend fun <T> llamar(peticion: suspend () -> T): T = try {
         peticion()

@@ -6,6 +6,8 @@ public record UsuarioResponse(
         String rut,
         String correo,
         Long rolId,
-        String rolNombre
+        String rolNombre,
+        String correoSecundario,
+        String telefono
 ) {
 }

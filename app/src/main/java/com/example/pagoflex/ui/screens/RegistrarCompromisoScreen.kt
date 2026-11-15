@@ -88,7 +88,12 @@ fun RegistrarCompromisoScreen(
         }
     }
 
-    val errorDeudor = if (intentoEnvio && deudor.isBlank()) "Ingresa el nombre del deudor" else null
+    val errorDeudor = when {
+        !intentoEnvio -> null
+        deudor.isBlank() -> "Ingresa el nombre del deudor"
+        !Validaciones.nombreSoloLetras(deudor) -> "El nombre no puede llevar números"
+        else -> null
+    }
     val errorRut = if (intentoEnvio && !Validaciones.rutValido(rut)) "RUT inválido" else null
     val errorConcepto = if (intentoEnvio && concepto.isBlank()) "Ingresa el concepto" else null
     val errorTotalCuotas = if (intentoEnvio && !Validaciones.cantidadCuotasValida(totalCuotas))
@@ -215,8 +220,9 @@ fun RegistrarCompromisoScreen(
                 onClick = {
                     intentoEnvio = true
                     val valido = deudor.isNotBlank() &&
-                        Validaciones.rutValido(rut) &&
-                        concepto.isNotBlank() &&
+                            Validaciones.nombreSoloLetras(deudor) &&
+                            Validaciones.rutValido(rut) &&
+                            concepto.isNotBlank() &&
                         Validaciones.cantidadCuotasValida(totalCuotas) &&
                         Validaciones.cuotaInicialValida(cuotaInicial, totalCuotas) &&
                         Validaciones.montoValido(monto) &&

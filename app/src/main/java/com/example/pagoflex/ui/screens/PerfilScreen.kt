@@ -209,7 +209,7 @@ fun PerfilScreen(
                         style = MaterialTheme.typography.titleMedium
                     )
                     Text(
-                        text = "Estos datos los administra tu empresa",
+                        text = "Puedes editar tu nombre y tu correo",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )

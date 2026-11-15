@@ -11,19 +11,12 @@ Servicios Spring Boot 4.1 (Java 21, Maven, JPA, MySQL) que consume la app con Re
 ## Cómo levantarlos (desde Android Studio)
 
 1. Iniciar MySQL en Laragon (puerto 3306, usuario `root` sin contraseña). Las bases se crean solas.
-2. En Android Studio, pestaña **Terminal**, desde la carpeta del proyecto:
+2. En Android Studio, pestaña **Terminal** (PowerShell), desde la carpeta del proyecto, encender los 3 con un solo comando:
+   ```powershell
+   Get-ChildItem .\microservicios\iniciar-*.bat | ForEach-Object { Start-Process $_.FullName }
    ```
-   .\microservicios\iniciar-roles.bat
-   ```
-3. Abrir otra pestaña de Terminal (botón **+**) y ejecutar:
-   ```
-   .\microservicios\iniciar-usuarios.bat
-   ```
-4. En una tercera pestaña:
-   ```
-   .\microservicios\iniciar-compromisos.bat
-   ```
-5. Para detener un servicio: `Ctrl+C` en su pestaña y responder `S`.
+   Se abre una ventana por servicio. También se puede encender uno solo, por ejemplo `.\microservicios\iniciar-usuarios.bat`.
+3. Para detenerlos: cerrar sus ventanas (o `Ctrl+C` en cada una y responder `S`).
 
 Los scripts usan el Java que trae Android Studio y el Maven Wrapper (`mvnw`) de cada servicio, así que no hace falta instalar Maven ni usar IntelliJ. La primera vez descargan Maven y las librerías (tarda unos minutos).
 
@@ -58,7 +51,7 @@ Endpoints: `GET /api/roles` y `GET /api/roles/{id}` (404 si no existe).
 | GET | `/api/compromisos?rut=...` | — | Compromisos del usuario (el RUT puede ir con o sin puntos) |
 | GET | `/api/compromisos?empresa=EC-03` | — | Compromisos de una empresa |
 | GET | `/api/compromisos/{folio}` | — | 200 · 404 |
-| POST | `/api/compromisos` | `{"rutUsuario","nombreUsuario","empresaCodigo","concepto","totalCuotas","cuotaInicial","monto","fechaVencimiento","registradoPor"}` | 201 con la cuota inicial creada · 400 |
+| POST | `/api/compromisos` | `{"rutUsuario","nombreUsuario","empresaCodigo","concepto","totalCuotas","cuotaInicial","monto","fechaVencimiento","registradoPor"}` | 201 con la cuota inicial creada · 400 datos o fecha anterior a hoy · 409 cuota ya registrada |
 | PUT | `/api/compromisos/{folio}/estado` | `{"estado"}` (`EN_REVISION`, `PENDIENTE` o `VENCIDO`) | 200 · 400 si se pide `ANULADO` o `PAGADO` · 409 si el cambio no está permitido |
 | PUT | `/api/compromisos/{folio}/anular` | `{"motivo","comentario","ejecutivoCodigo","empresaCodigo"}` | 200 · 400 sin motivo, u `OTRO` sin comentario · 403 otra empresa · 409 pagado o ya anulado |
 | POST | `/api/compromisos/{folio}/pagar` | `{"canal","medioPago"}` (opcional) | 201 `{"comprobante", "siguienteCuota"}` · 409 si no se puede pagar |
@@ -78,6 +71,14 @@ Endpoints: `GET /api/roles` y `GET /api/roles/{id}` (404 si no existe).
 - La revisión la hace `VencimientoService`: todos los días a las 00:01 (`@Scheduled`) y además antes de cada consulta o pago, así la app siempre ve el estado al día.
 - Al pagar se cobra monto + recargo, y el comprobante marca `aTiempo` comparando la fecha de pago con la de vencimiento.
 - Si un agente devuelve a pendiente una cuota en revisión cuya fecha ya pasó, queda Vencido con su recargo.
+
+### Registro sin errores ni duplicados (RN-20)
+
+- La fecha de vencimiento debe tener formato `dd-MM-aaaa` y no puede ser anterior a hoy (400).
+- La misma cuota no se registra dos veces: si ya existe una cuota con la misma persona (RUT, con o sin puntos), empresa, concepto (sin importar mayúsculas ni espacios al inicio o al final) y número de cuota, responde 409 con el folio existente.
+- Las cuotas **anuladas** no cuentan: si se anuló por "Error de registro", el ejecutivo puede volver a registrarla bien.
+- Las cuotas **pagadas** sí cuentan: una cuota pagada no se vuelve a cobrar.
+- Al pagar una cuota, si el ejecutivo ya había registrado a mano la siguiente, el servidor usa esa y no crea otra.
 
 ### Anulación (RN-21)
 

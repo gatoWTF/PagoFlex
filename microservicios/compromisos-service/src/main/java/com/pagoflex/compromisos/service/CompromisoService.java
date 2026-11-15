@@ -27,6 +27,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -72,6 +73,7 @@ public class CompromisoService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El monto de la cuota debe ser mayor a cero");
         }
         validarFecha(datos.fechaVencimiento());
+        validarQueNoEsteRegistrado(datos);
 
         Compromiso nuevo = Compromiso.builder()
                 .folio(siguienteFolio())
@@ -198,7 +200,10 @@ public class CompromisoService {
         if (numeroSiguiente > pagada.getTotalCuotas()) {
             return null;
         }
+        // Si el ejecutivo ya registro esa cuota a mano, se usa esa y no se crea otra (RN-20).
         return compromisoRepository.findByCodigoCreditoAndCuotaActual(pagada.getCodigoCredito(), numeroSiguiente)
+                .or(() -> buscarCuotaRegistrada(pagada.getRutClave(), pagada.getEmpresaCodigo(),
+                        pagada.getConcepto(), numeroSiguiente))
                 .orElseGet(() -> {
                     LocalDate vencimiento = LocalDate.parse(pagada.getFechaVencimiento(), FORMATO_FECHA).plusMonths(1);
                     Compromiso siguiente = Compromiso.builder()
@@ -228,6 +233,27 @@ public class CompromisoService {
         return comprobanteRepository.findByRutClaveOrderByNumeroDesc(Rut.clave(rut)).stream()
                 .map(ComprobanteResponse::desde)
                 .toList();
+    }
+
+    // RN-20: la misma cuota (persona + empresa + concepto + numero de cuota) no se registra dos veces.
+    private void validarQueNoEsteRegistrado(NuevoCompromisoRequest datos) {
+        buscarCuotaRegistrada(Rut.clave(datos.rutUsuario()), datos.empresaCodigo().trim(),
+                datos.concepto(), datos.cuotaInicial())
+                .ifPresent(existente -> {
+                    throw new ResponseStatusException(HttpStatus.CONFLICT,
+                            "Esta cuota ya está registrada: " + existente.getFolio()
+                                    + " (cuota " + existente.getCuotaActual() + " de " + existente.getTotalCuotas() + ")");
+                });
+    }
+
+    // Las anuladas no cuentan: si se anulo por "Error de registro", el ejecutivo puede registrarla bien.
+    private Optional<Compromiso> buscarCuotaRegistrada(String rutClave, String empresaCodigo, String concepto, Integer cuota) {
+        String conceptoBuscado = concepto.trim();
+        return compromisoRepository.findByRutClaveAndEmpresaCodigo(rutClave, empresaCodigo).stream()
+                .filter(c -> c.getEstado() != EstadoCompromiso.ANULADO)
+                .filter(c -> c.getConcepto().trim().equalsIgnoreCase(conceptoBuscado))
+                .filter(c -> c.getCuotaActual().equals(cuota))
+                .findFirst();
     }
 
     private Compromiso buscar(String folio) {

@@ -13,6 +13,8 @@ public interface CompromisoRepository extends JpaRepository<Compromiso, Long> {
 
     List<Compromiso> findByEmpresaCodigo(String empresaCodigo);
 
+    List<Compromiso> findByRutClaveAndEmpresaCodigo(String rutClave, String empresaCodigo);
+
     Optional<Compromiso> findByFolio(String folio);
 
     Optional<Compromiso> findByCodigoCreditoAndCuotaActual(String codigoCredito, Integer cuotaActual);

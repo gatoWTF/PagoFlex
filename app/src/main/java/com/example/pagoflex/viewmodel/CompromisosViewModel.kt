@@ -15,7 +15,9 @@ import com.example.pagoflex.data.remote.textoAnulacion
 import com.example.pagoflex.model.Comprobante
 import com.example.pagoflex.model.Compromiso
 import com.example.pagoflex.model.EstadoCompromiso
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeoutOrNull
 
 class CompromisosViewModel(app: Application) : AndroidViewModel(app) {
 
@@ -47,7 +49,7 @@ class CompromisosViewModel(app: Application) : AndroidViewModel(app) {
     private suspend fun recargar() {
         val rut = rutUsuario ?: return
         try {
-            empresas = db.empresaClienteDao().listarTodas().associateBy { it.codigo }
+            cargarEmpresas()
             val lista = repositorio.listarPorUsuario(rut)
             val pagos = repositorio.listarComprobantes(rut)
             compromisos = lista.map { it.aModelo() }
@@ -56,6 +58,15 @@ class CompromisosViewModel(app: Application) : AndroidViewModel(app) {
         } catch (e: Exception) {
             mensaje = e.message
         }
+    }
+
+    // Recien instalada la app, la semilla de Room se inserta en segundo plano: se espera a que lleguen las empresas.
+    private suspend fun cargarEmpresas() {
+        if (empresas.isNotEmpty()) return
+        val lista = withTimeoutOrNull(5000) {
+            db.empresaClienteDao().observarTodas().first { it.isNotEmpty() }
+        } ?: emptyList()
+        empresas = lista.associateBy { it.codigo }
     }
 
     fun consumirMensaje() { mensaje = null }

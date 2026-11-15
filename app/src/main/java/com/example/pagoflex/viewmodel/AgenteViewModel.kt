@@ -31,6 +31,7 @@ class AgenteViewModel(app: Application) : AndroidViewModel(app) {
     private val repositorio = CompromisoRepository()
 
     private var agenteCodigo: String? = null
+    private var rutAgente: String = ""
 
     var reportes by mutableStateOf<List<ReporteGestion>>(emptyList())
         private set
@@ -40,13 +41,22 @@ class AgenteViewModel(app: Application) : AndroidViewModel(app) {
     val cantidadAbiertos: Int get() = reportes.count { it.estado == EstadoReporte.ABIERTO }
 
     fun cargarAgente(rut: String) {
+        rutAgente = rut
         agenteCodigo = null
         reportes = emptyList()
         viewModelScope.launch {
-            val rutSinFormato = rut.trim().uppercase().replace(".", "").replace("-", "")
-            agenteCodigo = db.agenteDao().buscarPorRut(rutSinFormato)?.codigo
+            codigoDelAgente()
             recargar()
         }
+    }
+
+    // Si la semilla de Room aun no terminaba al entrar, se vuelve a buscar al momento de usar el codigo.
+    private suspend fun codigoDelAgente(): String? {
+        if (agenteCodigo == null) {
+            val rutSinFormato = rutAgente.trim().uppercase().replace(".", "").replace("-", "")
+            agenteCodigo = db.agenteDao().buscarPorRut(rutSinFormato)?.codigo
+        }
+        return agenteCodigo
     }
 
     fun actualizar() {
@@ -54,8 +64,11 @@ class AgenteViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     fun tomar(numero: String) {
-        val codigo = agenteCodigo ?: return
         viewModelScope.launch {
+            val codigo = codigoDelAgente() ?: run {
+                mensaje = "No se encontró tu ficha de agente"
+                return@launch
+            }
             try {
                 repositorio.tomarReporte(numero, codigo)
                 mensaje = "Reporte tomado"
@@ -67,8 +80,11 @@ class AgenteViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     fun resolver(numero: String) {
-        val codigo = agenteCodigo ?: return
         viewModelScope.launch {
+            val codigo = codigoDelAgente() ?: run {
+                mensaje = "No se encontró tu ficha de agente"
+                return@launch
+            }
             try {
                 repositorio.resolverReporte(numero, codigo)
                 mensaje = "Reporte resuelto"

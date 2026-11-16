@@ -81,7 +81,9 @@ class CompromisosViewModel(app: Application) : AndroidViewModel(app) {
         get() = compromisos.count { it.estado == EstadoCompromiso.VENCIDO }
 
     val proximoVencimiento: String?
-        get() = porPagar.minByOrNull { aOrden(it.fechaVencimiento) }?.fechaVencimiento
+        get() = compromisos
+            .filter { it.estado == EstadoCompromiso.PENDIENTE }
+            .minByOrNull { aOrden(it.fechaVencimiento) }?.fechaVencimiento
 
     val porcentajeCumplimiento: Int
         get() = if (comprobantes.isEmpty()) 100

@@ -33,6 +33,10 @@ class EjecutivoViewModel(app: Application) : AndroidViewModel(app) {
     var mensaje by mutableStateOf<String?>(null)
         private set
 
+    var errorRegistro by mutableStateOf<String?>(null)
+        private set
+    fun limpiarErrorRegistro() { errorRegistro = null }
+
     fun cargarEjecutivo(rut: String) {
         empresaCodigo = null
         ejecutivoCodigo = null
@@ -84,10 +88,12 @@ class EjecutivoViewModel(app: Application) : AndroidViewModel(app) {
         totalCuotas: Int,
         cuotaInicial: Int,
         montoCuota: Int,
-        fechaVencimiento: String
+        fechaVencimiento: String,
+        alTerminar: () -> Unit
     ) {
         val empresaActual = empresaCodigo ?: return
         val registrador = ejecutivoCodigo ?: return
+        errorRegistro = null
         viewModelScope.launch {
             try {
                 val creado = repositorio.registrar(
@@ -105,8 +111,9 @@ class EjecutivoViewModel(app: Application) : AndroidViewModel(app) {
                 )
                 mensaje = "Crédito registrado: cuota " + creado.cuotaActual + " de " + creado.totalCuotas
                 recargar()
+                alTerminar()
             } catch (e: Exception) {
-                mensaje = e.message
+                errorRegistro = e.message ?: "No se pudo registrar el crédito"
             }
         }
     }

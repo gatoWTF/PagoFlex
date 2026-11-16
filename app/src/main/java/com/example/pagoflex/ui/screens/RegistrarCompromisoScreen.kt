@@ -58,6 +58,7 @@ import java.util.TimeZone
 fun RegistrarCompromisoScreen(
     alVolver: () -> Unit,
     onRegistrar: (deudor: String, rut: String, concepto: String, totalCuotas: Int, cuotaInicial: Int, montoCuota: Int, fecha: String) -> Unit,
+    errorServidor: String? = null,
     modifier: Modifier = Modifier
 ) {
     var deudor by rememberSaveable { mutableStateOf("") }
@@ -72,6 +73,10 @@ fun RegistrarCompromisoScreen(
     var registrando by remember { mutableStateOf(false) }
 
     var mostrarCalendario by remember { mutableStateOf(false) }
+
+    LaunchedEffect(errorServidor) {
+        if (errorServidor != null) registrando = false
+    }
 
     LaunchedEffect(registrando) {
         if (registrando) {
@@ -214,6 +219,14 @@ fun RegistrarCompromisoScreen(
                 shape = EstilosCampo.forma,
                 colors = EstilosCampo.colores()
             )
+
+            if (errorServidor != null) {
+                Text(
+                    text = errorServidor,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.error
+                )
+            }
 
             BotonPrincipal(
                 texto = if (registrando) "Registrando…" else "Registrar",

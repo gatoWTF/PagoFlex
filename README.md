@@ -11,17 +11,17 @@ Caso **DSY1105 – Desarrollo de Aplicaciones Móviles** (Duoc UC). App **Kotlin
 │  App Android             │ ───────────────────────► │  usuarios-service  :8082  │──► MySQL pagoflex_usuarios
 │  Kotlin + Compose (MVVM) │                          │        │ WebClient        │
 │                          │                          │        ▼                  │
-│  Room (local): empresas, │                          │  roles-service     :8081  │──► MySQL pagoflex_roles
-│  perfiles y reportes     │ ───────────────────────► │  compromisos-service :8083│──► MySQL pagoflex_compromisos
+│  Room (local): empresas  │                          │  roles-service     :8081  │──► MySQL pagoflex_roles
+│  y datos de cada rol     │ ───────────────────────► │  compromisos-service :8083│──► MySQL pagoflex_compromisos
 └──────────────────────────┘                          └───────────────────────────┘
 ```
 
 - **usuarios-service** (8082): registro, login, editar perfil y cambiar contraseña. Las contraseñas se guardan con **BCrypt**. Le pregunta el nombre del rol a roles-service.
 - **roles-service** (8081): catálogo de roles (1 Usuario final, 2 Ejecutivo de empresa, 3 Agente PagoFlex).
-- **compromisos-service** (8083): compromisos (cuotas de cada crédito), pagos, comprobantes, vencimientos y anulaciones.
-- **Room** (en el teléfono): nombres de las empresas, datos propios de cada rol (empresa del ejecutivo, código del agente) y los reportes de problema.
+- **compromisos-service** (8083): compromisos (cuotas de cada crédito), pagos, comprobantes, vencimientos, anulaciones y reportes de problema.
+- **Room** (en el teléfono): nombres de las empresas y datos propios de cada rol (empresa del ejecutivo, código del agente).
 
-El detalle de cada endpoint está en [`microservicios/README.md`](microservicios/README.md).
+Los microservicios están en su propio repositorio: [gatoWTF/Pagoflex-Microservicios](https://github.com/gatoWTF/Pagoflex-Microservicios), con el detalle de cada endpoint en su README. La app no comparte código con ellos: solo conoce la dirección y el puerto de cada uno (`data/remote/RetrofitClient.kt`).
 
 ## Roles
 
@@ -33,14 +33,14 @@ El login es real: el correo y la contraseña se verifican en **usuarios-service*
 | **Ejecutivo de empresa** | `chenriquez@creditoandino.ejemplo` | Ve la cobranza de su empresa, registra créditos en cuotas y anula compromisos con motivo |
 | **Agente PagoFlex** | `alagos@pagoflex.ejemplo` | Gestiona la bandeja de reportes de problema (tomar / resolver) |
 
-Las cuentas de la semilla se crean solas la primera vez que se enciende usuarios-service. Su contraseña inicial está en `microservicios/usuarios-service/src/main/java/com/pagoflex/usuarios/config/DatosIniciales.java` (`CONTRASENA_INICIAL`).
+Las cuentas de la semilla se crean solas la primera vez que se enciende usuarios-service. Su contraseña inicial está en el repositorio de microservicios, en `usuarios-service/src/main/java/com/pagoflex/usuarios/config/DatosIniciales.java` (`CONTRASENA_INICIAL`).
 
 ## Funcionalidades
 
 **Usuario final**
 - Situación del mes: total por pagar, próximo vencimiento y cantidad de vencidos.
 - Lista de compromisos y detalle con la cuota ("8 de 24"); **pago simulado** con **comprobante**. Al pagar una cuota el sistema genera y muestra la siguiente.
-- **Historial** de pagos con filtro e **indicador de cumplimiento** (% de pagos a tiempo).
+- **Historial** de pagos (cada pago abre su comprobante) e **indicador de cumplimiento** (% de pagos a tiempo).
 - **Reportar un problema** sobre un compromiso (queda En revisión hasta que un agente lo resuelva).
 - **Perfil** con **foto de la cámara**, **editar nombre y correo** y **cambiar contraseña**.
 - **Avisos de vencimiento**: al entrar, la app pide el permiso de notificaciones explicando para qué sirve.
@@ -98,22 +98,22 @@ app/src/main/java/com/example/pagoflex/
 │   ├── styles/ · theme/     estilos, colores, tipografía y medidas
 │   └── navigation/          Rutas
 └── utils/                   Validaciones, FormatoMoneda, Notificaciones
-
-microservicios/
-├── roles-service/           :8081
-├── usuarios-service/        :8082
-├── compromisos-service/     :8083
-└── iniciar-*.bat            un script por servicio
 ```
 
 ## Cómo ejecutarla
 
 1. Abre **Laragon** y presiona **Iniciar todo** (MySQL en el puerto 3306, usuario `root` sin contraseña). Las bases se crean solas.
-2. Enciende los 3 microservicios con un solo comando en la **Terminal** de Android Studio (PowerShell):
+2. Enciende los 3 microservicios del repositorio [Pagoflex-Microservicios](https://github.com/gatoWTF/Pagoflex-Microservicios). Desde la carpeta de ese repositorio (en el Explorador de Windows: clic derecho en la carpeta → **Abrir en Terminal**), un comando por ventana:
    ```powershell
-   Get-ChildItem .\microservicios\iniciar-*.bat | ForEach-Object { Start-Process $_.FullName }
+   .\iniciar-roles.bat
    ```
-   Se abren 3 ventanas, una por servicio. Cada uno está listo cuando su ventana muestra `Started ...Application`. Para apagarlos, cierra las ventanas. La primera vez tardan unos minutos porque descargan las librerías.
+   ```powershell
+   .\iniciar-usuarios.bat
+   ```
+   ```powershell
+   .\iniciar-compromisos.bat
+   ```
+   También se puede hacer doble clic en cada archivo `.bat`. Cada servicio está listo cuando su ventana muestra `Started ...Application`. Para apagarlos, cierra sus ventanas. La primera vez tardan unos minutos porque descargan las librerías.
 3. Abre el proyecto en **Android Studio**, espera la sincronización de Gradle y ejecuta la app (**Run**) en un emulador con Android 7.0 (API 24) o superior.
 4. Entra con una cuenta de ejemplo de la tabla de Roles, o crea una cuenta nueva.
 
@@ -132,7 +132,7 @@ La app llega a los servicios por `http://10.0.2.2` (la dirección del PC vista d
 | `viewmodel/SesionViewModelTest` | datos de la cuenta al iniciar sesión, foto de perfil y mensajes |
 
 ```powershell
-.\gradlew testDebugUnitTest
+.\gradlew test
 ```
 
 También desde Android Studio: clic derecho en la carpeta `test` → **Run 'Tests in…'**.

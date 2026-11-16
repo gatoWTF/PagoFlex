@@ -13,6 +13,7 @@ import com.example.pagoflex.model.Usuario
 import com.google.gson.Gson
 import retrofit2.HttpException
 import java.io.IOException
+import java.net.SocketTimeoutException
 
 class UsuarioRepository(
     private val usuarioApi: UsuarioApi = RetrofitClient.usuarioApi
@@ -40,6 +41,8 @@ class UsuarioRepository(
         peticion()
     } catch (e: HttpException) {
         throw Exception(mensajeDelServidor(e))
+    } catch (e: SocketTimeoutException) {
+        throw Exception("El servidor tardó demasiado en responder. Intenta de nuevo en unos segundos")
     } catch (e: IOException) {
         throw Exception("No se pudo conectar con el servidor")
     }

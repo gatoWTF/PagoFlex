@@ -19,6 +19,7 @@ import com.example.pagoflex.model.MotivoAnulacion
 import com.google.gson.Gson
 import retrofit2.HttpException
 import java.io.IOException
+import java.net.SocketTimeoutException
 
 class CompromisoRepository(
     private val compromisoApi: CompromisoApi = RetrofitClient.compromisoApi
@@ -75,6 +76,8 @@ class CompromisoRepository(
         peticion()
     } catch (e: HttpException) {
         throw Exception(mensajeDelServidor(e))
+    } catch (e: SocketTimeoutException) {
+        throw Exception("El servidor de compromisos tardó demasiado en responder. Intenta de nuevo en unos segundos")
     } catch (e: IOException) {
         throw Exception("No se pudo conectar con el servidor de compromisos")
     }

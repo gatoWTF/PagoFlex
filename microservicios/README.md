@@ -86,7 +86,7 @@ Endpoints: `GET /api/roles` y `GET /api/roles/{id}` (404 si no existe).
 ### Registro sin errores ni duplicados (RN-20)
 
 - La fecha de vencimiento debe tener formato `dd-MM-aaaa` y no puede ser anterior a hoy (400).
-- La misma cuota no se registra dos veces: si ya existe una cuota con la misma persona (RUT, con o sin puntos), empresa, concepto (sin importar mayúsculas ni espacios al inicio o al final) y número de cuota, responde 409 con el folio existente.
+- La misma cuota no se registra dos veces: si ya existe una cuota con la misma persona (RUT, con o sin puntos), empresa, concepto (sin importar mayúsculas, tildes ni espacios al inicio o al final: "Credito" y "Crédito" son el mismo) y número de cuota, responde 409 con el folio existente.
 - Las cuotas **anuladas** no cuentan: si se anuló por "Error de registro", el ejecutivo puede volver a registrarla bien.
 - Las cuotas **pagadas** sí cuentan: una cuota pagada no se vuelve a cobrar.
 - Al pagar una cuota, si el ejecutivo ya había registrado a mano la siguiente, el servidor usa esa y no crea otra.

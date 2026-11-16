@@ -184,7 +184,6 @@ public class CompromisoService {
                 .medioPago(medio)
                 .build();
 
-        // El recargo se conserva: la cuota pagada debe mostrar lo que realmente se cobro (monto + recargo).
         compromiso.setEstado(EstadoCompromiso.PAGADO);
         compromisoRepository.save(compromiso);
         Comprobante guardado = comprobanteRepository.save(comprobante);
@@ -201,7 +200,6 @@ public class CompromisoService {
         if (numeroSiguiente > pagada.getTotalCuotas()) {
             return null;
         }
-        // Si el ejecutivo ya registro esa cuota a mano, se usa esa y no se crea otra (RN-20).
         return compromisoRepository.findByCodigoCreditoAndCuotaActual(pagada.getCodigoCredito(), numeroSiguiente)
                 .or(() -> buscarCuotaRegistrada(pagada.getRutClave(), pagada.getEmpresaCodigo(),
                         pagada.getConcepto(), numeroSiguiente))
@@ -245,7 +243,6 @@ public class CompromisoService {
                 .toList();
     }
 
-    // RN-20: la misma cuota (persona + empresa + concepto + numero de cuota) no se registra dos veces.
     private void validarQueNoEsteRegistrado(NuevoCompromisoRequest datos) {
         buscarCuotaRegistrada(Rut.clave(datos.rutUsuario()), datos.empresaCodigo().trim(),
                 datos.concepto(), datos.cuotaInicial())
@@ -256,7 +253,6 @@ public class CompromisoService {
                 });
     }
 
-    // Las anuladas no cuentan: si se anulo por "Error de registro", el ejecutivo puede registrarla bien.
     private Optional<Compromiso> buscarCuotaRegistrada(String rutClave, String empresaCodigo, String concepto, Integer cuota) {
         String conceptoBuscado = concepto.trim();
         return compromisoRepository.findByRutClaveAndEmpresaCodigo(rutClave, empresaCodigo).stream()

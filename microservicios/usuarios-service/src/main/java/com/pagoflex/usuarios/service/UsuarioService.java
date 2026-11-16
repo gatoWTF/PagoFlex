@@ -94,10 +94,8 @@ public class UsuarioService {
         Usuario guardado = usuarioRepository.save(usuario);
         compromisoClient.actualizarNombreTitular(guardado.getRut(), guardado.getNombre());
         return aRespuesta(guardado);
-        return aRespuesta(usuarioRepository.save(usuario));
     }
 
-    // Datos opcionales: si llegan vacios se borran; si traen algo, debe tener formato valido.
     public UsuarioResponse guardarContacto(Long id, ContactoRequest datos) {
         Usuario usuario = buscar(id);
         String correo2 = datos == null || vacio(datos.correoSecundario()) ? null : limpiarCorreo(datos.correoSecundario());

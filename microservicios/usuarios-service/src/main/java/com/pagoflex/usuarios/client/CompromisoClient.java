@@ -17,7 +17,6 @@ public class CompromisoClient {
         this.webClient = WebClient.builder().baseUrl(compromisosUrl).build();
     }
 
-    // Si compromisos-service esta apagado, el cambio de nombre igual queda guardado en usuarios-service.
     public void actualizarNombreTitular(String rut, String nombre) {
         try {
             webClient.put()

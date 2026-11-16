@@ -21,7 +21,7 @@ Caso **DSY1105 – Desarrollo de Aplicaciones Móviles** (Duoc UC). App **Kotlin
 - **compromisos-service** (8083): compromisos (cuotas de cada crédito), pagos, comprobantes, vencimientos, anulaciones y reportes de problema.
 - **Room** (en el teléfono): nombres de las empresas y datos propios de cada rol (empresa del ejecutivo, código del agente).
 
-El detalle de cada endpoint está en [`microservicios/README.md`](microservicios/README.md).
+Los microservicios están en su propio repositorio: [gatoWTF/PagoFlex-microservicios](https://github.com/gatoWTF/PagoFlex-microservicios), con el detalle de cada endpoint en su README. La app no comparte código con ellos: solo conoce la dirección y el puerto de cada uno (`data/remote/RetrofitClient.kt`).
 
 ## Roles
 
@@ -33,7 +33,7 @@ El login es real: el correo y la contraseña se verifican en **usuarios-service*
 | **Ejecutivo de empresa** | `chenriquez@creditoandino.ejemplo` | Ve la cobranza de su empresa, registra créditos en cuotas y anula compromisos con motivo |
 | **Agente PagoFlex** | `alagos@pagoflex.ejemplo` | Gestiona la bandeja de reportes de problema (tomar / resolver) |
 
-Las cuentas de la semilla se crean solas la primera vez que se enciende usuarios-service. Su contraseña inicial está en `microservicios/usuarios-service/src/main/java/com/pagoflex/usuarios/config/DatosIniciales.java` (`CONTRASENA_INICIAL`).
+Las cuentas de la semilla se crean solas la primera vez que se enciende usuarios-service. Su contraseña inicial está en el repositorio de microservicios, en `usuarios-service/src/main/java/com/pagoflex/usuarios/config/DatosIniciales.java` (`CONTRASENA_INICIAL`).
 
 ## Funcionalidades
 
@@ -98,20 +98,14 @@ app/src/main/java/com/example/pagoflex/
 │   ├── styles/ · theme/     estilos, colores, tipografía y medidas
 │   └── navigation/          Rutas
 └── utils/                   Validaciones, FormatoMoneda, Notificaciones
-
-microservicios/
-├── roles-service/           :8081
-├── usuarios-service/        :8082
-├── compromisos-service/     :8083
-└── iniciar-*.bat            un script por servicio
 ```
 
 ## Cómo ejecutarla
 
 1. Abre **Laragon** y presiona **Iniciar todo** (MySQL en el puerto 3306, usuario `root` sin contraseña). Las bases se crean solas.
-2. Enciende los 3 microservicios con un solo comando en la **Terminal** de Android Studio (PowerShell):
+2. Clona [PagoFlex-microservicios](https://github.com/gatoWTF/PagoFlex-microservicios) y enciende los 3 servicios con un solo comando en la **Terminal** de Android Studio (PowerShell), cambiando la ruta por la carpeta donde lo clonaste:
    ```powershell
-   Get-ChildItem .\microservicios\iniciar-*.bat | ForEach-Object { Start-Process $_.FullName }
+   Get-ChildItem C:\Users\HP\AndroidStudioProjects\PagoFlex-microservicios\iniciar-*.bat | ForEach-Object { Start-Process $_.FullName }
    ```
    Se abren 3 ventanas, una por servicio. Cada uno está listo cuando su ventana muestra `Started ...Application`. Para apagarlos, cierra las ventanas. La primera vez tardan unos minutos porque descargan las librerías.
 3. Abre el proyecto en **Android Studio**, espera la sincronización de Gradle y ejecuta la app (**Run**) en un emulador con Android 7.0 (API 24) o superior.

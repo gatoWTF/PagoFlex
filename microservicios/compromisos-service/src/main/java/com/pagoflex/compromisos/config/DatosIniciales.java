@@ -68,6 +68,19 @@ public class DatosIniciales implements CommandLineRunner {
                     compromiso("CP-2026-0114", "CR-2026-0010", JAVIERA, "Javiera Constanza Reyes Molina", "EC-06", "Cuota social", 11, 12, 15000, "05-11-2026", EstadoCompromiso.PENDIENTE, 0, "EJ-05")
             ));
         }
+        // Cuotas ya pagadas a las que apuntan los comprobantes de la semilla: sin ellas el historial
+        // no sabe el concepto del pago. Se agregan solo si faltan, asi tambien llegan a una base que ya tenia datos.
+        List.of(
+                compromiso("CP-2026-0072", "CR-2026-0005", LUIS, "Luis Alberto Muñoz Tapia", "EC-01", "Cuota pie departamento", 13, 36, 310000, "30-08-2026", EstadoCompromiso.PAGADO, 8500, "EJ-01"),
+                compromiso("CP-2026-0089", "CR-2026-0001", CAMILA, "Camila Andrea Rojas Peña", "EC-08", "Arriendo departamento", 9, 12, 520000, "10-09-2026", EstadoCompromiso.PAGADO, 0, "EJ-07"),
+                compromiso("CP-2026-0090", "CR-2026-0002", CAMILA, "Camila Andrea Rojas Peña", "EC-06", "Cuota social", 9, 12, 15000, "05-09-2026", EstadoCompromiso.PAGADO, 2000, "EJ-05"),
+                compromiso("CP-2026-0091", "CR-2026-0003", CAMILA, "Camila Andrea Rojas Peña", "EC-05", "Aporte mensual", 9, 12, 10000, "15-09-2026", EstadoCompromiso.PAGADO, 0, "PagoFlex"),
+                compromiso("CP-2026-0098", "CR-2026-0008", FERNANDA, "Fernanda Paz Godoy Lagos", "EC-02", "Mensualidad", 7, 10, 185000, "10-09-2026", EstadoCompromiso.PAGADO, 0, "EJ-02")
+        ).forEach(pagada -> {
+            if (compromisoRepository.findByFolio(pagada.getFolio()).isEmpty()) {
+                compromisoRepository.save(pagada);
+            }
+        });
         if (comprobanteRepository.count() == 0) {
             comprobanteRepository.saveAll(List.of(
                     comprobante("CPR-000377", "CP-2026-0072", LUIS, "EC-01", "02-09-2026 21:14", 318500, CanalPago.AGENTE_CONVERSACIONAL, false, "Pago simulado"),

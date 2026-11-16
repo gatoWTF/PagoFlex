@@ -234,7 +234,10 @@ private fun AppPagoFlex(configuracionViewModel: ConfiguracionViewModel) {
         composable(Rutas.Historial.ruta) {
             HistorialScreen(
                 viewModel = compromisosViewModel,
-                alVolver = { navController.popBackStack() }
+                alVolver = { navController.popBackStack() },
+                alAbrirComprobante = { folioComprobante ->
+                    navController.navigate(Rutas.Comprobante.crear(folioComprobante))
+                }
             )
         }
 

@@ -68,8 +68,6 @@ public class DatosIniciales implements CommandLineRunner {
                     compromiso("CP-2026-0114", "CR-2026-0010", JAVIERA, "Javiera Constanza Reyes Molina", "EC-06", "Cuota social", 11, 12, 15000, "05-11-2026", EstadoCompromiso.PENDIENTE, 0, "EJ-05")
             ));
         }
-        // Cuotas ya pagadas a las que apuntan los comprobantes de la semilla: sin ellas el historial
-        // no sabe el concepto del pago. Se agregan solo si faltan, asi tambien llegan a una base que ya tenia datos.
         List.of(
                 compromiso("CP-2026-0072", "CR-2026-0005", LUIS, "Luis Alberto Muñoz Tapia", "EC-01", "Cuota pie departamento", 13, 36, 310000, "30-08-2026", EstadoCompromiso.PAGADO, 8500, "EJ-01"),
                 compromiso("CP-2026-0089", "CR-2026-0001", CAMILA, "Camila Andrea Rojas Peña", "EC-08", "Arriendo departamento", 9, 12, 520000, "10-09-2026", EstadoCompromiso.PAGADO, 0, "EJ-07"),
@@ -102,7 +100,6 @@ public class DatosIniciales implements CommandLineRunner {
                     reporte("REP-0011", "CP-2026-0109", MATIAS, "Ya pagué por otro medio", "Pagué por transferencia directa al instituto el 03-10.", "03-10-2026", EstadoReporte.EN_GESTION, "AG-02", null),
                     reporte("REP-0012", "CP-2026-0106", LUIS, "El monto no corresponde", "No sé por qué me cobran $318.500.", "05-10-2026", EstadoReporte.ABIERTO, null, null)
             ));
-            // Un reporte abierto deja su cuota En revision (tambien en una base que ya tenia compromisos).
             ponerEnRevision("CP-2026-0106");
             ponerEnRevision("CP-2026-0110");
         }

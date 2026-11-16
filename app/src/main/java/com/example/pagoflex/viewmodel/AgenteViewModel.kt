@@ -50,7 +50,6 @@ class AgenteViewModel(app: Application) : AndroidViewModel(app) {
         }
     }
 
-    // Si la semilla de Room aun no terminaba al entrar, se vuelve a buscar al momento de usar el codigo.
     private suspend fun codigoDelAgente(): String? {
         if (agenteCodigo == null) {
             val rutSinFormato = rutAgente.trim().uppercase().replace(".", "").replace("-", "")

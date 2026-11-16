@@ -3,7 +3,6 @@ package com.pagoflex.compromisos.dto;
 import com.pagoflex.compromisos.model.EstadoCompromiso;
 import com.pagoflex.compromisos.model.EstadoReporte;
 
-// Junta el reporte con los datos de su compromiso para que el agente vea que se esta reclamando.
 public record ReporteResponse(
         String numero,
         String compromisoFolio,

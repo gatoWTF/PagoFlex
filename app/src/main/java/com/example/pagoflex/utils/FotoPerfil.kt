@@ -13,14 +13,12 @@ object FotoPerfil {
 
     private const val LADO_MINIMO = 512
 
-    // Archivo vacio donde la app de camara deja la foto completa (con su orientacion en el EXIF).
     fun crearUriParaCamara(context: Context): Uri {
         val archivo = File(context.cacheDir, "camara/foto_camara.jpg")
         archivo.parentFile?.mkdirs()
         return FileProvider.getUriForFile(context, context.packageName + ".fotos", archivo)
     }
 
-    // Lee la imagen achicada y la endereza segun el EXIF: asi no sale girada ni en espejo.
     fun leer(context: Context, uri: Uri): Bitmap? = try {
         val resolver = context.contentResolver
         val medidas = BitmapFactory.Options().apply { inJustDecodeBounds = true }
@@ -52,7 +50,6 @@ object FotoPerfil {
         return if (archivo.exists()) BitmapFactory.decodeFile(archivo.absolutePath) else null
     }
 
-    // Una foto por cuenta: si dos personas usan el mismo telefono, cada una ve la suya.
     private fun archivoDe(context: Context, rut: String): File {
         val carpeta = File(context.filesDir, "fotos")
         carpeta.mkdirs()

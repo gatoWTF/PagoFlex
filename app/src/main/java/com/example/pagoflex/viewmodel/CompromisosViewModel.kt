@@ -60,7 +60,6 @@ class CompromisosViewModel(app: Application) : AndroidViewModel(app) {
         }
     }
 
-    // Recien instalada la app, la semilla de Room se inserta en segundo plano: se espera a que lleguen las empresas.
     private suspend fun cargarEmpresas() {
         if (empresas.isNotEmpty()) return
         val lista = withTimeoutOrNull(5000) {

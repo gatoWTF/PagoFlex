@@ -40,7 +40,6 @@ public class ReporteService {
         List<Reporte> reportes = vacio(rut)
                 ? reporteRepository.findAll()
                 : reporteRepository.findByRutClave(Rut.clave(rut));
-        // Primero los abiertos, luego en gestion y al final los resueltos; dentro de cada grupo, el mas nuevo arriba.
         return reportes.stream()
                 .sorted(Comparator.comparing(Reporte::getEstado)
                         .thenComparing(Reporte::getNumero, Comparator.reverseOrder()))
@@ -63,7 +62,6 @@ public class ReporteService {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Solo se pueden reportar compromisos pendientes o vencidos");
         }
 
-        // Mientras soporte revisa el reclamo, la cuota queda En revision y no se puede pagar.
         compromisoService.cambiarEstado(compromiso.getFolio(), new CambiarEstadoRequest(EstadoCompromiso.EN_REVISION));
 
         Reporte nuevo = Reporte.builder()
@@ -108,7 +106,6 @@ public class ReporteService {
         reporte.setRespuesta(vacio(datos.respuesta()) ? RESPUESTA_POR_DEFECTO : datos.respuesta().trim());
         reporteRepository.save(reporte);
 
-        // La cuota vuelve a poder pagarse: Pendiente, o Vencida (con su recargo) si ya paso la fecha.
         compromisoRepository.findByFolio(reporte.getCompromisoFolio())
                 .filter(c -> c.getEstado() == EstadoCompromiso.EN_REVISION)
                 .ifPresent(c -> compromisoService.cambiarEstado(c.getFolio(), new CambiarEstadoRequest(EstadoCompromiso.PENDIENTE)));

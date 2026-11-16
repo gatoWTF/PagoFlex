@@ -5,11 +5,16 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.pagoflex.data.UsuarioRepository
 import com.example.pagoflex.model.RolUsuario
 import com.example.pagoflex.model.Usuario
 import com.example.pagoflex.utils.Validaciones
+import kotlinx.coroutines.launch
 
-class SesionViewModel : ViewModel() {
+class SesionViewModel(
+    private val repositorio: UsuarioRepository = UsuarioRepository()
+) : ViewModel() {
 
     var idUsuario by mutableStateOf<Long?>(null)
         private set
@@ -36,6 +41,8 @@ class SesionViewModel : ViewModel() {
         private set
     var mensaje by mutableStateOf<String?>(null)
         private set
+    var guardandoContacto by mutableStateOf(false)
+        private set
 
     var bienvenida by mutableStateOf<String?>(null)
         private set
@@ -46,8 +53,8 @@ class SesionViewModel : ViewModel() {
         this.rut = usuario.rut
         this.correo = usuario.correo
         this.rol = usuario.rol
-        this.telefono = ""
-        this.correoSecundario = ""
+        this.telefono = usuario.telefono
+        this.correoSecundario = usuario.correoSecundario
         this.fotoPerfil = null
         this.bienvenida = "Ingresaste como ${usuario.rol.etiqueta}"
         limpiarErrores()
@@ -56,6 +63,10 @@ class SesionViewModel : ViewModel() {
     fun cambiarFoto(bitmap: Bitmap) {
         fotoPerfil = bitmap
         mensaje = "Foto de perfil actualizada"
+    }
+
+    fun mostrarFotoGuardada(bitmap: Bitmap) {
+        fotoPerfil = bitmap
     }
 
     fun cambiarCorreoSecundario(nuevo: String) {
@@ -75,7 +86,7 @@ class SesionViewModel : ViewModel() {
         mensaje = "Datos actualizados"
     }
 
-    fun guardarContacto() {
+    fun validarContacto(): Boolean {
         val correo2 = correoSecundario.trim()
         errorCorreoSecundario =
             if (correo2.isEmpty() || Validaciones.correoValido(correo2)) null
@@ -83,9 +94,25 @@ class SesionViewModel : ViewModel() {
         errorTelefono =
             if (telefono.isBlank() || Validaciones.telefonoValido(telefono)) null
             else "Teléfono no válido"
+        return errorCorreoSecundario == null && errorTelefono == null
+    }
 
-        if (errorCorreoSecundario != null || errorTelefono != null) return
-        mensaje = "Datos de contacto guardados"
+    fun guardarContacto() {
+        if (!validarContacto()) return
+        val id = idUsuario ?: return
+        guardandoContacto = true
+        viewModelScope.launch {
+            try {
+                val usuario = repositorio.guardarContacto(id, correoSecundario.trim(), telefono.trim())
+                correoSecundario = usuario.correoSecundario
+                telefono = usuario.telefono
+                mensaje = "Datos de contacto guardados"
+            } catch (e: Exception) {
+                mensaje = e.message
+            } finally {
+                guardandoContacto = false
+            }
+        }
     }
 
     fun consumirMensaje() { mensaje = null }

@@ -9,18 +9,15 @@ import androidx.lifecycle.viewModelScope
 import com.example.pagoflex.data.CompromisoRepository
 import com.example.pagoflex.data.local.PagoFlexDatabase
 import com.example.pagoflex.data.local.entity.EmpresaClienteEntity
-import com.example.pagoflex.data.local.entity.ReporteEntity
 import com.example.pagoflex.data.remote.ComprobanteResponse
 import com.example.pagoflex.data.remote.CompromisoResponse
 import com.example.pagoflex.data.remote.textoAnulacion
 import com.example.pagoflex.model.Comprobante
 import com.example.pagoflex.model.Compromiso
 import com.example.pagoflex.model.EstadoCompromiso
-import com.example.pagoflex.model.EstadoReporte
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
+import kotlinx.coroutines.withTimeoutOrNull
 
 class CompromisosViewModel(app: Application) : AndroidViewModel(app) {
 
@@ -28,7 +25,6 @@ class CompromisosViewModel(app: Application) : AndroidViewModel(app) {
     private val repositorio = CompromisoRepository()
 
     private var rutUsuario: String? = null
-    private var usuarioCodigo: String? = null
 
     var compromisos by mutableStateOf<List<Compromiso>>(emptyList())
         private set
@@ -42,24 +38,18 @@ class CompromisosViewModel(app: Application) : AndroidViewModel(app) {
     private var empresas: Map<String, EmpresaClienteEntity> = emptyMap()
 
     private var ultimoComprobante: Comprobante? = null
-    private var contadorReporte = 20
 
     fun cargarUsuario(rut: String) {
         rutUsuario = rut
-        usuarioCodigo = null
         compromisos = emptyList()
         comprobantes = emptyList()
-        viewModelScope.launch {
-            val rutSinFormato = rut.trim().uppercase().replace(".", "").replace("-", "")
-            usuarioCodigo = db.usuarioFinalDao().buscarPorRut(rutSinFormato)?.codigo
-            recargar()
-        }
+        viewModelScope.launch { recargar() }
     }
 
     private suspend fun recargar() {
         val rut = rutUsuario ?: return
         try {
-            empresas = db.empresaClienteDao().listarTodas().associateBy { it.codigo }
+            cargarEmpresas()
             val lista = repositorio.listarPorUsuario(rut)
             val pagos = repositorio.listarComprobantes(rut)
             compromisos = lista.map { it.aModelo() }
@@ -68,6 +58,15 @@ class CompromisosViewModel(app: Application) : AndroidViewModel(app) {
         } catch (e: Exception) {
             mensaje = e.message
         }
+    }
+
+    // Recien instalada la app, la semilla de Room se inserta en segundo plano: se espera a que lleguen las empresas.
+    private suspend fun cargarEmpresas() {
+        if (empresas.isNotEmpty()) return
+        val lista = withTimeoutOrNull(5000) {
+            db.empresaClienteDao().observarTodas().first { it.isNotEmpty() }
+        } ?: emptyList()
+        empresas = lista.associateBy { it.codigo }
     }
 
     fun consumirMensaje() { mensaje = null }
@@ -111,26 +110,10 @@ class CompromisosViewModel(app: Application) : AndroidViewModel(app) {
 
     fun reportarProblema(folio: String, motivo: String, comentario: String) {
         val rut = rutUsuario ?: return
-        val numero = "REP-" + String.format(Locale.US, "%04d", contadorReporte)
-        contadorReporte++
-
         viewModelScope.launch {
             try {
-                repositorio.cambiarEstado(folio, EstadoCompromiso.EN_REVISION)
-                db.reporteDao().insertar(
-                    ReporteEntity(
-                        numero = numero,
-                        compromisoFolio = folio,
-                        usuarioCodigo = usuarioCodigo ?: rut,
-                        motivo = motivo,
-                        comentario = comentario,
-                        fecha = hoyFormateado(),
-                        estado = EstadoReporte.ABIERTO,
-                        agenteResponsable = null,
-                        respuestaUsuario = null
-                    )
-                )
-                mensaje = "Reporte enviado"
+                val reporte = repositorio.crearReporte(folio, rut, motivo, comentario)
+                mensaje = "Reporte " + reporte.numero + " enviado"
                 recargar()
             } catch (e: Exception) {
                 mensaje = e.message
@@ -172,9 +155,6 @@ class CompromisosViewModel(app: Application) : AndroidViewModel(app) {
             creditoTerminado = compromisoPagado?.esUltimaCuota == true
         )
     }
-
-    private fun hoyFormateado(): String =
-        SimpleDateFormat("dd-MM-yyyy", Locale.US).format(Date())
 
     private fun aOrden(fecha: String): Int {
         val partes = fecha.split("-")

@@ -1,13 +1,8 @@
 package com.example.pagoflex.ui.screens
 
 import android.Manifest
-import android.content.Context
 import android.content.pm.PackageManager
-import android.graphics.Bitmap
-import android.graphics.ImageDecoder
 import android.net.Uri
-import android.os.Build
-import android.provider.MediaStore
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -58,8 +53,11 @@ import com.example.pagoflex.ui.components.BotonSecundario
 import com.example.pagoflex.ui.components.CampoTexto
 import com.example.pagoflex.ui.components.SnackbarPagoFlex
 import com.example.pagoflex.ui.theme.Dimens
+import com.example.pagoflex.utils.FotoPerfil
 import com.example.pagoflex.viewmodel.SesionViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -82,27 +80,41 @@ fun PerfilScreen(
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
 
+    LaunchedEffect(sesion.rut) {
+        if (sesion.fotoPerfil == null && sesion.rut.isNotBlank()) {
+            val guardada = withContext(Dispatchers.IO) { FotoPerfil.cargar(context, sesion.rut) }
+            if (guardada != null) sesion.mostrarFotoGuardada(guardada)
+        }
+    }
+
+    fun usarFoto(uri: Uri) {
+        scope.launch {
+            val foto = withContext(Dispatchers.IO) {
+                FotoPerfil.leer(context, uri)?.also { FotoPerfil.guardar(context, sesion.rut, it) }
+            }
+            if (foto != null) sesion.cambiarFoto(foto)
+            else snackbarHostState.showSnackbar("No se pudo abrir la imagen")
+        }
+    }
+
+    val uriCamara = remember { FotoPerfil.crearUriParaCamara(context) }
     val camaraLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.TakePicturePreview()
-    ) { bitmap ->
-        if (bitmap != null) sesion.cambiarFoto(bitmap)
+        ActivityResultContracts.TakePicture()
+    ) { tomada ->
+        if (tomada) usarFoto(uriCamara)
     }
 
     val galeriaLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.PickVisualMedia()
     ) { uri ->
-        if (uri != null) {
-            val bitmap = cargarBitmap(context, uri)
-            if (bitmap != null) sesion.cambiarFoto(bitmap)
-            else scope.launch { snackbarHostState.showSnackbar("No se pudo abrir la imagen") }
-        }
+        if (uri != null) usarFoto(uri)
     }
 
     val permisoLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { concedido ->
         if (concedido) {
-            camaraLauncher.launch(null)
+            camaraLauncher.launch(uriCamara)
         } else {
             scope.launch { snackbarHostState.showSnackbar("Permiso de cámara denegado") }
         }
@@ -112,7 +124,7 @@ fun PerfilScreen(
         val concedido = ContextCompat.checkSelfPermission(
             context, Manifest.permission.CAMERA
         ) == PackageManager.PERMISSION_GRANTED
-        if (concedido) camaraLauncher.launch(null)
+        if (concedido) camaraLauncher.launch(uriCamara)
         else permisoLauncher.launch(Manifest.permission.CAMERA)
     }
 
@@ -268,24 +280,11 @@ fun PerfilScreen(
             BotonPrincipal(
                 texto = "Guardar cambios",
                 onClick = sesion::guardarContacto,
+                cargando = sesion.guardandoContacto,
                 modifier = Modifier.fillMaxWidth()
             )
         }
     }
-}
-
-private fun cargarBitmap(context: Context, uri: Uri): Bitmap? = try {
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-        val fuente = ImageDecoder.createSource(context.contentResolver, uri)
-        ImageDecoder.decodeBitmap(fuente) { decoder, _, _ ->
-            decoder.allocator = ImageDecoder.ALLOCATOR_SOFTWARE
-        }
-    } else {
-        @Suppress("DEPRECATION")
-        MediaStore.Images.Media.getBitmap(context.contentResolver, uri)
-    }
-} catch (e: Exception) {
-    null
 }
 
 @Composable

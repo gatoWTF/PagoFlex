@@ -32,4 +32,16 @@ interface CompromisoApi {
 
     @GET("api/comprobantes")
     suspend fun listarComprobantes(@Query("rut") rut: String): List<ComprobanteResponse>
+
+    @GET("api/reportes")
+    suspend fun listarReportes(): List<ReporteResponse>
+
+    @POST("api/reportes")
+    suspend fun crearReporte(@Body datos: NuevoReporteRequest): ReporteResponse
+
+    @PUT("api/reportes/{numero}/tomar")
+    suspend fun tomarReporte(@Path("numero") numero: String, @Body datos: GestionReporteRequest): ReporteResponse
+
+    @PUT("api/reportes/{numero}/resolver")
+    suspend fun resolverReporte(@Path("numero") numero: String, @Body datos: GestionReporteRequest): ReporteResponse
 }

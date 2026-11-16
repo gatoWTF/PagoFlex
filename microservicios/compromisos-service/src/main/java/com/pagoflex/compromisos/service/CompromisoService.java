@@ -183,8 +183,8 @@ public class CompromisoService {
                 .medioPago(medio)
                 .build();
 
+        // El recargo se conserva: la cuota pagada debe mostrar lo que realmente se cobro (monto + recargo).
         compromiso.setEstado(EstadoCompromiso.PAGADO);
-        compromiso.setRecargoAplicado(0);
         compromisoRepository.save(compromiso);
         Comprobante guardado = comprobanteRepository.save(comprobante);
 

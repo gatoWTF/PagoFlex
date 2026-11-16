@@ -11,15 +11,15 @@ Caso **DSY1105 – Desarrollo de Aplicaciones Móviles** (Duoc UC). App **Kotlin
 │  App Android             │ ───────────────────────► │  usuarios-service  :8082  │──► MySQL pagoflex_usuarios
 │  Kotlin + Compose (MVVM) │                          │        │ WebClient        │
 │                          │                          │        ▼                  │
-│  Room (local): empresas, │                          │  roles-service     :8081  │──► MySQL pagoflex_roles
-│  perfiles y reportes     │ ───────────────────────► │  compromisos-service :8083│──► MySQL pagoflex_compromisos
+│  Room (local): empresas  │                          │  roles-service     :8081  │──► MySQL pagoflex_roles
+│  y datos de cada rol     │ ───────────────────────► │  compromisos-service :8083│──► MySQL pagoflex_compromisos
 └──────────────────────────┘                          └───────────────────────────┘
 ```
 
 - **usuarios-service** (8082): registro, login, editar perfil y cambiar contraseña. Las contraseñas se guardan con **BCrypt**. Le pregunta el nombre del rol a roles-service.
 - **roles-service** (8081): catálogo de roles (1 Usuario final, 2 Ejecutivo de empresa, 3 Agente PagoFlex).
-- **compromisos-service** (8083): compromisos (cuotas de cada crédito), pagos, comprobantes, vencimientos y anulaciones.
-- **Room** (en el teléfono): nombres de las empresas, datos propios de cada rol (empresa del ejecutivo, código del agente) y los reportes de problema.
+- **compromisos-service** (8083): compromisos (cuotas de cada crédito), pagos, comprobantes, vencimientos, anulaciones y reportes de problema.
+- **Room** (en el teléfono): nombres de las empresas y datos propios de cada rol (empresa del ejecutivo, código del agente).
 
 El detalle de cada endpoint está en [`microservicios/README.md`](microservicios/README.md).
 
@@ -40,7 +40,7 @@ Las cuentas de la semilla se crean solas la primera vez que se enciende usuarios
 **Usuario final**
 - Situación del mes: total por pagar, próximo vencimiento y cantidad de vencidos.
 - Lista de compromisos y detalle con la cuota ("8 de 24"); **pago simulado** con **comprobante**. Al pagar una cuota el sistema genera y muestra la siguiente.
-- **Historial** de pagos con filtro e **indicador de cumplimiento** (% de pagos a tiempo).
+- **Historial** de pagos (cada pago abre su comprobante) e **indicador de cumplimiento** (% de pagos a tiempo).
 - **Reportar un problema** sobre un compromiso (queda En revisión hasta que un agente lo resuelva).
 - **Perfil** con **foto de la cámara**, **editar nombre y correo** y **cambiar contraseña**.
 - **Avisos de vencimiento**: al entrar, la app pide el permiso de notificaciones explicando para qué sirve.

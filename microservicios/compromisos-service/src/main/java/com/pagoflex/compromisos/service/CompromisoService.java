@@ -22,12 +22,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.text.Normalizer;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 
 @Service
@@ -254,12 +256,17 @@ public class CompromisoService {
     }
 
     private Optional<Compromiso> buscarCuotaRegistrada(String rutClave, String empresaCodigo, String concepto, Integer cuota) {
-        String conceptoBuscado = concepto.trim();
+        String conceptoBuscado = conceptoComparable(concepto);
         return compromisoRepository.findByRutClaveAndEmpresaCodigo(rutClave, empresaCodigo).stream()
                 .filter(c -> c.getEstado() != EstadoCompromiso.ANULADO)
-                .filter(c -> c.getConcepto().trim().equalsIgnoreCase(conceptoBuscado))
+                .filter(c -> conceptoComparable(c.getConcepto()).equals(conceptoBuscado))
                 .filter(c -> c.getCuotaActual().equals(cuota))
                 .findFirst();
+    }
+
+    private static String conceptoComparable(String concepto) {
+        String sinTildes = Normalizer.normalize(concepto.trim(), Normalizer.Form.NFD).replaceAll("\\p{M}", "");
+        return sinTildes.toLowerCase(Locale.ROOT);
     }
 
     private Compromiso buscar(String folio) {

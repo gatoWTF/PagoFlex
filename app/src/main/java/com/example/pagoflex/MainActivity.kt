@@ -82,7 +82,6 @@ private fun AppPagoFlex(configuracionViewModel: ConfiguracionViewModel) {
     val compromisosViewModel: CompromisosViewModel = viewModel()
     val ejecutivoViewModel: EjecutivoViewModel = viewModel()
     val agenteViewModel: AgenteViewModel = viewModel()
-
     val sesionViewModel: SesionViewModel = viewModel()
 
     fun cargarDatosDelRol(usuario: Usuario) {
@@ -189,7 +188,8 @@ private fun AppPagoFlex(configuracionViewModel: ConfiguracionViewModel) {
                 alAbrirConfiguracion = { navController.navigate(Rutas.Configuracion.ruta) },
                 alCerrarSesion = { irALogin(navController) },
                 bienvenida = sesionViewModel.bienvenida,
-                alMostrarBienvenida = sesionViewModel::consumirBienvenida
+                alMostrarBienvenida = sesionViewModel::consumirBienvenida,
+                avisosActivos = configuracionViewModel.avisosActivos
             )
         }
 

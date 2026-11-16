@@ -64,6 +64,7 @@ fun InicioScreen(
     alCerrarSesion: () -> Unit,
     bienvenida: String? = null,
     alMostrarBienvenida: () -> Unit = {},
+    avisosActivos: Boolean = true,
     modifier: Modifier = Modifier
 ) {
 
@@ -106,6 +107,12 @@ fun InicioScreen(
     }
 
     fun avisarVencimiento() {
+        if (!avisosActivos) {
+            scope.launch {
+                snackbarHostState.showSnackbar("Tienes los avisos desactivados. Actívalos en Configuración")
+            }
+            return
+        }
         if (Notificaciones.tienePermiso(context)) {
             postearAviso()
         } else {

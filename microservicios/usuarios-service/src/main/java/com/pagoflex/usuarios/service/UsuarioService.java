@@ -1,8 +1,10 @@
 package com.pagoflex.usuarios.service;
 
+import com.pagoflex.usuarios.client.CompromisoClient;
 import com.pagoflex.usuarios.client.RolClient;
 import com.pagoflex.usuarios.dto.ActualizarUsuarioRequest;
 import com.pagoflex.usuarios.dto.CambiarContrasenaRequest;
+import com.pagoflex.usuarios.dto.ContactoRequest;
 import com.pagoflex.usuarios.dto.LoginRequest;
 import com.pagoflex.usuarios.dto.RegistroRequest;
 import com.pagoflex.usuarios.dto.RolDto;
@@ -16,14 +18,19 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.regex.Pattern;
+
 @Service
 @RequiredArgsConstructor
 public class UsuarioService {
 
     private static final int LARGO_MINIMO_CONTRASENA = 6;
+    private static final Pattern PATRON_CORREO =
+            Pattern.compile("^[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(\\.[A-Za-z0-9-]+)*\\.[A-Za-z]{2,}$");
 
     private final UsuarioRepository usuarioRepository;
     private final RolClient rolClient;
+    private final CompromisoClient compromisoClient;
     private final PasswordEncoder passwordEncoder;
 
     public UsuarioResponse obtener(Long id) {
@@ -84,6 +91,25 @@ public class UsuarioService {
         usuario.setNombre(datos.nombre().trim());
         usuario.setRut(rut);
         usuario.setCorreo(correo);
+        Usuario guardado = usuarioRepository.save(usuario);
+        compromisoClient.actualizarNombreTitular(guardado.getRut(), guardado.getNombre());
+        return aRespuesta(guardado);
+    }
+
+    public UsuarioResponse guardarContacto(Long id, ContactoRequest datos) {
+        Usuario usuario = buscar(id);
+        String correo2 = datos == null || vacio(datos.correoSecundario()) ? null : limpiarCorreo(datos.correoSecundario());
+        String telefono = datos == null || vacio(datos.telefono()) ? null : datos.telefono().trim();
+
+        if (correo2 != null && !PATRON_CORREO.matcher(correo2).matches()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Correo secundario no válido");
+        }
+        if (telefono != null && !telefonoValido(telefono)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Teléfono no válido");
+        }
+
+        usuario.setCorreoSecundario(correo2);
+        usuario.setTelefono(telefono);
         return aRespuesta(usuarioRepository.save(usuario));
     }
 
@@ -134,8 +160,15 @@ public class UsuarioService {
                 usuario.getRut(),
                 usuario.getCorreo(),
                 usuario.getRolId(),
-                rol != null ? rol.nombre() : ""
+                rol != null ? rol.nombre() : "",
+                usuario.getCorreoSecundario(),
+                usuario.getTelefono()
         );
+    }
+
+    private boolean telefonoValido(String telefono) {
+        long digitos = telefono.chars().filter(Character::isDigit).count();
+        return telefono.matches("[0-9+\\s-]+") && digitos >= 8 && digitos <= 15;
     }
 
     private String limpiarCorreo(String correo) {

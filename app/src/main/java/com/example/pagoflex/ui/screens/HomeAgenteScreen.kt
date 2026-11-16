@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -36,6 +37,7 @@ import com.example.pagoflex.R
 import com.example.pagoflex.model.EstadoReporte
 import com.example.pagoflex.ui.components.SnackbarPagoFlex
 import com.example.pagoflex.ui.theme.Dimens
+import com.example.pagoflex.utils.FormatoMoneda
 import com.example.pagoflex.viewmodel.AgenteViewModel
 import com.example.pagoflex.viewmodel.ReporteGestion
 
@@ -64,6 +66,7 @@ fun HomeAgenteScreen(
             alMostrarBienvenida()
         }
     }
+    LaunchedEffect(Unit) { viewModel.actualizar() }
 
     Scaffold(
         modifier = modifier,
@@ -106,12 +109,25 @@ fun HomeAgenteScreen(
                         contentColor = MaterialTheme.colorScheme.onPrimary
                     )
                 ) {
-                    Column(modifier = Modifier.padding(Dimens.espacioGrande)) {
-                        Text("Bandeja de reportes", style = MaterialTheme.typography.bodyMedium)
-                        Text(
-                            text = "${viewModel.cantidadAbiertos} abiertos",
-                            style = MaterialTheme.typography.headlineMedium
-                        )
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(Dimens.espacioGrande),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text("Bandeja de reportes", style = MaterialTheme.typography.bodyMedium)
+                            Text(
+                                text = "${viewModel.cantidadAbiertos} abiertos",
+                                style = MaterialTheme.typography.headlineMedium
+                            )
+                        }
+                        TextButton(
+                            onClick = viewModel::actualizar,
+                            colors = ButtonDefaults.textButtonColors(
+                                contentColor = MaterialTheme.colorScheme.onPrimary
+                            )
+                        ) { Text("Actualizar") }
                     }
                 }
             }
@@ -169,6 +185,21 @@ private fun FilaReporte(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(top = Dimens.espacioMini)
             )
+            Text(
+                text = reporte.folio + " · " + reporte.empresa,
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.padding(top = Dimens.espacioMini)
+            )
+            val montoTexto = reporte.montoCuota?.let { FormatoMoneda.clp(it) }
+            val detalle = listOfNotNull(reporte.detalleCompromiso.ifBlank { null }, montoTexto)
+            if (detalle.isNotEmpty()) {
+                Text(
+                    text = detalle.joinToString(" · "),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
             Text(
                 text = reporte.comentario,
                 style = MaterialTheme.typography.bodyMedium,

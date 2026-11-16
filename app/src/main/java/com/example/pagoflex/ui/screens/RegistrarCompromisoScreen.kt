@@ -58,6 +58,7 @@ import java.util.TimeZone
 fun RegistrarCompromisoScreen(
     alVolver: () -> Unit,
     onRegistrar: (deudor: String, rut: String, concepto: String, totalCuotas: Int, cuotaInicial: Int, montoCuota: Int, fecha: String) -> Unit,
+    errorServidor: String? = null,
     modifier: Modifier = Modifier
 ) {
     var deudor by rememberSaveable { mutableStateOf("") }
@@ -72,6 +73,10 @@ fun RegistrarCompromisoScreen(
     var registrando by remember { mutableStateOf(false) }
 
     var mostrarCalendario by remember { mutableStateOf(false) }
+
+    LaunchedEffect(errorServidor) {
+        if (errorServidor != null) registrando = false
+    }
 
     LaunchedEffect(registrando) {
         if (registrando) {
@@ -88,7 +93,12 @@ fun RegistrarCompromisoScreen(
         }
     }
 
-    val errorDeudor = if (intentoEnvio && deudor.isBlank()) "Ingresa el nombre del deudor" else null
+    val errorDeudor = when {
+        !intentoEnvio -> null
+        deudor.isBlank() -> "Ingresa el nombre del deudor"
+        !Validaciones.nombreSoloLetras(deudor) -> "El nombre no puede llevar números"
+        else -> null
+    }
     val errorRut = if (intentoEnvio && !Validaciones.rutValido(rut)) "RUT inválido" else null
     val errorConcepto = if (intentoEnvio && concepto.isBlank()) "Ingresa el concepto" else null
     val errorTotalCuotas = if (intentoEnvio && !Validaciones.cantidadCuotasValida(totalCuotas))
@@ -210,13 +220,22 @@ fun RegistrarCompromisoScreen(
                 colors = EstilosCampo.colores()
             )
 
+            if (errorServidor != null) {
+                Text(
+                    text = errorServidor,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.error
+                )
+            }
+
             BotonPrincipal(
                 texto = if (registrando) "Registrando…" else "Registrar",
                 onClick = {
                     intentoEnvio = true
                     val valido = deudor.isNotBlank() &&
-                        Validaciones.rutValido(rut) &&
-                        concepto.isNotBlank() &&
+                            Validaciones.nombreSoloLetras(deudor) &&
+                            Validaciones.rutValido(rut) &&
+                            concepto.isNotBlank() &&
                         Validaciones.cantidadCuotasValida(totalCuotas) &&
                         Validaciones.cuotaInicialValida(cuotaInicial, totalCuotas) &&
                         Validaciones.montoValido(monto) &&

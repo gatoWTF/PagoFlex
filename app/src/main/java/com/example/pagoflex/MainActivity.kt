@@ -82,7 +82,6 @@ private fun AppPagoFlex(configuracionViewModel: ConfiguracionViewModel) {
     val compromisosViewModel: CompromisosViewModel = viewModel()
     val ejecutivoViewModel: EjecutivoViewModel = viewModel()
     val agenteViewModel: AgenteViewModel = viewModel()
-
     val sesionViewModel: SesionViewModel = viewModel()
 
     fun cargarDatosDelRol(usuario: Usuario) {
@@ -189,7 +188,8 @@ private fun AppPagoFlex(configuracionViewModel: ConfiguracionViewModel) {
                 alAbrirConfiguracion = { navController.navigate(Rutas.Configuracion.ruta) },
                 alCerrarSesion = { irALogin(navController) },
                 bienvenida = sesionViewModel.bienvenida,
-                alMostrarBienvenida = sesionViewModel::consumirBienvenida
+                alMostrarBienvenida = sesionViewModel::consumirBienvenida,
+                avisosActivos = configuracionViewModel.avisosActivos
             )
         }
 
@@ -234,7 +234,10 @@ private fun AppPagoFlex(configuracionViewModel: ConfiguracionViewModel) {
         composable(Rutas.Historial.ruta) {
             HistorialScreen(
                 viewModel = compromisosViewModel,
-                alVolver = { navController.popBackStack() }
+                alVolver = { navController.popBackStack() },
+                alAbrirComprobante = { folioComprobante ->
+                    navController.navigate(Rutas.Comprobante.crear(folioComprobante))
+                }
             )
         }
 
@@ -322,14 +325,17 @@ private fun AppPagoFlex(configuracionViewModel: ConfiguracionViewModel) {
         }
 
         composable(Rutas.RegistrarCompromiso.ruta) {
+            LaunchedEffect(Unit) { ejecutivoViewModel.limpiarErrorRegistro() }
             RegistrarCompromisoScreen(
                 alVolver = { navController.popBackStack() },
                 onRegistrar = { deudor, rut, concepto, totalCuotas, cuotaInicial, montoCuota, fecha ->
                     ejecutivoViewModel.registrarCompromiso(
                         deudor, rut, concepto, totalCuotas, cuotaInicial, montoCuota, fecha
-                    )
-                    navController.popBackStack()
-                }
+                    ) {
+                        navController.popBackStack()
+                    }
+                },
+                errorServidor = ejecutivoViewModel.errorRegistro
             )
         }
     }

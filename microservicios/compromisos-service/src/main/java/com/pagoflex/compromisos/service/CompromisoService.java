@@ -4,6 +4,7 @@ import com.pagoflex.compromisos.dto.AnularRequest;
 import com.pagoflex.compromisos.dto.CambiarEstadoRequest;
 import com.pagoflex.compromisos.dto.ComprobanteResponse;
 import com.pagoflex.compromisos.dto.CompromisoResponse;
+import com.pagoflex.compromisos.dto.NombreTitularRequest;
 import com.pagoflex.compromisos.dto.NuevoCompromisoRequest;
 import com.pagoflex.compromisos.dto.PagoRequest;
 import com.pagoflex.compromisos.dto.PagoResponse;
@@ -27,6 +28,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -72,6 +74,7 @@ public class CompromisoService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El monto de la cuota debe ser mayor a cero");
         }
         validarFecha(datos.fechaVencimiento());
+        validarQueNoEsteRegistrado(datos);
 
         Compromiso nuevo = Compromiso.builder()
                 .folio(siguienteFolio())
@@ -182,7 +185,6 @@ public class CompromisoService {
                 .build();
 
         compromiso.setEstado(EstadoCompromiso.PAGADO);
-        compromiso.setRecargoAplicado(0);
         compromisoRepository.save(compromiso);
         Comprobante guardado = comprobanteRepository.save(comprobante);
 
@@ -199,6 +201,8 @@ public class CompromisoService {
             return null;
         }
         return compromisoRepository.findByCodigoCreditoAndCuotaActual(pagada.getCodigoCredito(), numeroSiguiente)
+                .or(() -> buscarCuotaRegistrada(pagada.getRutClave(), pagada.getEmpresaCodigo(),
+                        pagada.getConcepto(), numeroSiguiente))
                 .orElseGet(() -> {
                     LocalDate vencimiento = LocalDate.parse(pagada.getFechaVencimiento(), FORMATO_FECHA).plusMonths(1);
                     Compromiso siguiente = Compromiso.builder()
@@ -224,10 +228,38 @@ public class CompromisoService {
                 });
     }
 
+    public void actualizarNombreTitular(String rut, NombreTitularRequest datos) {
+        if (datos == null || vacio(datos.nombre())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Indica el nombre");
+        }
+        List<Compromiso> compromisos = compromisoRepository.findByRutClave(Rut.clave(rut));
+        compromisos.forEach(compromiso -> compromiso.setNombreUsuario(datos.nombre().trim()));
+        compromisoRepository.saveAll(compromisos);
+    }
+
     public List<ComprobanteResponse> listarComprobantes(String rut) {
         return comprobanteRepository.findByRutClaveOrderByNumeroDesc(Rut.clave(rut)).stream()
                 .map(ComprobanteResponse::desde)
                 .toList();
+    }
+
+    private void validarQueNoEsteRegistrado(NuevoCompromisoRequest datos) {
+        buscarCuotaRegistrada(Rut.clave(datos.rutUsuario()), datos.empresaCodigo().trim(),
+                datos.concepto(), datos.cuotaInicial())
+                .ifPresent(existente -> {
+                    throw new ResponseStatusException(HttpStatus.CONFLICT,
+                            "Esta cuota ya está registrada: " + existente.getFolio()
+                                    + " (cuota " + existente.getCuotaActual() + " de " + existente.getTotalCuotas() + ")");
+                });
+    }
+
+    private Optional<Compromiso> buscarCuotaRegistrada(String rutClave, String empresaCodigo, String concepto, Integer cuota) {
+        String conceptoBuscado = concepto.trim();
+        return compromisoRepository.findByRutClaveAndEmpresaCodigo(rutClave, empresaCodigo).stream()
+                .filter(c -> c.getEstado() != EstadoCompromiso.ANULADO)
+                .filter(c -> c.getConcepto().trim().equalsIgnoreCase(conceptoBuscado))
+                .filter(c -> c.getCuotaActual().equals(cuota))
+                .findFirst();
     }
 
     private Compromiso buscar(String folio) {

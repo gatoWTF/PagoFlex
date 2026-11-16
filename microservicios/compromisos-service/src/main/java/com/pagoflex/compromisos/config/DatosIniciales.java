@@ -5,11 +5,14 @@ import com.pagoflex.compromisos.model.Comprobante;
 import com.pagoflex.compromisos.model.Compromiso;
 import com.pagoflex.compromisos.model.Empresa;
 import com.pagoflex.compromisos.model.EstadoCompromiso;
+import com.pagoflex.compromisos.model.EstadoReporte;
 import com.pagoflex.compromisos.model.MotivoAnulacion;
+import com.pagoflex.compromisos.model.Reporte;
 import com.pagoflex.compromisos.model.Rut;
 import com.pagoflex.compromisos.repository.ComprobanteRepository;
 import com.pagoflex.compromisos.repository.CompromisoRepository;
 import com.pagoflex.compromisos.repository.EmpresaRepository;
+import com.pagoflex.compromisos.repository.ReporteRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
@@ -31,6 +34,7 @@ public class DatosIniciales implements CommandLineRunner {
     private final CompromisoRepository compromisoRepository;
     private final ComprobanteRepository comprobanteRepository;
     private final EmpresaRepository empresaRepository;
+    private final ReporteRepository reporteRepository;
 
     @Override
     public void run(String... args) {
@@ -64,6 +68,17 @@ public class DatosIniciales implements CommandLineRunner {
                     compromiso("CP-2026-0114", "CR-2026-0010", JAVIERA, "Javiera Constanza Reyes Molina", "EC-06", "Cuota social", 11, 12, 15000, "05-11-2026", EstadoCompromiso.PENDIENTE, 0, "EJ-05")
             ));
         }
+        List.of(
+                compromiso("CP-2026-0072", "CR-2026-0005", LUIS, "Luis Alberto Muñoz Tapia", "EC-01", "Cuota pie departamento", 13, 36, 310000, "30-08-2026", EstadoCompromiso.PAGADO, 8500, "EJ-01"),
+                compromiso("CP-2026-0089", "CR-2026-0001", CAMILA, "Camila Andrea Rojas Peña", "EC-08", "Arriendo departamento", 9, 12, 520000, "10-09-2026", EstadoCompromiso.PAGADO, 0, "EJ-07"),
+                compromiso("CP-2026-0090", "CR-2026-0002", CAMILA, "Camila Andrea Rojas Peña", "EC-06", "Cuota social", 9, 12, 15000, "05-09-2026", EstadoCompromiso.PAGADO, 2000, "EJ-05"),
+                compromiso("CP-2026-0091", "CR-2026-0003", CAMILA, "Camila Andrea Rojas Peña", "EC-05", "Aporte mensual", 9, 12, 10000, "15-09-2026", EstadoCompromiso.PAGADO, 0, "PagoFlex"),
+                compromiso("CP-2026-0098", "CR-2026-0008", FERNANDA, "Fernanda Paz Godoy Lagos", "EC-02", "Mensualidad", 7, 10, 185000, "10-09-2026", EstadoCompromiso.PAGADO, 0, "EJ-02")
+        ).forEach(pagada -> {
+            if (compromisoRepository.findByFolio(pagada.getFolio()).isEmpty()) {
+                compromisoRepository.save(pagada);
+            }
+        });
         if (comprobanteRepository.count() == 0) {
             comprobanteRepository.saveAll(List.of(
                     comprobante("CPR-000377", "CP-2026-0072", LUIS, "EC-01", "02-09-2026 21:14", 318500, CanalPago.AGENTE_CONVERSACIONAL, false, "Pago simulado"),
@@ -76,6 +91,43 @@ public class DatosIniciales implements CommandLineRunner {
                     comprobante("CPR-000453", "CP-2026-0112", JAVIERA, "EC-06", "04-10-2026 08:15", 15000, CanalPago.APP, true, "Pago simulado")
             ));
         }
+        if (reporteRepository.count() == 0) {
+            reporteRepository.saveAll(List.of(
+                    reporte("REP-0005", "CP-2026-0104", CAMILA, "Otro", "Pagué la cuota 7 y el comprobante tardó en aparecer en mi historial.", "24-09-2026", EstadoReporte.RESUELTO, "AG-01", "El pago estaba registrado; el comprobante ya aparece (25-09-2026)."),
+                    reporte("REP-0007", "CP-2026-0108", ROSA, "No reconozco este cobro", "Me aparece dos veces el cobro de la cuota 10 del seguro.", "01-10-2026", EstadoReporte.RESUELTO, "AG-02", "Hay un solo pago registrado (CPR-000452); no hubo cobro duplicado (02-10-2026)."),
+                    reporte("REP-0009", "CP-2026-0111", HECTOR, "El monto no corresponde", "Repacté el crédito y me siguen cobrando la cuota antigua.", "18-09-2026", EstadoReporte.RESUELTO, "AG-01", "La empresa anuló la cuota por repactación (22-09-2026)."),
+                    reporte("REP-0010", "CP-2026-0110", FERNANDA, "El monto no corresponde", "La mensualidad de este año es de $175.000 y me cobran $185.000.", "08-10-2026", EstadoReporte.ABIERTO, null, null),
+                    reporte("REP-0011", "CP-2026-0109", MATIAS, "Ya pagué por otro medio", "Pagué por transferencia directa al instituto el 03-10.", "03-10-2026", EstadoReporte.EN_GESTION, "AG-02", null),
+                    reporte("REP-0012", "CP-2026-0106", LUIS, "El monto no corresponde", "No sé por qué me cobran $318.500.", "05-10-2026", EstadoReporte.ABIERTO, null, null)
+            ));
+            ponerEnRevision("CP-2026-0106");
+            ponerEnRevision("CP-2026-0110");
+        }
+    }
+
+    private Reporte reporte(String numero, String folio, String rut, String motivo, String comentario, String fecha,
+                            EstadoReporte estado, String agente, String respuesta) {
+        return Reporte.builder()
+                .numero(numero)
+                .compromisoFolio(folio)
+                .rutUsuario(rut)
+                .rutClave(Rut.clave(rut))
+                .motivo(motivo)
+                .comentario(comentario)
+                .fecha(fecha)
+                .estado(estado)
+                .agenteResponsable(agente)
+                .respuesta(respuesta)
+                .build();
+    }
+
+    private void ponerEnRevision(String folio) {
+        compromisoRepository.findByFolio(folio)
+                .filter(c -> c.getEstado() == EstadoCompromiso.PENDIENTE || c.getEstado() == EstadoCompromiso.VENCIDO)
+                .ifPresent(c -> {
+                    c.setEstado(EstadoCompromiso.EN_REVISION);
+                    compromisoRepository.save(c);
+                });
     }
 
     private Compromiso compromiso(String folio, String credito, String rut, String nombre, String empresa,

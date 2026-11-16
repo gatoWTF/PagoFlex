@@ -133,7 +133,9 @@ fun DetalleCompromisoScreen(
             if (compromiso.recargo > 0) {
                 FilaDato("Recargo por atraso", FormatoMoneda.clp(compromiso.recargo))
             }
-            FilaDato("Total a pagar", FormatoMoneda.clp(compromiso.totalAPagar))
+            val etiquetaTotal =
+                if (compromiso.estado == EstadoCompromiso.PAGADO) "Total pagado" else "Total a pagar"
+            FilaDato(etiquetaTotal, FormatoMoneda.clp(compromiso.totalAPagar))
             HorizontalDivider(modifier = Modifier.padding(vertical = Dimens.espacioChico))
             FilaDato("Vence", compromiso.fechaVencimiento)
             FilaDato("Cuota", compromiso.cuota)

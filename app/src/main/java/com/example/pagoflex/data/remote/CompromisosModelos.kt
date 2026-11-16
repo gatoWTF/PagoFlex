@@ -2,6 +2,7 @@ package com.example.pagoflex.data.remote
 
 import com.example.pagoflex.model.CanalPago
 import com.example.pagoflex.model.EstadoCompromiso
+import com.example.pagoflex.model.EstadoReporte
 import com.example.pagoflex.model.MotivoAnulacion
 
 data class CompromisoResponse(
@@ -73,4 +74,36 @@ data class CambiarEstadoRequest(
 data class PagoRequest(
     val canal: CanalPago,
     val medioPago: String
+)
+
+data class ReporteResponse(
+    val numero: String,
+    val compromisoFolio: String,
+    val rutUsuario: String,
+    val nombreUsuario: String?,
+    val empresaCodigo: String?,
+    val empresaNombre: String?,
+    val concepto: String?,
+    val cuotaActual: Int?,
+    val totalCuotas: Int?,
+    val montoCuota: Int?,
+    val estadoCompromiso: EstadoCompromiso?,
+    val motivo: String,
+    val comentario: String,
+    val fecha: String,
+    val estado: EstadoReporte,
+    val agenteResponsable: String?,
+    val respuesta: String?
+)
+
+data class NuevoReporteRequest(
+    val compromisoFolio: String,
+    val rutUsuario: String,
+    val motivo: String,
+    val comentario: String
+)
+
+data class GestionReporteRequest(
+    val agenteCodigo: String,
+    val respuesta: String? = null
 )

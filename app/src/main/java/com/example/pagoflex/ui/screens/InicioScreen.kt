@@ -64,6 +64,7 @@ fun InicioScreen(
     alCerrarSesion: () -> Unit,
     bienvenida: String? = null,
     alMostrarBienvenida: () -> Unit = {},
+    avisosActivos: Boolean = true,
     modifier: Modifier = Modifier
 ) {
 
@@ -91,9 +92,15 @@ fun InicioScreen(
     LaunchedEffect(Unit) { Notificaciones.crearCanal(context) }
 
     fun postearAviso() {
-        val texto = viewModel.proximoVencimiento?.let {
-            "Tu proximo pago vence el $it. Total por pagar: ${FormatoMoneda.clp(viewModel.totalPorPagar)}"
-        } ?: "No tienes pagos pendientes."
+        val total = FormatoMoneda.clp(viewModel.totalPorPagar)
+        val texto = when {
+            viewModel.cantidadVencidos > 0 ->
+                "Tienes ${viewModel.cantidadVencidos} pagos vencidos. Total por pagar: $total"
+            viewModel.proximoVencimiento != null ->
+                "Tu próximo pago vence el ${viewModel.proximoVencimiento}. Total por pagar: $total"
+            else -> "No tienes pagos pendientes."
+        }
+
         Notificaciones.mostrarAviso(context, "Aviso de vencimiento", texto)
         scope.launch { snackbarHostState.showSnackbar("Aviso de vencimiento enviado") }
     }
@@ -106,6 +113,12 @@ fun InicioScreen(
     }
 
     fun avisarVencimiento() {
+        if (!avisosActivos) {
+            scope.launch {
+                snackbarHostState.showSnackbar("Tienes los avisos desactivados. Actívalos en Configuración")
+            }
+            return
+        }
         if (Notificaciones.tienePermiso(context)) {
             postearAviso()
         } else {
@@ -238,7 +251,7 @@ private fun ResumenSituacion(
         )
     ) {
         Column(modifier = Modifier.padding(Dimens.espacioGrande)) {
-            Text(text = "Total por pagar este mes", style = MaterialTheme.typography.bodyMedium)
+            Text(text = "Total por pagar", style = MaterialTheme.typography.bodyMedium)
             Text(
                 text = FormatoMoneda.clp(total),
                 style = MaterialTheme.typography.headlineMedium
@@ -250,7 +263,7 @@ private fun ResumenSituacion(
                 horizontalArrangement = Arrangement.spacedBy(Dimens.espacioGrande)
             ) {
                 Column {
-                    Text(text = "Proximo vencimiento", style = MaterialTheme.typography.labelMedium)
+                    Text(text = "Próximo vencimiento", style = MaterialTheme.typography.labelMedium)
                     Text(
                         text = proximoVencimiento ?: "Sin pagos pendientes",
                         style = MaterialTheme.typography.titleSmall

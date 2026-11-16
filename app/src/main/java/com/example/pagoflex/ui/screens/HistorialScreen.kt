@@ -53,6 +53,7 @@ import com.example.pagoflex.viewmodel.CompromisosViewModel
 fun HistorialScreen(
     viewModel: CompromisosViewModel,
     alVolver: () -> Unit,
+    alAbrirComprobante: (String) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     Scaffold(
@@ -99,7 +100,11 @@ fun HistorialScreen(
                 )
             }
             items(viewModel.comprobantes, key = { it.folio }) { comprobante ->
-                FilaComprobante(comprobante, modifier = Modifier.animateItem())
+                FilaComprobante(
+                    comprobante = comprobante,
+                    alTocar = { alAbrirComprobante(comprobante.folio) },
+                    modifier = Modifier.animateItem()
+                )
             }
         }
     }
@@ -135,8 +140,13 @@ private fun TarjetaCumplimiento(porcentaje: Int, aTiempo: Int, total: Int) {
 }
 
 @Composable
-private fun FilaComprobante(comprobante: Comprobante, modifier: Modifier = Modifier) {
+private fun FilaComprobante(
+    comprobante: Comprobante,
+    alTocar: () -> Unit,
+    modifier: Modifier = Modifier
+) {
     Card(
+        onClick = alTocar,
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(Dimens.radioTarjeta),
         elevation = CardDefaults.cardElevation(defaultElevation = Dimens.elevacionTarjeta)

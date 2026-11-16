@@ -40,9 +40,18 @@ class SesionViewModelTest {
     @Test
     fun consumirMensaje_limpiaElAviso() {
         val sesion = SesionViewModel()
-        sesion.guardarContacto()
-        Assert.assertEquals("Datos de contacto guardados", sesion.mensaje)
+        sesion.actualizarDatos(cuentaDePrueba)
+        Assert.assertEquals("Datos actualizados", sesion.mensaje)
         sesion.consumirMensaje()
         Assert.assertNull(sesion.mensaje)
+    }
+
+    @Test
+    fun validarContacto_conTelefonoInvalido_mostrarError() {
+        val sesion = SesionViewModel()
+        sesion.cambiarTelefono("12ab")
+        val valido = sesion.validarContacto()
+        Assert.assertFalse(valido)
+        Assert.assertEquals("Teléfono no válido", sesion.errorTelefono)
     }
 }

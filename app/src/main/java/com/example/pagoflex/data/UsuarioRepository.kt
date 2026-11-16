@@ -2,6 +2,7 @@ package com.example.pagoflex.data
 
 import com.example.pagoflex.data.remote.ActualizarUsuarioRequest
 import com.example.pagoflex.data.remote.CambiarContrasenaRequest
+import com.example.pagoflex.data.remote.ContactoRequest
 import com.example.pagoflex.data.remote.ErrorApi
 import com.example.pagoflex.data.remote.LoginRequest
 import com.example.pagoflex.data.remote.RegistroRequest
@@ -28,6 +29,9 @@ class UsuarioRepository(
 
     suspend fun actualizar(id: Long, nombre: String, rut: String, correo: String): Usuario =
         llamar { usuarioApi.actualizar(id, ActualizarUsuarioRequest(nombre, rut, correo)) }.aUsuario()
+
+    suspend fun guardarContacto(id: Long, correoSecundario: String, telefono: String): Usuario =
+        llamar { usuarioApi.guardarContacto(id, ContactoRequest(correoSecundario, telefono)) }.aUsuario()
 
     suspend fun cambiarContrasena(id: Long, actual: String, nueva: String) =
         llamar { usuarioApi.cambiarContrasena(id, CambiarContrasenaRequest(actual, nueva)) }

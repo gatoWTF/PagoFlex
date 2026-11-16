@@ -21,7 +21,7 @@ Caso **DSY1105 – Desarrollo de Aplicaciones Móviles** (Duoc UC). App **Kotlin
 - **compromisos-service** (8083): compromisos (cuotas de cada crédito), pagos, comprobantes, vencimientos, anulaciones y reportes de problema.
 - **Room** (en el teléfono): nombres de las empresas y datos propios de cada rol (empresa del ejecutivo, código del agente).
 
-Los microservicios están en su propio repositorio: [gatoWTF/PagoFlex-microservicios](https://github.com/gatoWTF/PagoFlex-microservicios), con el detalle de cada endpoint en su README. La app no comparte código con ellos: solo conoce la dirección y el puerto de cada uno (`data/remote/RetrofitClient.kt`).
+Los microservicios están en su propio repositorio: [gatoWTF/Pagoflex-Microservicios](https://github.com/gatoWTF/Pagoflex-Microservicios), con el detalle de cada endpoint en su README. La app no comparte código con ellos: solo conoce la dirección y el puerto de cada uno (`data/remote/RetrofitClient.kt`).
 
 ## Roles
 
@@ -103,11 +103,17 @@ app/src/main/java/com/example/pagoflex/
 ## Cómo ejecutarla
 
 1. Abre **Laragon** y presiona **Iniciar todo** (MySQL en el puerto 3306, usuario `root` sin contraseña). Las bases se crean solas.
-2. Clona [PagoFlex-microservicios](https://github.com/gatoWTF/PagoFlex-microservicios) y enciende los 3 servicios con un solo comando en la **Terminal** de Android Studio (PowerShell), cambiando la ruta por la carpeta donde lo clonaste:
+2. Enciende los 3 microservicios del repositorio [Pagoflex-Microservicios](https://github.com/gatoWTF/Pagoflex-Microservicios). Desde la carpeta de ese repositorio (en el Explorador de Windows: clic derecho en la carpeta → **Abrir en Terminal**), un comando por ventana:
    ```powershell
-   Get-ChildItem C:\Users\HP\AndroidStudioProjects\PagoFlex-microservicios\iniciar-*.bat | ForEach-Object { Start-Process $_.FullName }
+   .\iniciar-roles.bat
    ```
-   Se abren 3 ventanas, una por servicio. Cada uno está listo cuando su ventana muestra `Started ...Application`. Para apagarlos, cierra las ventanas. La primera vez tardan unos minutos porque descargan las librerías.
+   ```powershell
+   .\iniciar-usuarios.bat
+   ```
+   ```powershell
+   .\iniciar-compromisos.bat
+   ```
+   También se puede hacer doble clic en cada archivo `.bat`. Cada servicio está listo cuando su ventana muestra `Started ...Application`. Para apagarlos, cierra sus ventanas. La primera vez tardan unos minutos porque descargan las librerías.
 3. Abre el proyecto en **Android Studio**, espera la sincronización de Gradle y ejecuta la app (**Run**) en un emulador con Android 7.0 (API 24) o superior.
 4. Entra con una cuenta de ejemplo de la tabla de Roles, o crea una cuenta nueva.
 
@@ -126,7 +132,7 @@ La app llega a los servicios por `http://10.0.2.2` (la dirección del PC vista d
 | `viewmodel/SesionViewModelTest` | datos de la cuenta al iniciar sesión, foto de perfil y mensajes |
 
 ```powershell
-.\gradlew testDebugUnitTest
+.\gradlew test
 ```
 
 También desde Android Studio: clic derecho en la carpeta `test` → **Run 'Tests in…'**.

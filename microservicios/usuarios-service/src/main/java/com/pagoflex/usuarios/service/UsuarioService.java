@@ -1,5 +1,6 @@
 package com.pagoflex.usuarios.service;
 
+import com.pagoflex.usuarios.client.CompromisoClient;
 import com.pagoflex.usuarios.client.RolClient;
 import com.pagoflex.usuarios.dto.ActualizarUsuarioRequest;
 import com.pagoflex.usuarios.dto.CambiarContrasenaRequest;
@@ -29,6 +30,7 @@ public class UsuarioService {
 
     private final UsuarioRepository usuarioRepository;
     private final RolClient rolClient;
+    private final CompromisoClient compromisoClient;
     private final PasswordEncoder passwordEncoder;
 
     public UsuarioResponse obtener(Long id) {
@@ -89,6 +91,9 @@ public class UsuarioService {
         usuario.setNombre(datos.nombre().trim());
         usuario.setRut(rut);
         usuario.setCorreo(correo);
+        Usuario guardado = usuarioRepository.save(usuario);
+        compromisoClient.actualizarNombreTitular(guardado.getRut(), guardado.getNombre());
+        return aRespuesta(guardado);
         return aRespuesta(usuarioRepository.save(usuario));
     }
 

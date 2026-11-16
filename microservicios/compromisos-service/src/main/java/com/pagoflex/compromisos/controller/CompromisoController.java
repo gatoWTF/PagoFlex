@@ -4,6 +4,7 @@ import com.pagoflex.compromisos.dto.AnularRequest;
 import com.pagoflex.compromisos.dto.CambiarEstadoRequest;
 import com.pagoflex.compromisos.dto.CompromisoResponse;
 import com.pagoflex.compromisos.dto.NuevoCompromisoRequest;
+import com.pagoflex.compromisos.dto.NombreTitularRequest;
 import com.pagoflex.compromisos.dto.PagoRequest;
 import com.pagoflex.compromisos.dto.PagoResponse;
 import com.pagoflex.compromisos.service.CompromisoService;
@@ -60,6 +61,12 @@ public class CompromisoController {
     @PutMapping("/{folio}/anular")
     public CompromisoResponse anular(@PathVariable String folio, @RequestBody AnularRequest datos) {
         return compromisoService.anular(folio, datos);
+    }
+
+    @PutMapping("/titular/{rut}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void actualizarNombreTitular(@PathVariable String rut, @RequestBody NombreTitularRequest datos) {
+        compromisoService.actualizarNombreTitular(rut, datos);
     }
 
     @PostMapping("/{folio}/pagar")

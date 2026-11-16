@@ -4,6 +4,7 @@ import com.pagoflex.compromisos.dto.AnularRequest;
 import com.pagoflex.compromisos.dto.CambiarEstadoRequest;
 import com.pagoflex.compromisos.dto.ComprobanteResponse;
 import com.pagoflex.compromisos.dto.CompromisoResponse;
+import com.pagoflex.compromisos.dto.NombreTitularRequest;
 import com.pagoflex.compromisos.dto.NuevoCompromisoRequest;
 import com.pagoflex.compromisos.dto.PagoRequest;
 import com.pagoflex.compromisos.dto.PagoResponse;
@@ -227,6 +228,15 @@ public class CompromisoService {
                     }
                     return compromisoRepository.save(siguiente);
                 });
+    }
+
+    public void actualizarNombreTitular(String rut, NombreTitularRequest datos) {
+        if (datos == null || vacio(datos.nombre())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Indica el nombre");
+        }
+        List<Compromiso> compromisos = compromisoRepository.findByRutClave(Rut.clave(rut));
+        compromisos.forEach(compromiso -> compromiso.setNombreUsuario(datos.nombre().trim()));
+        compromisoRepository.saveAll(compromisos);
     }
 
     public List<ComprobanteResponse> listarComprobantes(String rut) {

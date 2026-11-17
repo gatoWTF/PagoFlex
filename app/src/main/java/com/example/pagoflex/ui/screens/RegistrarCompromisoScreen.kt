@@ -78,6 +78,19 @@ fun RegistrarCompromisoScreen(
 
     var mostrarCalendario by remember { mutableStateOf(false) }
 
+    fun formularioValido(): Boolean {
+        val fechaIngresada = fecha.replace("/", "-")
+        return deudor.isNotBlank() &&
+            Validaciones.nombreSoloLetras(deudor) &&
+            Validaciones.rutValido(rut) &&
+            concepto.isNotBlank() &&
+            Validaciones.cantidadCuotasValida(totalCuotas) &&
+            Validaciones.cuotaInicialValida(cuotaInicial, totalCuotas) &&
+            Validaciones.montoValido(monto) &&
+            Validaciones.fechaValida(fechaIngresada) &&
+            Validaciones.fechaNoAnteriorAHoy(fechaIngresada)
+    }
+
     LaunchedEffect(errorServidor) {
         if (errorServidor != null) registrando = false
     }
@@ -89,6 +102,10 @@ fun RegistrarCompromisoScreen(
     LaunchedEffect(registrando) {
         if (registrando) {
             delay(1000)
+            if (!formularioValido()) {
+                registrando = false
+                return@LaunchedEffect
+            }
             onRegistrar(
                 deudor,
                 rut,
@@ -247,16 +264,7 @@ fun RegistrarCompromisoScreen(
                 texto = if (registrando) "Registrando…" else "Registrar",
                 onClick = {
                     intentoEnvio = true
-                    val valido = deudor.isNotBlank() &&
-                            Validaciones.nombreSoloLetras(deudor) &&
-                            Validaciones.rutValido(rut) &&
-                            concepto.isNotBlank() &&
-                        Validaciones.cantidadCuotasValida(totalCuotas) &&
-                        Validaciones.cuotaInicialValida(cuotaInicial, totalCuotas) &&
-                        Validaciones.montoValido(monto) &&
-                        Validaciones.fechaValida(fechaConGuiones) &&
-                        Validaciones.fechaNoAnteriorAHoy(fechaConGuiones)
-                    if (valido) registrando = true
+                    if (formularioValido()) registrando = true
                 },
                 cargando = registrando,
                 icono = R.drawable.ic_ingresar,

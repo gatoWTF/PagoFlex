@@ -69,8 +69,10 @@ class CompromisoRepository(
     suspend fun tomarReporte(numero: String, agenteCodigo: String): ReporteResponse =
         llamar { compromisoApi.tomarReporte(numero, GestionReporteRequest(agenteCodigo)) }
 
-    suspend fun resolverReporte(numero: String, agenteCodigo: String): ReporteResponse =
-        llamar { compromisoApi.resolverReporte(numero, GestionReporteRequest(agenteCodigo)) }
+    suspend fun resolverReporte(numero: String, agenteCodigo: String, respuesta: String): ReporteResponse =
+        llamar {
+            compromisoApi.resolverReporte(numero, GestionReporteRequest(agenteCodigo, respuesta.ifBlank { null }))
+        }
 
     private suspend fun <T> llamar(peticion: suspend () -> T): T = try {
         peticion()

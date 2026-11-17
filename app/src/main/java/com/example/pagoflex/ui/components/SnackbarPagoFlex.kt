@@ -11,6 +11,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarData
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarVisuals
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -18,9 +20,19 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.pagoflex.ui.theme.Dimens
 import com.example.pagoflex.ui.theme.Exito
+import com.example.pagoflex.ui.theme.Vencido
+
+class AvisoError(
+    override val message: String,
+    override val duration: SnackbarDuration = SnackbarDuration.Long
+) : SnackbarVisuals {
+    override val actionLabel: String? = null
+    override val withDismissAction: Boolean = false
+}
 
 @Composable
 fun SnackbarPagoFlex(data: SnackbarData) {
+    val colorPunto = if (data.visuals is AvisoError) Vencido else Exito
     Snackbar(
         modifier = Modifier.padding(Dimens.espacioChico),
         shape = RoundedCornerShape(Dimens.radioTarjeta),
@@ -31,7 +43,7 @@ fun SnackbarPagoFlex(data: SnackbarData) {
             Spacer(
                 modifier = Modifier
                     .size(9.dp)
-                    .background(Exito, CircleShape)
+                    .background(colorPunto, CircleShape)
             )
             Spacer(Modifier.width(Dimens.espacioChico))
             Text(text = data.visuals.message, style = MaterialTheme.typography.bodyMedium)

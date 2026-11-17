@@ -325,7 +325,10 @@ private fun AppPagoFlex(configuracionViewModel: ConfiguracionViewModel) {
         }
 
         composable(Rutas.RegistrarCompromiso.ruta) {
-            LaunchedEffect(Unit) { ejecutivoViewModel.limpiarErrorRegistro() }
+            LaunchedEffect(Unit) {
+                ejecutivoViewModel.limpiarErrorRegistro()
+                ejecutivoViewModel.limpiarDeudor()
+            }
             RegistrarCompromisoScreen(
                 alVolver = { navController.popBackStack() },
                 onRegistrar = { deudor, rut, concepto, totalCuotas, cuotaInicial, montoCuota, fecha ->
@@ -335,7 +338,9 @@ private fun AppPagoFlex(configuracionViewModel: ConfiguracionViewModel) {
                         navController.popBackStack()
                     }
                 },
-                errorServidor = ejecutivoViewModel.errorRegistro
+                errorServidor = ejecutivoViewModel.errorRegistro,
+                nombreDeudor = ejecutivoViewModel.nombreDeudor,
+                onRutCambia = ejecutivoViewModel::buscarDeudor
             )
         }
     }
@@ -343,7 +348,7 @@ private fun AppPagoFlex(configuracionViewModel: ConfiguracionViewModel) {
 
 private fun irALogin(navController: NavHostController) {
     navController.navigate(Rutas.Login.ruta) {
-        popUpTo(Rutas.Login.ruta) { inclusive = true }
+        popUpTo(navController.graph.id) { inclusive = true }
         launchSingleTop = true
     }
 }

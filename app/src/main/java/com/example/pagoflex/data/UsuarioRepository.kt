@@ -28,6 +28,14 @@ class UsuarioRepository(
     suspend fun obtener(id: Long): Usuario =
         llamar { usuarioApi.obtener(id) }.aUsuario()
 
+    suspend fun buscarNombrePorRut(rut: String): String? = try {
+        usuarioApi.buscarTitular(rut).nombre
+    } catch (e: HttpException) {
+        if (e.code() == 404) null else throw Exception(mensajeDelServidor(e))
+    } catch (e: IOException) {
+        throw Exception("No se pudo conectar con el servidor")
+    }
+
     suspend fun actualizar(id: Long, nombre: String, rut: String, correo: String): Usuario =
         llamar { usuarioApi.actualizar(id, ActualizarUsuarioRequest(nombre, rut, correo)) }.aUsuario()
 

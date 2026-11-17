@@ -5,11 +5,15 @@ import retrofit2.http.GET
 import retrofit2.http.POST
 import retrofit2.http.PUT
 import retrofit2.http.Path
+import retrofit2.http.Query
 
 interface UsuarioApi {
 
     @GET("api/usuarios/{id}")
     suspend fun obtener(@Path("id") id: Long): UsuarioResponse
+
+    @GET("api/usuarios/titular")
+    suspend fun buscarTitular(@Query("rut") rut: String): TitularResponse
 
     @POST("api/usuarios")
     suspend fun registrar(@Body datos: RegistroRequest): UsuarioResponse

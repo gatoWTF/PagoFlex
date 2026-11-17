@@ -13,8 +13,10 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
@@ -48,6 +50,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import com.example.pagoflex.R
+import com.example.pagoflex.ui.components.AvisoError
 import com.example.pagoflex.ui.components.BotonPrincipal
 import com.example.pagoflex.ui.components.BotonSecundario
 import com.example.pagoflex.ui.components.CampoTexto
@@ -72,7 +75,8 @@ fun PerfilScreen(
     LaunchedEffect(sesion.mensaje) {
         val texto = sesion.mensaje
         if (texto != null) {
-            snackbarHostState.showSnackbar(texto, duration = SnackbarDuration.Short)
+            if (sesion.mensajeEsError) snackbarHostState.showSnackbar(AvisoError(texto))
+            else snackbarHostState.showSnackbar(texto, duration = SnackbarDuration.Short)
             sesion.consumirMensaje()
         }
     }
@@ -93,7 +97,7 @@ fun PerfilScreen(
                 FotoPerfil.leer(context, uri)?.also { FotoPerfil.guardar(context, sesion.rut, it) }
             }
             if (foto != null) sesion.cambiarFoto(foto)
-            else snackbarHostState.showSnackbar("No se pudo abrir la imagen")
+            else snackbarHostState.showSnackbar(AvisoError("No se pudo abrir la imagen"))
         }
     }
 
@@ -116,7 +120,7 @@ fun PerfilScreen(
         if (concedido) {
             camaraLauncher.launch(uriCamara)
         } else {
-            scope.launch { snackbarHostState.showSnackbar("Permiso de cámara denegado") }
+            scope.launch { snackbarHostState.showSnackbar(AvisoError("Permiso de cámara denegado")) }
         }
     }
 
@@ -154,6 +158,8 @@ fun PerfilScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
+                .consumeWindowInsets(padding)
+                .imePadding()
                 .verticalScroll(rememberScrollState())
                 .padding(Dimens.espacioPantalla),
             verticalArrangement = Arrangement.spacedBy(Dimens.espacioMedio)

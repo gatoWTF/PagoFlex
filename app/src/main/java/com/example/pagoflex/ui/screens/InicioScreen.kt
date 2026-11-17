@@ -44,6 +44,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.pagoflex.R
+import com.example.pagoflex.ui.components.AvisoError
 import com.example.pagoflex.ui.components.FilaCompromiso
 import com.example.pagoflex.ui.components.SnackbarPagoFlex
 import com.example.pagoflex.ui.theme.Dimens
@@ -72,7 +73,8 @@ fun InicioScreen(
     LaunchedEffect(viewModel.mensaje) {
         val texto = viewModel.mensaje
         if (texto != null) {
-            snackbarHostState.showSnackbar(texto, duration = SnackbarDuration.Long)
+            if (viewModel.mensajeEsError) snackbarHostState.showSnackbar(AvisoError(texto))
+            else snackbarHostState.showSnackbar(texto, duration = SnackbarDuration.Long)
             viewModel.consumirMensaje()
         }
     }
@@ -108,14 +110,16 @@ fun InicioScreen(
     val permisoNotif = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { concedido ->
-        val texto = if (concedido) "Notificaciones activadas" else "No recibirás avisos de vencimiento"
-        scope.launch { snackbarHostState.showSnackbar(texto) }
+        scope.launch {
+            if (concedido) snackbarHostState.showSnackbar("Notificaciones activadas")
+            else snackbarHostState.showSnackbar(AvisoError("No recibirás avisos de vencimiento"))
+        }
     }
 
     fun avisarVencimiento() {
         if (!avisosActivos) {
             scope.launch {
-                snackbarHostState.showSnackbar("Tienes los avisos desactivados. Actívalos en Configuración")
+                snackbarHostState.showSnackbar(AvisoError("Tienes los avisos desactivados. Actívalos en Configuración"))
             }
             return
         }
@@ -123,7 +127,7 @@ fun InicioScreen(
             postearAviso()
         } else {
             scope.launch {
-                snackbarHostState.showSnackbar("Notificaciones desactivadas: se te preguntará al iniciar sesión")
+                snackbarHostState.showSnackbar(AvisoError("Notificaciones desactivadas: se te preguntará al iniciar sesión"))
             }
         }
     }

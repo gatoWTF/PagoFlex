@@ -6,7 +6,9 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -59,6 +61,8 @@ fun RegistrarCompromisoScreen(
     alVolver: () -> Unit,
     onRegistrar: (deudor: String, rut: String, concepto: String, totalCuotas: Int, cuotaInicial: Int, montoCuota: Int, fecha: String) -> Unit,
     errorServidor: String? = null,
+    nombreDeudor: String? = null,
+    onRutCambia: (String) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     var deudor by rememberSaveable { mutableStateOf("") }
@@ -76,6 +80,10 @@ fun RegistrarCompromisoScreen(
 
     LaunchedEffect(errorServidor) {
         if (errorServidor != null) registrando = false
+    }
+
+    LaunchedEffect(nombreDeudor) {
+        if (nombreDeudor != null) deudor = nombreDeudor
     }
 
     LaunchedEffect(registrando) {
@@ -140,23 +148,30 @@ fun RegistrarCompromisoScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
+                .consumeWindowInsets(padding)
+                .imePadding()
                 .padding(Dimens.espacioPantalla)
                 .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(Dimens.espacioChico)
         ) {
             CampoTexto(
+                valor = rut,
+                onValorCambia = {
+                    rut = it
+                    onRutCambia(it)
+                },
+                etiqueta = "RUT del deudor",
+                icono = R.drawable.ic_otro,
+                error = errorRut
+            )
+            CampoTexto(
                 valor = deudor,
                 onValorCambia = { deudor = it },
                 etiqueta = "Nombre del deudor",
                 icono = R.drawable.ic_perfil,
-                error = errorDeudor
-            )
-            CampoTexto(
-                valor = rut,
-                onValorCambia = { rut = it },
-                etiqueta = "RUT del deudor",
-                icono = R.drawable.ic_otro,
-                error = errorRut
+                error = errorDeudor,
+                ayuda = if (nombreDeudor != null) "Nombre de la cuenta PagoFlex con este RUT" else null,
+                soloLectura = nombreDeudor != null
             )
             CampoTexto(
                 valor = concepto,

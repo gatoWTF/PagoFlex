@@ -45,6 +45,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.pagoflex.R
 import com.example.pagoflex.ui.components.AvisoError
+import com.example.pagoflex.model.EstadoCompromiso
 import com.example.pagoflex.ui.components.FilaCompromiso
 import com.example.pagoflex.ui.components.SnackbarPagoFlex
 import com.example.pagoflex.ui.theme.Dimens
@@ -213,7 +214,9 @@ fun InicioScreen(
                 )
             }
             items(
-                viewModel.compromisos.sortedBy { it.estado.prioridadLista },
+                viewModel.compromisos
+                    .filter { it.estado != EstadoCompromiso.PAGADO }
+                    .sortedBy { it.estado.prioridadLista },
                 key = { it.folio }
             ) { compromiso ->
                 FilaCompromiso(
@@ -269,8 +272,12 @@ private fun ResumenSituacion(
                 Column {
                     Text(text = "Próximo vencimiento", style = MaterialTheme.typography.labelMedium)
                     Text(
-                        text = proximoVencimiento ?: "Sin pagos pendientes",
-                        style = MaterialTheme.typography.titleSmall
+                        text = when {
+                            proximoVencimiento != null -> proximoVencimiento
+                            vencidos > 0 -> "Paga tus vencidos"
+                            else -> "Sin pagos pendientes"
+                        },
+                        style =  MaterialTheme.typography.titleSmall
                     )
                 }
                 Column {

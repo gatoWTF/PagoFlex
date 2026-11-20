@@ -54,4 +54,12 @@ class SesionViewModelTest {
         Assert.assertFalse(valido)
         Assert.assertEquals("Teléfono no válido", sesion.errorTelefono)
     }
+
+    @Test
+    fun eliminarCuenta_sinSesion_noHaceNada() {
+        val sesion = SesionViewModel()
+        sesion.eliminarCuenta()
+        Assert.assertFalse(sesion.eliminandoCuenta)
+        Assert.assertFalse(sesion.cuentaEliminada)
+    }
 }

@@ -201,6 +201,7 @@ private fun AppPagoFlex(configuracionViewModel: ConfiguracionViewModel) {
                 alVolver = { navController.popBackStack() },
                 alCambiarContrasena = { navController.navigate(Rutas.CambiarContrasena.ruta) },
                 alEditarPerfil = { navController.navigate(Rutas.EditarPerfil.ruta) },
+                alCuentaEliminada = { irALogin(navController) }
             )
         }
         composable(Rutas.EditarPerfil.ruta) {

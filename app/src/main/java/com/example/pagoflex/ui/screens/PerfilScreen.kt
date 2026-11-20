@@ -3,6 +3,7 @@ package com.example.pagoflex.ui.screens
 import android.Manifest
 import android.content.pm.PackageManager
 import android.net.Uri
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -21,6 +22,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -33,12 +37,16 @@ import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -50,11 +58,14 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import com.example.pagoflex.R
+import com.example.pagoflex.model.RolUsuario
 import com.example.pagoflex.ui.components.AvisoError
 import com.example.pagoflex.ui.components.BotonPrincipal
 import com.example.pagoflex.ui.components.BotonSecundario
 import com.example.pagoflex.ui.components.CampoTexto
 import com.example.pagoflex.ui.components.SnackbarPagoFlex
+import com.example.pagoflex.ui.styles.EstilosBoton
+import com.example.pagoflex.ui.styles.estiloAltoBoton
 import com.example.pagoflex.ui.theme.Dimens
 import com.example.pagoflex.utils.FotoPerfil
 import com.example.pagoflex.viewmodel.SesionViewModel
@@ -69,6 +80,7 @@ fun PerfilScreen(
     alVolver: () -> Unit,
     alCambiarContrasena: () -> Unit = {},
     alEditarPerfil: () -> Unit = {},
+    alCuentaEliminada: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
@@ -83,6 +95,16 @@ fun PerfilScreen(
 
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
+    var confirmarEliminar by remember { mutableStateOf(false) }
+
+    LaunchedEffect(sesion.cuentaEliminada) {
+        if (sesion.cuentaEliminada) {
+            withContext(Dispatchers.IO) { FotoPerfil.borrar(context, sesion.rut) }
+            Toast.makeText(context, "Tu cuenta fue eliminada", Toast.LENGTH_LONG).show()
+            sesion.consumirCuentaEliminada()
+            alCuentaEliminada()
+        }
+    }
 
     LaunchedEffect(sesion.rut) {
         if (sesion.fotoPerfil == null && sesion.rut.isNotBlank()) {
@@ -289,8 +311,51 @@ fun PerfilScreen(
                 cargando = sesion.guardandoContacto,
                 modifier = Modifier.fillMaxWidth()
             )
+
+            if (sesion.rol == RolUsuario.USUARIO_FINAL) {
+                HorizontalDivider(modifier = Modifier.padding(vertical = Dimens.espacioChico))
+                Button(
+                    onClick = { confirmarEliminar = true },
+                    enabled = !sesion.eliminandoCuenta,
+                    modifier = Modifier.fillMaxWidth().estiloAltoBoton(),
+                    shape = EstilosBoton.forma,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.error,
+                        contentColor = MaterialTheme.colorScheme.onError
+                    )
+                ) {
+                    Text(if (sesion.eliminandoCuenta) "Eliminando..." else "Eliminar mi cuenta")
+                }
+            }
         }
     }
+
+    if (confirmarEliminar) {
+        DialogoEliminarCuenta(
+            alConfirmar = {
+                confirmarEliminar = false
+                sesion.eliminarCuenta()
+            },
+            alCancelar = { confirmarEliminar = false }
+        )
+    }
+}
+
+@Composable
+private fun DialogoEliminarCuenta(alConfirmar: () -> Unit, alCancelar: () -> Unit) {
+    AlertDialog(
+        onDismissRequest = alCancelar,
+        title = { Text("¿Eliminar tu cuenta?") },
+        text = {
+            Text("No podrás volver a entrar con esta cuenta. Solo se puede eliminar si no tienes cuotas por pagar. Tus pagos ya hechos se conservan.")
+        },
+        confirmButton = {
+            TextButton(onClick = alConfirmar) {
+                Text("Eliminar", color = MaterialTheme.colorScheme.error)
+            }
+        },
+        dismissButton = { TextButton(onClick = alCancelar) { Text("Cancelar") } }
+    )
 }
 
 @Composable

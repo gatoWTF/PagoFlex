@@ -1,6 +1,7 @@
 package com.example.pagoflex.data.remote
 
 import retrofit2.http.Body
+import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.POST
 import retrofit2.http.PUT
@@ -29,4 +30,7 @@ interface UsuarioApi {
 
     @PUT("api/usuarios/{id}/contrasena")
     suspend fun cambiarContrasena(@Path("id") id: Long, @Body datos: CambiarContrasenaRequest)
+
+    @DELETE("api/usuarios/{id}")
+    suspend fun eliminar(@Path("id") id: Long)
 }

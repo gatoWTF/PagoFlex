@@ -124,7 +124,12 @@ fun RegistrarCompromisoScreen(
         !Validaciones.nombreSoloLetras(deudor) -> "El nombre no puede llevar números"
         else -> null
     }
-    val errorRut = if (intentoEnvio && !Validaciones.rutValido(rut)) "RUT inválido" else null
+    val errorRut = when {
+        !intentoEnvio -> null
+        rut.isBlank() -> "Ingresa el RUT del deudor"
+        !Validaciones.rutValido(rut) -> "RUT inválido"
+        else -> null
+    }
     val errorConcepto = if (intentoEnvio && concepto.isBlank()) "Ingresa el concepto" else null
     val errorTotalCuotas = if (intentoEnvio && !Validaciones.cantidadCuotasValida(totalCuotas))
         "Ingresa una cantidad entre 1 y ${Validaciones.MAXIMO_CUOTAS}" else null

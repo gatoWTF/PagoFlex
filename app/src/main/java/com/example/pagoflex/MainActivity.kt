@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -53,6 +54,7 @@ import com.example.pagoflex.viewmodel.EditarPerfilViewModel
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
+        installSplashScreen()
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
@@ -325,7 +327,10 @@ private fun AppPagoFlex(configuracionViewModel: ConfiguracionViewModel) {
         }
 
         composable(Rutas.RegistrarCompromiso.ruta) {
-            LaunchedEffect(Unit) { ejecutivoViewModel.limpiarErrorRegistro() }
+            LaunchedEffect(Unit) {
+                ejecutivoViewModel.limpiarErrorRegistro()
+                ejecutivoViewModel.limpiarDeudor()
+            }
             RegistrarCompromisoScreen(
                 alVolver = { navController.popBackStack() },
                 onRegistrar = { deudor, rut, concepto, totalCuotas, cuotaInicial, montoCuota, fecha ->
@@ -335,7 +340,9 @@ private fun AppPagoFlex(configuracionViewModel: ConfiguracionViewModel) {
                         navController.popBackStack()
                     }
                 },
-                errorServidor = ejecutivoViewModel.errorRegistro
+                errorServidor = ejecutivoViewModel.errorRegistro,
+                nombreDeudor = ejecutivoViewModel.nombreDeudor,
+                onRutCambia = ejecutivoViewModel::buscarDeudor
             )
         }
     }
@@ -343,7 +350,7 @@ private fun AppPagoFlex(configuracionViewModel: ConfiguracionViewModel) {
 
 private fun irALogin(navController: NavHostController) {
     navController.navigate(Rutas.Login.ruta) {
-        popUpTo(Rutas.Login.ruta) { inclusive = true }
+        popUpTo(navController.graph.id) { inclusive = true }
         launchSingleTop = true
     }
 }

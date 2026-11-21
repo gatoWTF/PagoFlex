@@ -22,6 +22,8 @@ class RegistroViewModelTest {
         val resultado = viewModel.validar()
         assertFalse(resultado)
         assertEquals("Ingresa tu nombre", viewModel.errorNombre)
+        assertEquals("Ingresa tu RUT", viewModel.errorRut)
+        assertEquals("Ingresa tu correo", viewModel.errorCorreo)
         assertEquals("Ingresa una contraseña", viewModel.errorContrasena)
     }
 

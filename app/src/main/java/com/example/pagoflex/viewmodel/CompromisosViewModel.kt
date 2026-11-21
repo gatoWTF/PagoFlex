@@ -34,6 +34,8 @@ class CompromisosViewModel(app: Application) : AndroidViewModel(app) {
 
     var mensaje by mutableStateOf<String?>(null)
         private set
+    var mensajeEsError by mutableStateOf(false)
+        private set
 
     private var empresas: Map<String, EmpresaClienteEntity> = emptyMap()
 
@@ -54,9 +56,11 @@ class CompromisosViewModel(app: Application) : AndroidViewModel(app) {
             val pagos = repositorio.listarComprobantes(rut)
             compromisos = lista.map { it.aModelo() }
             val compromisoPorFolio = compromisos.associateBy { it.folio }
-            comprobantes = pagos.map { it.aModelo(compromisoPorFolio) }
+            comprobantes = pagos
+                .map { it.aModelo(compromisoPorFolio) }
+                .sortedByDescending { ordenFechaHora(it.fechaHora) }
         } catch (e: Exception) {
-            mensaje = e.message
+            avisarError(e.message)
         }
     }
 
@@ -68,7 +72,15 @@ class CompromisosViewModel(app: Application) : AndroidViewModel(app) {
         empresas = lista.associateBy { it.codigo }
     }
 
-    fun consumirMensaje() { mensaje = null }
+    fun consumirMensaje() {
+        mensaje = null
+        mensajeEsError = false
+    }
+
+    private fun avisarError(texto: String?) {
+        mensajeEsError = true
+        mensaje = texto
+    }
 
     val porPagar: List<Compromiso>
         get() = compromisos.filter { it.estaPorPagar }
@@ -104,7 +116,7 @@ class CompromisosViewModel(app: Application) : AndroidViewModel(app) {
                 ultimoComprobante = comprobante
                 alTerminar(comprobante)
             } catch (e: Exception) {
-                mensaje = e.message
+                avisarError(e.message)
             }
         }
     }
@@ -117,7 +129,7 @@ class CompromisosViewModel(app: Application) : AndroidViewModel(app) {
                 mensaje = "Reporte " + reporte.numero + " enviado"
                 recargar()
             } catch (e: Exception) {
-                mensaje = e.message
+                avisarError(e.message)
             }
         }
     }
@@ -161,5 +173,11 @@ class CompromisosViewModel(app: Application) : AndroidViewModel(app) {
         val partes = fecha.split("-")
         if (partes.size != 3) return 0
         return partes[2].toInt() * 10000 + partes[1].toInt() * 100 + partes[0].toInt()
+    }
+
+    private fun ordenFechaHora(fechaHora: String): String {
+        val partes = fechaHora.trim().split(" ")
+        val hora = partes.getOrElse(1) { "00:00" }
+        return aOrden(partes[0]).toString() + hora
     }
 }

@@ -8,15 +8,7 @@ import java.util.concurrent.TimeUnit
 
 object RetrofitClient {
 
-    private const val URL_USUARIOS = "http://10.0.2.2:8082/"
-    private const val URL_COMPROMISOS = "http://10.0.2.2:8083/"
-
-    private fun crear(urlBase: String): Retrofit =
-        Retrofit.Builder()
-            .baseUrl(urlBase)
-            .client(cliente)
-            .addConverterFactory(GsonConverterFactory.create())
-            .build()
+    private const val URL_GATEWAY = "http://10.0.2.2:8080/"
 
     private val cliente: OkHttpClient = OkHttpClient.Builder()
         .connectTimeout(30, TimeUnit.SECONDS)
@@ -25,7 +17,15 @@ object RetrofitClient {
         .connectionPool(ConnectionPool(5, 30, TimeUnit.SECONDS))
         .build()
 
-    val usuarioApi: UsuarioApi by lazy { crear(URL_USUARIOS).create(UsuarioApi::class.java) }
+    private val retrofit: Retrofit by lazy {
+        Retrofit.Builder()
+            .baseUrl(URL_GATEWAY)
+            .client(cliente)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+    }
 
-    val compromisoApi: CompromisoApi by lazy { crear(URL_COMPROMISOS).create(CompromisoApi::class.java) }
+    val usuarioApi: UsuarioApi by lazy { retrofit.create(UsuarioApi::class.java) }
+
+    val compromisoApi: CompromisoApi by lazy { retrofit.create(CompromisoApi::class.java) }
 }

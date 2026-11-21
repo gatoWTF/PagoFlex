@@ -6,7 +6,9 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -59,6 +61,8 @@ fun RegistrarCompromisoScreen(
     alVolver: () -> Unit,
     onRegistrar: (deudor: String, rut: String, concepto: String, totalCuotas: Int, cuotaInicial: Int, montoCuota: Int, fecha: String) -> Unit,
     errorServidor: String? = null,
+    nombreDeudor: String? = null,
+    onRutCambia: (String) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     var deudor by rememberSaveable { mutableStateOf("") }
@@ -74,13 +78,34 @@ fun RegistrarCompromisoScreen(
 
     var mostrarCalendario by remember { mutableStateOf(false) }
 
+    fun formularioValido(): Boolean {
+        val fechaIngresada = fecha.replace("/", "-")
+        return deudor.isNotBlank() &&
+            Validaciones.nombreSoloLetras(deudor) &&
+            Validaciones.rutValido(rut) &&
+            concepto.isNotBlank() &&
+            Validaciones.cantidadCuotasValida(totalCuotas) &&
+            Validaciones.cuotaInicialValida(cuotaInicial, totalCuotas) &&
+            Validaciones.montoValido(monto) &&
+            Validaciones.fechaValida(fechaIngresada) &&
+            Validaciones.fechaNoAnteriorAHoy(fechaIngresada)
+    }
+
     LaunchedEffect(errorServidor) {
         if (errorServidor != null) registrando = false
+    }
+
+    LaunchedEffect(nombreDeudor) {
+        if (nombreDeudor != null) deudor = nombreDeudor
     }
 
     LaunchedEffect(registrando) {
         if (registrando) {
             delay(1000)
+            if (!formularioValido()) {
+                registrando = false
+                return@LaunchedEffect
+            }
             onRegistrar(
                 deudor,
                 rut,
@@ -99,7 +124,12 @@ fun RegistrarCompromisoScreen(
         !Validaciones.nombreSoloLetras(deudor) -> "El nombre no puede llevar números"
         else -> null
     }
-    val errorRut = if (intentoEnvio && !Validaciones.rutValido(rut)) "RUT inválido" else null
+    val errorRut = when {
+        !intentoEnvio -> null
+        rut.isBlank() -> "Ingresa el RUT del deudor"
+        !Validaciones.rutValido(rut) -> "RUT inválido"
+        else -> null
+    }
     val errorConcepto = if (intentoEnvio && concepto.isBlank()) "Ingresa el concepto" else null
     val errorTotalCuotas = if (intentoEnvio && !Validaciones.cantidadCuotasValida(totalCuotas))
         "Ingresa una cantidad entre 1 y ${Validaciones.MAXIMO_CUOTAS}" else null
@@ -140,23 +170,30 @@ fun RegistrarCompromisoScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
+                .consumeWindowInsets(padding)
+                .imePadding()
                 .padding(Dimens.espacioPantalla)
                 .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(Dimens.espacioChico)
         ) {
             CampoTexto(
+                valor = rut,
+                onValorCambia = {
+                    rut = it
+                    onRutCambia(it)
+                },
+                etiqueta = "RUT del deudor",
+                icono = R.drawable.ic_otro,
+                error = errorRut
+            )
+            CampoTexto(
                 valor = deudor,
                 onValorCambia = { deudor = it },
                 etiqueta = "Nombre del deudor",
                 icono = R.drawable.ic_perfil,
-                error = errorDeudor
-            )
-            CampoTexto(
-                valor = rut,
-                onValorCambia = { rut = it },
-                etiqueta = "RUT del deudor",
-                icono = R.drawable.ic_otro,
-                error = errorRut
+                error = errorDeudor,
+                ayuda = if (nombreDeudor != null) "Nombre de la cuenta PagoFlex con este RUT" else null,
+                soloLectura = nombreDeudor != null
             )
             CampoTexto(
                 valor = concepto,
@@ -232,16 +269,7 @@ fun RegistrarCompromisoScreen(
                 texto = if (registrando) "Registrando…" else "Registrar",
                 onClick = {
                     intentoEnvio = true
-                    val valido = deudor.isNotBlank() &&
-                            Validaciones.nombreSoloLetras(deudor) &&
-                            Validaciones.rutValido(rut) &&
-                            concepto.isNotBlank() &&
-                        Validaciones.cantidadCuotasValida(totalCuotas) &&
-                        Validaciones.cuotaInicialValida(cuotaInicial, totalCuotas) &&
-                        Validaciones.montoValido(monto) &&
-                        Validaciones.fechaValida(fechaConGuiones) &&
-                        Validaciones.fechaNoAnteriorAHoy(fechaConGuiones)
-                    if (valido) registrando = true
+                    if (formularioValido()) registrando = true
                 },
                 cargando = registrando,
                 icono = R.drawable.ic_ingresar,

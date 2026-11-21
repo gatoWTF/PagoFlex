@@ -78,8 +78,16 @@ class RegistroViewModel(
             !Validaciones.nombreLargo(nombre) -> "El nombre es muy corto"
             !Validaciones.nombreSoloLetras(nombre) -> "El nombre no puede llevar números"
             else -> null}
-        errorRut = if (Validaciones.rutValido(rut)) null else "RUT no válido"
-        errorCorreo = if (Validaciones.correoValido(correo.trim())) null else "Correo no válido"
+        errorRut = when {
+            rut.isBlank() -> "Ingresa tu RUT"
+            !Validaciones.rutValido(rut) -> "RUT no válido"
+            else -> null
+        }
+        errorCorreo = when{
+            correo.isBlank() -> "Ingresa tu correo"
+            !Validaciones.correoValido(correo.trim()) -> "Correo no válido"
+            else -> null
+        }
         errorContrasena = evaluarContrasena() ?: contrasenaObligatoria()
         errorConfirmar = evaluarConfirmar() ?: confirmacionObligatoria()
 

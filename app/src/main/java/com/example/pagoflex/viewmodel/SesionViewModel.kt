@@ -41,6 +41,8 @@ class SesionViewModel(
         private set
     var mensaje by mutableStateOf<String?>(null)
         private set
+    var mensajeEsError by mutableStateOf(false)
+        private set
     var guardandoContacto by mutableStateOf(false)
         private set
 
@@ -108,6 +110,7 @@ class SesionViewModel(
                 telefono = usuario.telefono
                 mensaje = "Datos de contacto guardados"
             } catch (e: Exception) {
+                mensajeEsError = true
                 mensaje = e.message
             } finally {
                 guardandoContacto = false
@@ -115,12 +118,16 @@ class SesionViewModel(
         }
     }
 
-    fun consumirMensaje() { mensaje = null }
+    fun consumirMensaje() {
+        mensaje = null
+        mensajeEsError = false
+    }
 
     fun consumirBienvenida() { bienvenida = null }
     private fun limpiarErrores() {
         errorCorreoSecundario = null
         errorTelefono = null
         mensaje = null
+        mensajeEsError = false
     }
 }

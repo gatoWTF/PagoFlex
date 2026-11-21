@@ -42,6 +42,11 @@ data class UsuarioResponse(
     val telefono: String?
 )
 
+data class TitularResponse(
+    val rut: String,
+    val nombre: String
+)
+
 data class ErrorApi(
     val message: String?
 )

@@ -36,7 +36,9 @@ fun CampoTexto(
     modifier: Modifier = Modifier,
     error: String? = null,
     tipoTeclado: KeyboardType = KeyboardType.Text,
-    onPerderFoco: (() -> Unit)? = null
+    onPerderFoco: (() -> Unit)? = null,
+    ayuda: String? = null,
+    soloLectura: Boolean = false
 ) {
 
     var tuvoFoco by remember { mutableStateOf(false) }
@@ -62,7 +64,11 @@ fun CampoTexto(
             )
         },
         isError = error != null,
-        supportingText = { if (error != null) Text(error) },
+        supportingText = {
+            val texto = error ?: ayuda
+            if (texto != null) Text(texto)
+        },
+        readOnly = soloLectura,
         singleLine = true,
         keyboardOptions = KeyboardOptions(
             keyboardType = tipoTeclado,

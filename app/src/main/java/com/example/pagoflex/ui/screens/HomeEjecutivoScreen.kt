@@ -48,6 +48,7 @@ import com.example.pagoflex.R
 import com.example.pagoflex.model.CompromisoEmpresa
 import com.example.pagoflex.model.EstadoCompromiso
 import com.example.pagoflex.model.MotivoAnulacion
+import com.example.pagoflex.ui.components.AvisoError
 import com.example.pagoflex.ui.components.BotonPrincipal
 import com.example.pagoflex.ui.components.EtiquetaEstado
 import com.example.pagoflex.ui.components.SnackbarPagoFlex
@@ -90,7 +91,8 @@ fun HomeEjecutivoScreen(
     LaunchedEffect(viewModel.mensaje) {
         val texto = viewModel.mensaje
         if (texto != null) {
-            snackbarHostState.showSnackbar(texto, duration = SnackbarDuration.Long)
+            if (viewModel.mensajeEsError) snackbarHostState.showSnackbar(AvisoError(texto))
+            else snackbarHostState.showSnackbar(texto, duration = SnackbarDuration.Long)
             viewModel.consumirMensaje()
         }
     }

@@ -7,6 +7,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.pagoflex.data.CompromisoRepository
+import com.example.pagoflex.data.UsuarioRepository
 import com.example.pagoflex.data.local.PagoFlexDatabase
 import com.example.pagoflex.data.remote.CompromisoResponse
 import com.example.pagoflex.data.remote.NuevoCompromisoRequest
@@ -14,12 +15,15 @@ import com.example.pagoflex.data.remote.textoAnulacion
 import com.example.pagoflex.model.CompromisoEmpresa
 import com.example.pagoflex.model.EstadoCompromiso
 import com.example.pagoflex.model.MotivoAnulacion
+import com.example.pagoflex.utils.Validaciones
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
 class EjecutivoViewModel(app: Application) : AndroidViewModel(app) {
 
     private val db = PagoFlexDatabase.obtener(app)
     private val repositorio = CompromisoRepository()
+    private val usuarios = UsuarioRepository()
 
     private var empresaCodigo: String? = null
     private var ejecutivoCodigo: String? = null
@@ -32,10 +36,34 @@ class EjecutivoViewModel(app: Application) : AndroidViewModel(app) {
 
     var mensaje by mutableStateOf<String?>(null)
         private set
+    var mensajeEsError by mutableStateOf(false)
+        private set
 
     var errorRegistro by mutableStateOf<String?>(null)
         private set
     fun limpiarErrorRegistro() { errorRegistro = null }
+
+    var nombreDeudor by mutableStateOf<String?>(null)
+        private set
+    private var busquedaDeudor: Job? = null
+
+    fun buscarDeudor(rut: String) {
+        busquedaDeudor?.cancel()
+        nombreDeudor = null
+        if (!Validaciones.rutValido(rut)) return
+        busquedaDeudor = viewModelScope.launch {
+            nombreDeudor = try {
+                usuarios.buscarNombrePorRut(rut.trim())
+            } catch (e: Exception) {
+                null
+            }
+        }
+    }
+
+    fun limpiarDeudor() {
+        busquedaDeudor?.cancel()
+        nombreDeudor = null
+    }
 
     fun cargarEjecutivo(rut: String) {
         empresaCodigo = null
@@ -58,11 +86,19 @@ class EjecutivoViewModel(app: Application) : AndroidViewModel(app) {
         try {
             compromisos = repositorio.listarPorEmpresa(codigo).map { it.aModelo() }
         } catch (e: Exception) {
-            mensaje = e.message
+            avisarError(e.message)
         }
     }
 
-    fun consumirMensaje() { mensaje = null }
+    fun consumirMensaje() {
+        mensaje = null
+        mensajeEsError = false
+    }
+
+    private fun avisarError(texto: String?) {
+        mensajeEsError = true
+        mensaje = texto
+    }
 
     private val porCobrar: List<CompromisoEmpresa>
         get() = compromisos.filter {
@@ -72,7 +108,7 @@ class EjecutivoViewModel(app: Application) : AndroidViewModel(app) {
     private val pagados: List<CompromisoEmpresa>
         get() = compromisos.filter { it.estado == EstadoCompromiso.PAGADO }
 
-    val totalRecaudado: Int get() = pagados.sumOf { it.monto }
+    val totalRecaudado: Int get() = pagados.sumOf { it.monto + it.recargo }
     val totalPorCobrar: Int get() = porCobrar.sumOf { it.monto + it.recargo }
 
     val tasaCobranza: Int
@@ -127,7 +163,7 @@ class EjecutivoViewModel(app: Application) : AndroidViewModel(app) {
                 mensaje = "Compromiso anulado: " + motivo.etiqueta
                 recargar()
             } catch (e: Exception) {
-                mensaje = e.message
+                avisarError(e.message)
             }
         }
     }

@@ -22,7 +22,9 @@ data class ReporteGestion(
     val motivo: String,
     val comentario: String,
     val fecha: String,
-    val estado: EstadoReporte
+    val estado: EstadoReporte,
+    val agente: String?,
+    val esMio: Boolean
 )
 
 class AgenteViewModel(app: Application) : AndroidViewModel(app) {
@@ -36,6 +38,8 @@ class AgenteViewModel(app: Application) : AndroidViewModel(app) {
     var reportes by mutableStateOf<List<ReporteGestion>>(emptyList())
         private set
     var mensaje by mutableStateOf<String?>(null)
+        private set
+    var mensajeEsError by mutableStateOf(false)
         private set
 
     val cantidadAbiertos: Int get() = reportes.count { it.estado == EstadoReporte.ABIERTO }
@@ -65,42 +69,50 @@ class AgenteViewModel(app: Application) : AndroidViewModel(app) {
     fun tomar(numero: String) {
         viewModelScope.launch {
             val codigo = codigoDelAgente() ?: run {
-                mensaje = "No se encontró tu ficha de agente"
+                avisarError("No se encontró tu ficha de agente")
                 return@launch
             }
             try {
                 repositorio.tomarReporte(numero, codigo)
                 mensaje = "Reporte tomado"
             } catch (e: Exception) {
-                mensaje = e.message
+                avisarError(e.message)
             }
             recargar()
         }
     }
 
-    fun resolver(numero: String) {
+    fun resolver(numero: String, respuesta: String) {
         viewModelScope.launch {
             val codigo = codigoDelAgente() ?: run {
-                mensaje = "No se encontró tu ficha de agente"
+                avisarError("No se encontró tu ficha de agente")
                 return@launch
             }
             try {
-                repositorio.resolverReporte(numero, codigo)
+                repositorio.resolverReporte(numero, codigo, respuesta.trim())
                 mensaje = "Reporte resuelto"
             } catch (e: Exception) {
-                mensaje = e.message
+                avisarError(e.message)
             }
             recargar()
         }
     }
 
-    fun consumirMensaje() { mensaje = null }
+    fun consumirMensaje() {
+        mensaje = null
+        mensajeEsError = false
+    }
+
+    private fun avisarError(texto: String?) {
+        mensajeEsError = true
+        mensaje = texto
+    }
 
     private suspend fun recargar() {
         try {
             reportes = repositorio.listarReportes().map { it.aGestion() }
         } catch (e: Exception) {
-            mensaje = e.message
+            avisarError(e.message)
         }
     }
 
@@ -116,7 +128,9 @@ class AgenteViewModel(app: Application) : AndroidViewModel(app) {
             motivo = motivo,
             comentario = comentario,
             fecha = fecha,
-            estado = estado
+            estado = estado,
+            agente = agenteResponsable,
+            esMio = agenteResponsable != null && agenteResponsable == agenteCodigo
         )
     }
 }

@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -18,6 +19,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
@@ -28,13 +30,17 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.example.pagoflex.R
 import com.example.pagoflex.model.EstadoReporte
+import com.example.pagoflex.ui.components.AvisoError
 import com.example.pagoflex.ui.components.SnackbarPagoFlex
 import com.example.pagoflex.ui.theme.Dimens
 import com.example.pagoflex.utils.FormatoMoneda
@@ -52,11 +58,14 @@ fun HomeAgenteScreen(
     alMostrarBienvenida: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
+    var reporteAResolver by remember { mutableStateOf<ReporteGestion?>(null) }
+
     val snackbarHostState = remember { SnackbarHostState() }
     LaunchedEffect(viewModel.mensaje) {
         val texto = viewModel.mensaje
         if (texto != null) {
-            snackbarHostState.showSnackbar(texto, duration = SnackbarDuration.Long)
+            if (viewModel.mensajeEsError) snackbarHostState.showSnackbar(AvisoError(texto))
+            else snackbarHostState.showSnackbar(texto, duration = SnackbarDuration.Long)
             viewModel.consumirMensaje()
         }
     }
@@ -147,11 +156,53 @@ fun HomeAgenteScreen(
                 FilaReporte(
                     reporte = reporte,
                     alTomar = { viewModel.tomar(reporte.numero) },
-                    alResolver = { viewModel.resolver(reporte.numero) }
+                    alResolver = { reporteAResolver = reporte }
                 )
             }
         }
     }
+
+    val porResolver = reporteAResolver
+    if (porResolver != null) {
+        DialogoResolver(
+            reporte = porResolver,
+            alConfirmar = { respuesta ->
+                viewModel.resolver(porResolver.numero, respuesta)
+                reporteAResolver = null
+            },
+            alCancelar = { reporteAResolver = null }
+        )
+    }
+}
+
+@Composable
+private fun DialogoResolver(
+    reporte: ReporteGestion,
+    alConfirmar: (String) -> Unit,
+    alCancelar: () -> Unit
+) {
+    var respuesta by remember { mutableStateOf("") }
+    AlertDialog(
+        onDismissRequest = alCancelar,
+        title = { Text("Resolver reporte") },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(Dimens.espacioMini)) {
+                Text(reporte.numero + " de " + reporte.usuario + ". La cuota vuelve a Pendiente, o a Vencido si su fecha ya pasó.")
+                OutlinedTextField(
+                    value = respuesta,
+                    onValueChange = { respuesta = it },
+                    label = { Text("Respuesta para el usuario (opcional)") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = { alConfirmar(respuesta) }) { Text("Resolver") }
+        },
+        dismissButton = {
+            TextButton(onClick = alCancelar) { Text("Cancelar") }
+        }
+    )
 }
 
 @Composable
@@ -214,7 +265,16 @@ private fun FilaReporte(
             ) {
                 when (reporte.estado) {
                     EstadoReporte.ABIERTO -> TextButton(onClick = alTomar) { Text("Tomar") }
-                    EstadoReporte.EN_GESTION -> TextButton(onClick = alResolver) { Text("Resolver") }
+                    EstadoReporte.EN_GESTION ->
+                        if (reporte.esMio) {
+                            TextButton(onClick = alResolver) { Text("Resolver") }
+                        } else {
+                            Text(
+                                text = "Lo gestiona " + (reporte.agente ?: "otro agente"),
+                                style = MaterialTheme.typography.labelMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
                     EstadoReporte.RESUELTO -> {}
                 }
             }

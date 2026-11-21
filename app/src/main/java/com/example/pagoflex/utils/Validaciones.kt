@@ -1,5 +1,6 @@
 package com.example.pagoflex.utils
 
+import com.example.pagoflex.model.Feriado
 import com.example.pagoflex.model.MotivoAnulacion
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -72,6 +73,21 @@ object Validaciones {
         val fecha = anio + mes + dia
         val fechaDeHoy = SimpleDateFormat("yyyyMMdd", Locale.US).format(hoy)
         return fecha >= fechaDeHoy
+    }
+
+    fun feriadoEn(fecha: String, feriados: List<Feriado>): Feriado? =
+        feriados.firstOrNull { it.fecha == fecha.trim() }
+
+    fun proximoFeriado(feriados: List<Feriado>, hoy: Date = Date()): Feriado? {
+        val fechaDeHoy = SimpleDateFormat("yyyyMMdd", Locale.US).format(hoy)
+        return feriados
+            .filter { ordenable(it.fecha) >= fechaDeHoy }
+            .minByOrNull { ordenable(it.fecha) }
+    }
+
+    private fun ordenable(fecha: String): String {
+        val (dia, mes, anio) = fecha.split("-")
+        return anio + mes + dia
     }
 
     private fun esBisiesto(anio: Int): Boolean =

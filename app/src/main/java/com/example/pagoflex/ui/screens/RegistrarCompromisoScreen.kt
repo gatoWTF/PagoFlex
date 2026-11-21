@@ -42,9 +42,11 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.pagoflex.R
+import com.example.pagoflex.model.Feriado
 import com.example.pagoflex.ui.components.BotonPrincipal
 import com.example.pagoflex.ui.components.BotonSecundario
 import com.example.pagoflex.ui.components.CampoTexto
+import com.example.pagoflex.ui.components.NotaInfo
 import com.example.pagoflex.ui.styles.EstilosCampo
 import com.example.pagoflex.ui.theme.Dimens
 import com.example.pagoflex.ui.theme.PagoFlexTheme
@@ -63,6 +65,9 @@ fun RegistrarCompromisoScreen(
     errorServidor: String? = null,
     nombreDeudor: String? = null,
     onRutCambia: (String) -> Unit = {},
+    feriados: List<Feriado> = emptyList(),
+    errorFeriados: String? = null,
+    onAnioDeLaFecha: (Int) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     var deudor by rememberSaveable { mutableStateOf("") }
@@ -143,6 +148,14 @@ fun RegistrarCompromisoScreen(
         !Validaciones.fechaValida(fechaConGuiones) -> "Ingresa una fecha válida (DD/MM/AAAA)"
         !Validaciones.fechaNoAnteriorAHoy(fechaConGuiones) -> "La fecha no puede ser anterior a hoy"
         else -> null
+    }
+
+    val fechaCompleta = Validaciones.fechaValida(fechaConGuiones)
+    val feriadoElegido = if (fechaCompleta) Validaciones.feriadoEn(fechaConGuiones, feriados) else null
+    val proximoFeriado = Validaciones.proximoFeriado(feriados)
+
+    LaunchedEffect(fechaConGuiones) {
+        if (fechaCompleta) onAnioDeLaFecha(fechaConGuiones.takeLast(4).toInt())
     }
 
     Scaffold(
@@ -256,6 +269,21 @@ fun RegistrarCompromisoScreen(
                 shape = EstilosCampo.forma,
                 colors = EstilosCampo.colores()
             )
+
+            when {
+                feriadoElegido != null -> NotaInfo(
+                    texto = "El ${feriadoElegido.fecha} es feriado: ${feriadoElegido.nombre}. Revisa si la cuota debe vencer ese día."
+                )
+                proximoFeriado != null -> NotaInfo(
+                    texto = "Próximo feriado: ${proximoFeriado.fecha}, ${proximoFeriado.nombre}",
+                    icono = R.drawable.ic_dias_aviso
+                )
+                errorFeriados != null -> Text(
+                    text = errorFeriados,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
 
             if (errorServidor != null) {
                 Text(

@@ -51,6 +51,8 @@ import com.example.pagoflex.viewmodel.SesionViewModel
 import com.example.pagoflex.viewmodel.CambiarContrasenaViewModel
 import com.example.pagoflex.ui.screens.EditarPerfilScreen
 import com.example.pagoflex.viewmodel.EditarPerfilViewModel
+import com.example.pagoflex.viewmodel.FeriadosViewModel
+import java.util.Calendar
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -328,9 +330,11 @@ private fun AppPagoFlex(configuracionViewModel: ConfiguracionViewModel) {
         }
 
         composable(Rutas.RegistrarCompromiso.ruta) {
+            val feriadosViewModel: FeriadosViewModel = viewModel()
             LaunchedEffect(Unit) {
                 ejecutivoViewModel.limpiarErrorRegistro()
                 ejecutivoViewModel.limpiarDeudor()
+                feriadosViewModel.cargar(Calendar.getInstance().get(Calendar.YEAR))
             }
             RegistrarCompromisoScreen(
                 alVolver = { navController.popBackStack() },
@@ -343,7 +347,10 @@ private fun AppPagoFlex(configuracionViewModel: ConfiguracionViewModel) {
                 },
                 errorServidor = ejecutivoViewModel.errorRegistro,
                 nombreDeudor = ejecutivoViewModel.nombreDeudor,
-                onRutCambia = ejecutivoViewModel::buscarDeudor
+                onRutCambia = ejecutivoViewModel::buscarDeudor,
+                feriados = feriadosViewModel.feriados,
+                errorFeriados = feriadosViewModel.error,
+                onAnioDeLaFecha = feriadosViewModel::cargar
             )
         }
     }

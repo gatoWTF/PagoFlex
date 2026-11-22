@@ -39,6 +39,9 @@ class CompromisosViewModel(app: Application) : AndroidViewModel(app) {
     var cargando by mutableStateOf(false)
         private set
 
+    var errorCarga by mutableStateOf(false)
+        private set
+
     var mensaje by mutableStateOf<String?>(null)
         private set
     var mensajeEsError by mutableStateOf(false)
@@ -53,6 +56,16 @@ class CompromisosViewModel(app: Application) : AndroidViewModel(app) {
         compromisos = emptyList()
         comprobantes = emptyList()
         reportes = emptyList()
+        errorCarga = false
+        cargarDeNuevo()
+    }
+
+    fun reintentar() {
+        if (cargando) return
+        cargarDeNuevo()
+    }
+
+    private fun cargarDeNuevo() {
         cargando = true
         viewModelScope.launch {
             recargar()
@@ -72,7 +85,9 @@ class CompromisosViewModel(app: Application) : AndroidViewModel(app) {
                 .map { it.aModelo(compromisoPorFolio) }
                 .sortedByDescending { ordenFechaHora(it.fechaHora) }
             reportes = runCatching { repositorio.listarReportesDe(rut) }.getOrDefault(reportes)
+            errorCarga = false
         } catch (e: Exception) {
+            errorCarga = true
             avisarError(e.message)
         }
     }

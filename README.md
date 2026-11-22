@@ -75,4 +75,4 @@ App en Kotlin con Jetpack Compose (MVVM), conectada por Retrofit a microservicio
 
 ## 6. APK firmado y llave
 
-Pendiente: se agrega la captura del APK firmado y del archivo `.jks` al generar la versión final.
+![APK firmado y llave pagoflex.jks](capturas/firma.png)

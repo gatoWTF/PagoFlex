@@ -8,7 +8,7 @@ App en Kotlin con Jetpack Compose (MVVM), conectada por Retrofit a microservicio
 
 ## 2. Integrantes
 
-- Gabriel Antonio Molina Apablaza (grupo 8)
+- Gabriel Antonio Molina Apablaza
 
 ## 3. Funcionalidades
 
@@ -40,7 +40,7 @@ App en Kotlin con Jetpack Compose (MVVM), conectada por Retrofit a microservicio
 |---|---|---|
 | GET | `https://api.boostr.cl/holidays/{año}.json` | Feriados de Chile en el formulario del ejecutivo |
 
-**Microservicios** (todos a través del API Gateway, `http://10.0.2.2:8080`)
+**Microservicios** (todos a través del API Gateway, `https://0k707gs4-8080.brs.devtunnels.ms`)
 
 | Método | Ruta | Uso en la app |
 |---|---|---|
@@ -69,8 +69,9 @@ App en Kotlin con Jetpack Compose (MVVM), conectada por Retrofit a microservicio
 
 1. Abrir **Laragon** y presionar **Iniciar todo** (MySQL en el puerto 3306, usuario `root` sin contraseña).
 2. En la carpeta del repositorio de microservicios, hacer doble clic en `encender-todo.bat` y esperar a que las 5 ventanas muestren `Started`.
-3. Abrir este proyecto en **Android Studio**, esperar la sincronización de Gradle y presionar **Run** en un emulador.
-4. Pruebas unitarias: `.\gradlew test`
+3. Abrir la carpeta de microservicios en **VS Code**, ir a la pestaña **Puertos**, reenviar el puerto `8080` y cambiar su visibilidad a **Público**. La dirección que aparece es la que usa `RetrofitClient.kt`.
+4. Abrir este proyecto en **Android Studio**, esperar la sincronización de Gradle y presionar **Run** en un emulador.
+5. Pruebas unitarias: `.\gradlew test`
 
 ## 6. APK firmado y llave
 

@@ -134,7 +134,10 @@ private fun AppPagoFlex(configuracionViewModel: ConfiguracionViewModel) {
                 onContrasenaCambia = loginViewModel::cambiarContrasena,
                 onAlternarVisible = loginViewModel::alternarContrasenaVisible,
                 onIngresar = loginViewModel::iniciarSesion,
-                onIrARegistro = { navController.navigate(Rutas.Registro.ruta) },
+                onIrARegistro = {
+                    loginViewModel.limpiar()
+                    navController.navigate(Rutas.Registro.ruta)
+                },
                 errorCorreo = loginViewModel.errorCorreo,
                 errorContrasena = loginViewModel.errorContrasena,
                 errorGeneral = loginViewModel.errorGeneral,
@@ -262,6 +265,7 @@ private fun AppPagoFlex(configuracionViewModel: ConfiguracionViewModel) {
             val folio = backStackEntry.arguments?.getString(Rutas.DetalleCompromiso.ARG_FOLIO)
             DetalleCompromisoScreen(
                 compromiso = folio?.let { compromisosViewModel.buscarPorFolio(it) },
+                respuestaSoporte = folio?.let { compromisosViewModel.respuestaDeSoporte(it) },
                 alVolver = { navController.popBackStack() },
                 alPagar = { folioPagado ->
                     compromisosViewModel.pagar(folioPagado) { comprobante ->
@@ -285,6 +289,7 @@ private fun AppPagoFlex(configuracionViewModel: ConfiguracionViewModel) {
             val folioComprobante = backStackEntry.arguments?.getString(Rutas.Comprobante.ARG_FOLIO)
             ComprobanteScreen(
                 comprobante = folioComprobante?.let { compromisosViewModel.buscarComprobante(it) },
+                recienPagado = folioComprobante?.let { compromisosViewModel.esPagoRecien(it) } ?: false,
                 alFinalizar = { navController.popBackStack() }
             )
         }

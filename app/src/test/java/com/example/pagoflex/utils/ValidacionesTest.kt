@@ -20,6 +20,18 @@ class ValidacionesTest {
     }
 
     @Test
+    fun formatearRut_sinPuntos_agregaPuntosYGuion() {
+        Assert.assertEquals("18.704.396-4", Validaciones.formatearRut("18704396-4"))
+        Assert.assertEquals("15.834.207-3", Validaciones.formatearRut("158342073"))
+    }
+
+    @Test
+    fun formatearRut_conKMinuscula_quedaEnMayuscula() {
+        Assert.assertEquals("16.248.317-K", Validaciones.formatearRut("16248317-k"))
+        Assert.assertEquals("6.893.541-5", Validaciones.formatearRut("6.893.541-5"))
+    }
+
+    @Test
     fun rutConDigitoIncorrecto_invalido() {
         Assert.assertFalse(Validaciones.rutValido("15.834.207-4"))
     }

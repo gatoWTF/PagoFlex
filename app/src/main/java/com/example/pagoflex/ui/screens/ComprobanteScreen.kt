@@ -49,7 +49,8 @@ import com.example.pagoflex.utils.FormatoMoneda
 fun ComprobanteScreen(
     comprobante: Comprobante?,
     alFinalizar: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    recienPagado: Boolean = true
 ) {
 
     val escala = remember { Animatable(0f) }
@@ -110,7 +111,7 @@ fun ComprobanteScreen(
                 )
             }
             Text(
-                text = "¡Pago realizado!",
+                text = if (recienPagado) "¡Pago realizado!" else "Comprobante de pago",
                 style = MaterialTheme.typography.titleLarge,
                 color = MaterialTheme.colorScheme.onBackground
             )

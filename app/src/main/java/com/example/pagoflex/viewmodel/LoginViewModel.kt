@@ -57,4 +57,12 @@ class LoginViewModel(
     }
 
     fun consumirUsuario() { usuario = null }
+
+    fun limpiar() {
+        contrasena = ""
+        contrasenaVisible = false
+        errorCorreo = null
+        errorContrasena = null
+        errorGeneral = null
+    }
 }

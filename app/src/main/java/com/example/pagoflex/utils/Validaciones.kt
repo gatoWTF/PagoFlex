@@ -115,4 +115,13 @@ object Validaciones {
         }
         return digitoVerificador == esperado
     }
+
+    fun formatearRut(rut: String): String {
+        val limpio = rut.trim().uppercase().replace(".", "").replace("-", "").replace(" ", "")
+        if (limpio.length < 2) return rut.trim()
+        val cuerpo = limpio.dropLast(1)
+        val digitoVerificador = limpio.last()
+        val conPuntos = cuerpo.reversed().chunked(3).joinToString(".").reversed()
+        return "$conPuntos-$digitoVerificador"
+    }
 }

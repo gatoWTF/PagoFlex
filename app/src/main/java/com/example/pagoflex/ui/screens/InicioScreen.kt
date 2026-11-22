@@ -47,6 +47,7 @@ import com.example.pagoflex.R
 import com.example.pagoflex.ui.components.AvisoError
 import com.example.pagoflex.model.EstadoCompromiso
 import com.example.pagoflex.ui.components.FilaCompromiso
+import com.example.pagoflex.ui.components.NotaInfo
 import com.example.pagoflex.ui.components.SnackbarPagoFlex
 import com.example.pagoflex.ui.theme.Dimens
 import com.example.pagoflex.ui.theme.PagoFlexTheme
@@ -213,12 +214,15 @@ fun InicioScreen(
                     modifier = Modifier.padding(top = Dimens.espacioChico)
                 )
             }
-            items(
-                viewModel.compromisos
-                    .filter { it.estado != EstadoCompromiso.PAGADO }
-                    .sortedBy { it.estado.prioridadLista },
-                key = { it.folio }
-            ) { compromiso ->
+            val porMostrar = viewModel.compromisos
+                .filter { it.estado != EstadoCompromiso.PAGADO }
+                .sortedBy { it.estado.prioridadLista }
+            if (porMostrar.isEmpty() && !viewModel.cargando) {
+                item {
+                    NotaInfo(texto = "No tienes compromisos por pagar. Cuando una empresa registre una cuota a tu nombre, aparecerá aquí.")
+                }
+            }
+            items(porMostrar, key = { it.folio }) { compromiso ->
                 FilaCompromiso(
                     compromiso = compromiso,
                     onClick = { alAbrirDetalle(compromiso.folio) },

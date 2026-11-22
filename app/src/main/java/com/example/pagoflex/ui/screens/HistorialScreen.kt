@@ -39,6 +39,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.pagoflex.R
 import com.example.pagoflex.model.Comprobante
+import com.example.pagoflex.ui.components.NotaInfo
 import com.example.pagoflex.ui.theme.Dimens
 import com.example.pagoflex.ui.theme.Exito
 import com.example.pagoflex.ui.theme.ExitoFondo
@@ -84,12 +85,18 @@ fun HistorialScreen(
             contentPadding = PaddingValues(Dimens.espacioPantalla),
             verticalArrangement = Arrangement.spacedBy(Dimens.espacioChico)
         ) {
-            item {
-                TarjetaCumplimiento(
-                    porcentaje = viewModel.porcentajeCumplimiento,
-                    aTiempo = viewModel.comprobantes.count { it.aTiempo },
-                    total = viewModel.comprobantes.size
-                )
+            if (viewModel.comprobantes.isEmpty()) {
+                item {
+                    NotaInfo(texto = "Aún no tienes pagos registrados. Cuando pagues una cuota, su comprobante aparecerá aquí.")
+                }
+            } else {
+                item {
+                    TarjetaCumplimiento(
+                        porcentaje = viewModel.porcentajeCumplimiento,
+                        aTiempo = viewModel.comprobantes.count { it.aTiempo },
+                        total = viewModel.comprobantes.size
+                    )
+                }
             }
             item {
                 Text(

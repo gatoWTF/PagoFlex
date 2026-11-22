@@ -11,10 +11,12 @@ import com.example.pagoflex.data.local.PagoFlexDatabase
 import com.example.pagoflex.data.local.entity.EmpresaClienteEntity
 import com.example.pagoflex.data.remote.ComprobanteResponse
 import com.example.pagoflex.data.remote.CompromisoResponse
+import com.example.pagoflex.data.remote.ReporteResponse
 import com.example.pagoflex.data.remote.textoAnulacion
 import com.example.pagoflex.model.Comprobante
 import com.example.pagoflex.model.Compromiso
 import com.example.pagoflex.model.EstadoCompromiso
+import com.example.pagoflex.model.EstadoReporte
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
@@ -32,6 +34,11 @@ class CompromisosViewModel(app: Application) : AndroidViewModel(app) {
     var comprobantes by mutableStateOf<List<Comprobante>>(emptyList())
         private set
 
+    private var reportes by mutableStateOf<List<ReporteResponse>>(emptyList())
+
+    var cargando by mutableStateOf(false)
+        private set
+
     var mensaje by mutableStateOf<String?>(null)
         private set
     var mensajeEsError by mutableStateOf(false)
@@ -45,7 +52,12 @@ class CompromisosViewModel(app: Application) : AndroidViewModel(app) {
         rutUsuario = rut
         compromisos = emptyList()
         comprobantes = emptyList()
-        viewModelScope.launch { recargar() }
+        reportes = emptyList()
+        cargando = true
+        viewModelScope.launch {
+            recargar()
+            cargando = false
+        }
     }
 
     private suspend fun recargar() {
@@ -59,6 +71,7 @@ class CompromisosViewModel(app: Application) : AndroidViewModel(app) {
             comprobantes = pagos
                 .map { it.aModelo(compromisoPorFolio) }
                 .sortedByDescending { ordenFechaHora(it.fechaHora) }
+            reportes = runCatching { repositorio.listarReportesDe(rut) }.getOrDefault(reportes)
         } catch (e: Exception) {
             avisarError(e.message)
         }
@@ -104,6 +117,14 @@ class CompromisosViewModel(app: Application) : AndroidViewModel(app) {
 
     fun buscarComprobante(folio: String): Comprobante? =
         ultimoComprobante?.takeIf { it.folio == folio } ?: comprobantes.find { it.folio == folio }
+
+    fun esPagoRecien(folio: String): Boolean = ultimoComprobante?.folio == folio
+
+    fun respuestaDeSoporte(folio: String): String? =
+        reportes
+            .filter { it.compromisoFolio == folio && it.estado == EstadoReporte.RESUELTO && !it.respuesta.isNullOrBlank() }
+            .maxByOrNull { it.numero }
+            ?.respuesta
 
     fun pagar(folio: String, alTerminar: (Comprobante) -> Unit) {
         viewModelScope.launch {

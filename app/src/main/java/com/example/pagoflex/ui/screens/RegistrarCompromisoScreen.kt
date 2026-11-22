@@ -16,6 +16,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.DatePickerState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -27,7 +28,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -41,6 +41,7 @@ import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import com.example.pagoflex.R
 import com.example.pagoflex.model.Feriado
 import com.example.pagoflex.ui.components.BotonPrincipal
@@ -313,15 +314,18 @@ fun RegistrarCompromisoScreen(
         }
 
         if (mostrarCalendario) {
-            val estadoCalendario = rememberDatePickerState(
-                selectableDates = object : SelectableDates {
-                    override fun isSelectableDate(utcTimeMillis: Long): Boolean {
-                        val formato = SimpleDateFormat("dd-MM-yyyy", Locale.US)
-                        formato.timeZone = TimeZone.getTimeZone("UTC")
-                        return Validaciones.fechaNoAnteriorAHoy(formato.format(Date(utcTimeMillis)))
+            val estadoCalendario = remember {
+                DatePickerState(
+                    locale = Locale.forLanguageTag("es-CL"),
+                    selectableDates = object : SelectableDates {
+                        override fun isSelectableDate(utcTimeMillis: Long): Boolean {
+                            val formato = SimpleDateFormat("dd-MM-yyyy", Locale.US)
+                            formato.timeZone = TimeZone.getTimeZone("UTC")
+                            return Validaciones.fechaNoAnteriorAHoy(formato.format(Date(utcTimeMillis)))
+                        }
                     }
-                }
-            )
+                )
+            }
             DatePickerDialog(
                 onDismissRequest = { mostrarCalendario = false },
                 confirmButton = {
@@ -338,7 +342,27 @@ fun RegistrarCompromisoScreen(
                     TextButton(onClick = { mostrarCalendario = false }) { Text("Cancelar") }
                 }
             ) {
-                DatePicker(state = estadoCalendario)
+                DatePicker(
+                    state = estadoCalendario,
+                    title = {
+                        Text(
+                            text = "Elige la fecha de vencimiento",
+                            modifier = Modifier.padding(start = 24.dp, end = 12.dp, top = 16.dp)
+                        )
+                    },
+                    headline = {
+                        val elegida = estadoCalendario.selectedDateMillis?.let { millis ->
+                            val formato = SimpleDateFormat("dd-MM-yyyy", Locale.US)
+                            formato.timeZone = TimeZone.getTimeZone("UTC")
+                            formato.format(Date(millis))
+                        }
+                        Text(
+                            text = elegida ?: "Sin fecha elegida",
+                            style = MaterialTheme.typography.headlineLarge,
+                            modifier = Modifier.padding(start = 24.dp, end = 12.dp, bottom = 12.dp)
+                        )
+                    }
+                )
             }
         }
     }

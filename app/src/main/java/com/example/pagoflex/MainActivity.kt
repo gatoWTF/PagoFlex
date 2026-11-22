@@ -51,6 +51,8 @@ import com.example.pagoflex.viewmodel.SesionViewModel
 import com.example.pagoflex.viewmodel.CambiarContrasenaViewModel
 import com.example.pagoflex.ui.screens.EditarPerfilScreen
 import com.example.pagoflex.viewmodel.EditarPerfilViewModel
+import com.example.pagoflex.viewmodel.FeriadosViewModel
+import java.util.Calendar
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -132,7 +134,10 @@ private fun AppPagoFlex(configuracionViewModel: ConfiguracionViewModel) {
                 onContrasenaCambia = loginViewModel::cambiarContrasena,
                 onAlternarVisible = loginViewModel::alternarContrasenaVisible,
                 onIngresar = loginViewModel::iniciarSesion,
-                onIrARegistro = { navController.navigate(Rutas.Registro.ruta) },
+                onIrARegistro = {
+                    loginViewModel.limpiar()
+                    navController.navigate(Rutas.Registro.ruta)
+                },
                 errorCorreo = loginViewModel.errorCorreo,
                 errorContrasena = loginViewModel.errorContrasena,
                 errorGeneral = loginViewModel.errorGeneral,
@@ -201,6 +206,7 @@ private fun AppPagoFlex(configuracionViewModel: ConfiguracionViewModel) {
                 alVolver = { navController.popBackStack() },
                 alCambiarContrasena = { navController.navigate(Rutas.CambiarContrasena.ruta) },
                 alEditarPerfil = { navController.navigate(Rutas.EditarPerfil.ruta) },
+                alCuentaEliminada = { irALogin(navController) }
             )
         }
         composable(Rutas.EditarPerfil.ruta) {
@@ -259,6 +265,7 @@ private fun AppPagoFlex(configuracionViewModel: ConfiguracionViewModel) {
             val folio = backStackEntry.arguments?.getString(Rutas.DetalleCompromiso.ARG_FOLIO)
             DetalleCompromisoScreen(
                 compromiso = folio?.let { compromisosViewModel.buscarPorFolio(it) },
+                respuestaSoporte = folio?.let { compromisosViewModel.respuestaDeSoporte(it) },
                 alVolver = { navController.popBackStack() },
                 alPagar = { folioPagado ->
                     compromisosViewModel.pagar(folioPagado) { comprobante ->
@@ -282,6 +289,7 @@ private fun AppPagoFlex(configuracionViewModel: ConfiguracionViewModel) {
             val folioComprobante = backStackEntry.arguments?.getString(Rutas.Comprobante.ARG_FOLIO)
             ComprobanteScreen(
                 comprobante = folioComprobante?.let { compromisosViewModel.buscarComprobante(it) },
+                recienPagado = folioComprobante?.let { compromisosViewModel.esPagoRecien(it) } ?: false,
                 alFinalizar = { navController.popBackStack() }
             )
         }
@@ -327,9 +335,11 @@ private fun AppPagoFlex(configuracionViewModel: ConfiguracionViewModel) {
         }
 
         composable(Rutas.RegistrarCompromiso.ruta) {
+            val feriadosViewModel: FeriadosViewModel = viewModel()
             LaunchedEffect(Unit) {
                 ejecutivoViewModel.limpiarErrorRegistro()
                 ejecutivoViewModel.limpiarDeudor()
+                feriadosViewModel.cargar(Calendar.getInstance().get(Calendar.YEAR))
             }
             RegistrarCompromisoScreen(
                 alVolver = { navController.popBackStack() },
@@ -342,7 +352,10 @@ private fun AppPagoFlex(configuracionViewModel: ConfiguracionViewModel) {
                 },
                 errorServidor = ejecutivoViewModel.errorRegistro,
                 nombreDeudor = ejecutivoViewModel.nombreDeudor,
-                onRutCambia = ejecutivoViewModel::buscarDeudor
+                onRutCambia = ejecutivoViewModel::buscarDeudor,
+                feriados = feriadosViewModel.feriados,
+                errorFeriados = feriadosViewModel.error,
+                onAnioDeLaFecha = feriadosViewModel::cargar
             )
         }
     }

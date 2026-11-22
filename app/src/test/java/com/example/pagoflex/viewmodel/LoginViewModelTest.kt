@@ -51,4 +51,17 @@ class LoginViewModelTest {
         assertNull(viewModel.errorCorreo)
         assertEquals("Ingresa tu contraseña", viewModel.errorContrasena)
     }
+
+    @Test
+    fun limpiar_despuesDeUnError_borraErroresYContrasena() {
+        viewModel.cambiarCorreo("benjamin")
+        viewModel.cambiarContrasena("")
+        viewModel.validar()
+
+        viewModel.limpiar()
+
+        assertNull(viewModel.errorContrasena)
+        assertEquals("", viewModel.contrasena)
+        assertEquals("benjamin", viewModel.correo)
+    }
 }

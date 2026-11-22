@@ -36,6 +36,9 @@ interface CompromisoApi {
     @GET("api/reportes")
     suspend fun listarReportes(): List<ReporteResponse>
 
+    @GET("api/reportes")
+    suspend fun listarReportesDe(@Query("rut") rut: String): List<ReporteResponse>
+
     @POST("api/reportes")
     suspend fun crearReporte(@Body datos: NuevoReporteRequest): ReporteResponse
 

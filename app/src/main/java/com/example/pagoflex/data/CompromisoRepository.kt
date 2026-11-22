@@ -63,6 +63,9 @@ class CompromisoRepository(
     suspend fun listarReportes(): List<ReporteResponse> =
         llamar { compromisoApi.listarReportes() }
 
+    suspend fun listarReportesDe(rut: String): List<ReporteResponse> =
+        llamar { compromisoApi.listarReportesDe(rut) }
+
     suspend fun crearReporte(folio: String, rut: String, motivo: String, comentario: String): ReporteResponse =
         llamar { compromisoApi.crearReporte(NuevoReporteRequest(folio, rut, motivo, comentario)) }
 

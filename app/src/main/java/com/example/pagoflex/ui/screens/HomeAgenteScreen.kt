@@ -127,7 +127,7 @@ fun HomeAgenteScreen(
                         Column(modifier = Modifier.weight(1f)) {
                             Text("Bandeja de reportes", style = MaterialTheme.typography.bodyMedium)
                             Text(
-                                text = "${viewModel.cantidadAbiertos} abiertos",
+                                text = if (viewModel.cantidadAbiertos == 1) "1 abierto" else "${viewModel.cantidadAbiertos} abiertos",
                                 style = MaterialTheme.typography.headlineMedium
                             )
                         }

@@ -1,5 +1,6 @@
 package com.example.pagoflex.utils
 
+import com.example.pagoflex.model.Feriado
 import com.example.pagoflex.model.MotivoAnulacion
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -74,6 +75,21 @@ object Validaciones {
         return fecha >= fechaDeHoy
     }
 
+    fun feriadoEn(fecha: String, feriados: List<Feriado>): Feriado? =
+        feriados.firstOrNull { it.fecha == fecha.trim() }
+
+    fun proximoFeriado(feriados: List<Feriado>, hoy: Date = Date()): Feriado? {
+        val fechaDeHoy = SimpleDateFormat("yyyyMMdd", Locale.US).format(hoy)
+        return feriados
+            .filter { ordenable(it.fecha) >= fechaDeHoy }
+            .minByOrNull { ordenable(it.fecha) }
+    }
+
+    private fun ordenable(fecha: String): String {
+        val (dia, mes, anio) = fecha.split("-")
+        return anio + mes + dia
+    }
+
     private fun esBisiesto(anio: Int): Boolean =
         (anio % 4 == 0 && anio % 100 != 0) || (anio % 400 == 0)
 
@@ -98,5 +114,14 @@ object Validaciones {
             else -> '0' + resto
         }
         return digitoVerificador == esperado
+    }
+
+    fun formatearRut(rut: String): String {
+        val limpio = rut.trim().uppercase().replace(".", "").replace("-", "").replace(" ", "")
+        if (limpio.length < 2) return rut.trim()
+        val cuerpo = limpio.dropLast(1)
+        val digitoVerificador = limpio.last()
+        val conPuntos = cuerpo.reversed().chunked(3).joinToString(".").reversed()
+        return "$conPuntos-$digitoVerificador"
     }
 }

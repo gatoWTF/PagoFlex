@@ -8,7 +8,7 @@ import java.util.concurrent.TimeUnit
 
 object RetrofitClient {
 
-    private const val URL_GATEWAY = "http://10.0.2.2:8080/"
+    private const val URL_GATEWAY = "https://0k707gs4-8080.brs.devtunnels.ms/"
 
     private val cliente: OkHttpClient = OkHttpClient.Builder()
         .connectTimeout(30, TimeUnit.SECONDS)

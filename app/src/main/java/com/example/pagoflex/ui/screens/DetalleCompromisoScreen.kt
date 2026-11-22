@@ -38,6 +38,7 @@ import com.example.pagoflex.model.EstadoCompromiso
 import com.example.pagoflex.ui.components.BotonPrincipal
 import com.example.pagoflex.ui.components.BotonSecundario
 import com.example.pagoflex.ui.components.EtiquetaEstado
+import com.example.pagoflex.ui.components.NotaInfo
 import com.example.pagoflex.ui.theme.Dimens
 import com.example.pagoflex.ui.theme.PagoFlexTheme
 import com.example.pagoflex.utils.FormatoMoneda
@@ -50,7 +51,8 @@ fun DetalleCompromisoScreen(
     alVolver: () -> Unit,
     alPagar: (String) -> Unit,
     alReportar: (String) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    respuestaSoporte: String? = null
 ) {
 
     var pagando by remember { mutableStateOf(false) }
@@ -133,8 +135,11 @@ fun DetalleCompromisoScreen(
             if (compromiso.recargo > 0) {
                 FilaDato("Recargo por atraso", FormatoMoneda.clp(compromiso.recargo))
             }
-            val etiquetaTotal =
-                if (compromiso.estado == EstadoCompromiso.PAGADO) "Total pagado" else "Total a pagar"
+            val etiquetaTotal = when (compromiso.estado) {
+                EstadoCompromiso.PAGADO -> "Total pagado"
+                EstadoCompromiso.ANULADO -> "Monto anulado"
+                else -> "Total a pagar"
+            }
             FilaDato(etiquetaTotal, FormatoMoneda.clp(compromiso.totalAPagar))
             HorizontalDivider(modifier = Modifier.padding(vertical = Dimens.espacioChico))
             FilaDato("Vence", compromiso.fechaVencimiento)
@@ -145,6 +150,19 @@ fun DetalleCompromisoScreen(
             }
             compromiso.motivoAnulacion?.let { FilaDato("Motivo de anulación", it) }
             FilaDato("Folio", compromiso.folio)
+
+            if (compromiso.estado == EstadoCompromiso.EN_REVISION) {
+                NotaInfo(
+                    texto = "Esta cuota está en revisión por un reporte. Podrás pagarla cuando soporte lo resuelva.",
+                    modifier = Modifier.padding(top = Dimens.espacioChico)
+                )
+            }
+            respuestaSoporte?.let { respuesta ->
+                NotaInfo(
+                    texto = "Respuesta de soporte: $respuesta",
+                    modifier = Modifier.padding(top = Dimens.espacioChico)
+                )
+            }
 
             Spacer(Modifier.weight(1f))
 

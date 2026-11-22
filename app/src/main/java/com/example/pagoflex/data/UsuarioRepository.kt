@@ -45,6 +45,9 @@ class UsuarioRepository(
     suspend fun cambiarContrasena(id: Long, actual: String, nueva: String) =
         llamar { usuarioApi.cambiarContrasena(id, CambiarContrasenaRequest(actual, nueva)) }
 
+    suspend fun eliminar(id: Long) =
+        llamar { usuarioApi.eliminar(id) }
+
     private suspend fun <T> llamar(peticion: suspend () -> T): T = try {
         peticion()
     } catch (e: HttpException) {

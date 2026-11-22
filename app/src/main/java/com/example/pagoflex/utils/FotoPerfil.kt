@@ -50,6 +50,10 @@ object FotoPerfil {
         return if (archivo.exists()) BitmapFactory.decodeFile(archivo.absolutePath) else null
     }
 
+    fun borrar(context: Context, rut: String) {
+        archivoDe(context, rut).delete()
+    }
+
     private fun archivoDe(context: Context, rut: String): File {
         val carpeta = File(context.filesDir, "fotos")
         carpeta.mkdirs()

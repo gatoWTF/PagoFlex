@@ -101,7 +101,7 @@ class RegistroViewModel(
         errorGeneral = null
         viewModelScope.launch {
             try {
-                usuario = repositorio.registrar(nombre.trim(), rut.trim(), correo.trim(), contrasena)
+                usuario = repositorio.registrar(nombre.trim(), Validaciones.formatearRut(rut), correo.trim(), contrasena)
             } catch (e: Exception) {
                 errorGeneral = e.message
             } finally {

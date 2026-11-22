@@ -308,7 +308,7 @@ private fun TarjetaCobranza(tasa: Int, recaudado: Int, porCobrar: Int) {
         )
     ) {
         Column(modifier = Modifier.padding(Dimens.espacioGrande)) {
-            Text(text = "Tasa de cobranza del mes", style = MaterialTheme.typography.bodyMedium)
+            Text(text = "Tasa de cobranza", style = MaterialTheme.typography.bodyMedium)
             Text(text = "$tasaAnimada%", style = MaterialTheme.typography.headlineLarge)
             Row(
                 modifier = Modifier

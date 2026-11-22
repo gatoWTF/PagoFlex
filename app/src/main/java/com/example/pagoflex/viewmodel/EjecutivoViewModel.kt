@@ -9,6 +9,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.pagoflex.data.CompromisoRepository
 import com.example.pagoflex.data.UsuarioRepository
 import com.example.pagoflex.data.local.PagoFlexDatabase
+import com.example.pagoflex.data.local.entity.EjecutivoEntity
 import com.example.pagoflex.data.remote.CompromisoResponse
 import com.example.pagoflex.data.remote.NuevoCompromisoRequest
 import com.example.pagoflex.data.remote.textoAnulacion
@@ -17,6 +18,7 @@ import com.example.pagoflex.model.EstadoCompromiso
 import com.example.pagoflex.model.MotivoAnulacion
 import com.example.pagoflex.utils.Validaciones
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 class EjecutivoViewModel(app: Application) : AndroidViewModel(app) {
@@ -72,13 +74,21 @@ class EjecutivoViewModel(app: Application) : AndroidViewModel(app) {
         compromisos = emptyList()
         viewModelScope.launch {
             val rutSinFormato = rut.trim().uppercase().replace(".", "").replace("-", "")
-            val ejecutivo = db.ejecutivoDao().buscarPorRut(rutSinFormato) ?: return@launch
+            val ejecutivo = esperarEjecutivo(rutSinFormato) ?: return@launch
             ejecutivoCodigo = ejecutivo.codigo
             empresaCodigo = ejecutivo.empresaCodigo
             empresa = db.empresaClienteDao().obtenerPorCodigo(ejecutivo.empresaCodigo)?.nombreFantasia
                 ?: ejecutivo.empresaCodigo
             recargar()
         }
+    }
+
+    private suspend fun esperarEjecutivo(rutSinFormato: String): EjecutivoEntity? {
+        repeat(10) {
+            db.ejecutivoDao().buscarPorRut(rutSinFormato)?.let { return it }
+            delay(500)
+        }
+        return null
     }
 
     private suspend fun recargar() {
@@ -127,14 +137,18 @@ class EjecutivoViewModel(app: Application) : AndroidViewModel(app) {
         fechaVencimiento: String,
         alTerminar: () -> Unit
     ) {
-        val empresaActual = empresaCodigo ?: return
-        val registrador = ejecutivoCodigo ?: return
         errorRegistro = null
+        val empresaActual = empresaCodigo
+        val registrador = ejecutivoCodigo
+        if (empresaActual == null || registrador == null) {
+            errorRegistro = "No se encontró la empresa de tu cuenta. Cierra sesión y vuelve a entrar."
+            return
+        }
         viewModelScope.launch {
             try {
                 val creado = repositorio.registrar(
                     NuevoCompromisoRequest(
-                        rutUsuario = rutDeudor.trim(),
+                        rutUsuario = Validaciones.formatearRut(rutDeudor),
                         nombreUsuario = deudor.trim(),
                         empresaCodigo = empresaActual,
                         concepto = concepto.trim(),

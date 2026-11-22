@@ -49,6 +49,11 @@ class SesionViewModel(
     var bienvenida by mutableStateOf<String?>(null)
         private set
 
+    var eliminandoCuenta by mutableStateOf(false)
+        private set
+    var cuentaEliminada by mutableStateOf(false)
+        private set
+
     fun iniciarSesion(usuario: Usuario) {
         this.idUsuario = usuario.id
         this.nombre = usuario.nombre
@@ -117,6 +122,25 @@ class SesionViewModel(
             }
         }
     }
+
+    fun eliminarCuenta() {
+        val id = idUsuario ?: return
+        if (eliminandoCuenta) return
+        eliminandoCuenta = true
+        viewModelScope.launch {
+            try {
+                repositorio.eliminar(id)
+                cuentaEliminada = true
+            } catch (e: Exception) {
+                mensajeEsError = true
+                mensaje = e.message
+            } finally {
+                eliminandoCuenta = false
+            }
+        }
+    }
+
+    fun consumirCuentaEliminada() { cuentaEliminada = false }
 
     fun consumirMensaje() {
         mensaje = null

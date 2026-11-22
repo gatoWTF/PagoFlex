@@ -1,5 +1,6 @@
 package com.example.pagoflex.utils
 
+import com.example.pagoflex.model.Feriado
 import org.junit.Assert
 import org.junit.Test
 import java.text.SimpleDateFormat
@@ -16,6 +17,18 @@ class ValidacionesTest {
     @Test
     fun rutSinFormato_valido() {
         Assert.assertTrue(Validaciones.rutValido("158342073"))
+    }
+
+    @Test
+    fun formatearRut_sinPuntos_agregaPuntosYGuion() {
+        Assert.assertEquals("18.704.396-4", Validaciones.formatearRut("18704396-4"))
+        Assert.assertEquals("15.834.207-3", Validaciones.formatearRut("158342073"))
+    }
+
+    @Test
+    fun formatearRut_conKMinuscula_quedaEnMayuscula() {
+        Assert.assertEquals("16.248.317-K", Validaciones.formatearRut("16248317-k"))
+        Assert.assertEquals("6.893.541-5", Validaciones.formatearRut("6.893.541-5"))
     }
 
     @Test
@@ -71,5 +84,23 @@ class ValidacionesTest {
     fun fechaPasada_esAnterior() {
         Assert.assertFalse(Validaciones.fechaNoAnteriorAHoy("13-11-2026", hoy))
         Assert.assertFalse(Validaciones.fechaNoAnteriorAHoy("25-12-2025", hoy))
+    }
+
+    private val feriados = listOf(
+        Feriado("18-09-2026", "Independencia Nacional", true),
+        Feriado("25-12-2026", "Navidad", true),
+        Feriado("08-12-2026", "Inmaculada Concepción", false)
+    )
+
+    @Test
+    fun feriadoEn_conFechaFeriado_devuelveElFeriado() {
+        Assert.assertEquals("Navidad", Validaciones.feriadoEn("25-12-2026", feriados)?.nombre)
+        Assert.assertNull(Validaciones.feriadoEn("26-12-2026", feriados))
+    }
+
+    @Test
+    fun proximoFeriado_ignoraLosQueYaPasaron() {
+        val proximo = Validaciones.proximoFeriado(feriados, hoy)
+        Assert.assertEquals("08-12-2026", proximo?.fecha)
     }
 }

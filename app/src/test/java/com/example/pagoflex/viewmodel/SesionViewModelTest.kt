@@ -3,6 +3,7 @@ package com.example.pagoflex.viewmodel
 import com.example.pagoflex.model.RolUsuario
 import com.example.pagoflex.model.Usuario
 import org.junit.Assert
+import org.junit.Before
 import org.junit.Test
 
 class SesionViewModelTest {
@@ -14,6 +15,13 @@ class SesionViewModelTest {
         correo = "ana@correo.cl",
         rol = RolUsuario.USUARIO_FINAL
     )
+
+    private lateinit var editarPerfil: EditarPerfilViewModel
+
+    @Before
+    fun preparar() {
+        editarPerfil = EditarPerfilViewModel()
+    }
 
     @Test
     fun fotoPerfil_arranca_null() {
@@ -53,5 +61,35 @@ class SesionViewModelTest {
         val valido = sesion.validarContacto()
         Assert.assertFalse(valido)
         Assert.assertEquals("Teléfono no válido", sesion.errorTelefono)
+    }
+
+    @Test
+    fun eliminarCuenta_sinSesion_noHaceNada() {
+        val sesion = SesionViewModel()
+        sesion.eliminarCuenta()
+        Assert.assertFalse(sesion.eliminandoCuenta)
+        Assert.assertFalse(sesion.cuentaEliminada)
+    }
+
+    @Test
+    fun editarPerfil_conNombreConNumeros_mostrarError() {
+        editarPerfil.cambiarNombre("benjamin 123")
+        editarPerfil.cambiarCorreo("benjamin@correo.cl")
+
+        val resultado = editarPerfil.validar()
+
+        Assert.assertFalse(resultado)
+        Assert.assertEquals("El nombre no puede llevar números", editarPerfil.errorNombre)
+    }
+
+    @Test
+    fun editarPerfil_conCorreoInvalido_mostrarError() {
+        editarPerfil.cambiarNombre("Benjamin Soto")
+        editarPerfil.cambiarCorreo("benjamin")
+
+        val resultado = editarPerfil.validar()
+
+        Assert.assertFalse(resultado)
+        Assert.assertEquals("Correo no válido", editarPerfil.errorCorreo)
     }
 }
